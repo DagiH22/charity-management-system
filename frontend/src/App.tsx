@@ -1,9 +1,16 @@
-import './App.css'
 import "./index.css";
+import NavBar from "./components/NavBar";
+import HomePage from "./pages/HomePage";
+import { Routes, Route } from "react-router-dom";
 export default function App() {
   return (
-    <>
-      the charity where we utilize our good name to exploit people
-    </>
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      <NavBar />
+      <main className="px-[6vw] py-12">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+        </Routes>
+      </main>
+    </div>
   );
 }
