@@ -3,14 +3,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { validateEmail, validatePassword } from "../utils/validation";
 import { InputField } from "../components/InputField";
 
-export default function LoginPage() {
+export default function RegisterPage() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
 
     const eError = validateEmail(email);
@@ -23,9 +24,9 @@ export default function LoginPage() {
       return;
     }
 
-    // Placeholder for actual authentication logic
-    console.log("Logging in with", email, password);
-    navigate("/");
+    // Placeholder for actual registration logic
+    console.log("Registering with", name, email, password);
+    navigate("/login");
   };
 
   return (
@@ -39,14 +40,24 @@ export default function LoginPage() {
             Charity<span className="text-emerald-500">.</span>
           </Link>
           <h1 className="text-3xl font-extrabold tracking-tight text-[#0b2b53]">
-            Welcome Back
+            Create an Account
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            Please sign in to your account
+            Join us to make a difference
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleRegister} className="space-y-6">
+          <InputField
+            id="name"
+            type="text"
+            label="Full Name"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="John Doe"
+          />
+
           <InputField
             id="email"
             type="email"
@@ -58,54 +69,32 @@ export default function LoginPage() {
             placeholder="you@example.com"
           />
 
-          <div>
-            <div className="flex items-center justify-between">
-              <label
-                htmlFor="password"
-                className="block text-sm font-semibold text-slate-700"
-              >
-                Password
-              </label>
-              <a
-                href="#"
-                className="text-sm font-medium text-emerald-600 hover:text-emerald-500"
-              >
-                Forgot password?
-              </a>
-            </div>
-            <input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={`mt-2 block w-full rounded-lg border px-4 py-3 placeholder-slate-400 focus:outline-none focus:ring-1 ${
-                passwordError
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                  : "border-slate-300 focus:border-emerald-500 focus:ring-emerald-500"
-              }`}
-              placeholder="••••••••"
-            />
-            {passwordError && (
-              <p className="mt-1 text-xs text-red-500">{passwordError}</p>
-            )}
-          </div>
+          <InputField
+            id="password"
+            type="password"
+            label="Password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            error={passwordError}
+            placeholder="••••••••"
+          />
 
           <button
             type="submit"
             className="w-full flex justify-center rounded-lg bg-emerald-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition-all hover:bg-emerald-600 hover:shadow-emerald-500/40 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
           >
-            Sign In
+            Sign Up
           </button>
         </form>
 
         <p className="mt-8 text-center text-sm text-slate-500">
-          Not a member?{" "}
+          Already have an account?{" "}
           <Link
-            to="/register"
+            to="/login"
             className="font-semibold text-emerald-600 hover:text-emerald-500"
           >
-            Create an account
+            Sign in
           </Link>
         </p>
       </div>
