@@ -2,16 +2,32 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { validateEmail, validatePassword } from "../utils/validation";
 import { InputField } from "../components/InputField";
+import { getApiErrorMessage, loginRequest } from "../services/auth.api";
+import type { User } from "../types/auth";
 
-export default function LoginPage() {
+type LoginPageProps = {
+  user: User | null;
+  onAuthSuccess: (token: string, user: User) => void;
+};
+
+export default function LoginPage({ user, onAuthSuccess }: LoginPageProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  React.useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [navigate, user]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
 
     const eError = validateEmail(email);
     const pError = validatePassword(password);
@@ -23,9 +39,16 @@ export default function LoginPage() {
       return;
     }
 
-    // Placeholder for actual authentication logic
-    console.log("Logging in with", email, password);
-    navigate("/");
+    try {
+      setIsSubmitting(true);
+      const response = await loginRequest({ email, password });
+      onAuthSuccess(response.token, response.user);
+      navigate("/dashboard");
+    } catch (error) {
+      setSubmitError(getApiErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -93,10 +116,12 @@ export default function LoginPage() {
 
           <button
             type="submit"
+            disabled={isSubmitting}
             className="w-full flex justify-center rounded-lg bg-emerald-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition-all hover:bg-emerald-600 hover:shadow-emerald-500/40 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
           >
-            Sign In
+            {isSubmitting ? "Signing in..." : "Sign In"}
           </button>
+          {submitError && <p className="text-sm text-red-500">{submitError}</p>}
         </form>
 
         <p className="mt-8 text-center text-sm text-slate-500">
