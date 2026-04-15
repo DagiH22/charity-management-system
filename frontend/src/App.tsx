@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
+import AboutPage from "./pages/AboutPage";
 import { Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import type { User } from "./types/auth";
@@ -59,6 +60,7 @@ export default function App() {
       <Route element={<MainLayout user={user} onLogout={handleLogout} />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/dashboard" element={<DashboardPage user={user} />} />
+        <Route path="/about" element={<AboutPage />} />
       </Route>
       <Route path="/login" element={<LoginPage user={user} onAuthSuccess={handleAuthSuccess} />} />
       <Route path="/register" element={<RegisterPage user={user} onAuthSuccess={handleAuthSuccess} />} />
