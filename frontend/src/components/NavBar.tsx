@@ -47,16 +47,7 @@ export default function NavBar({ user, onLogout }: NavBarProps) {
               {link.label}
             </NavLink>
           ))}
-          {user && (
-            <Link
-              className="text-[0.98rem] font-semibold text-[#3a5270] transition-colors hover:text-[#0b2b53]"
-              to="/dashboard"
-            >
-              Dashboard
-            </Link>
-          )}
         </nav>
-
         <div className="flex items-center gap-3">
           {!user ? (
             <Link
