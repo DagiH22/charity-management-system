@@ -1,13 +1,25 @@
 import { Router } from "express";
 import { authorize, protect } from "../middlewares/auth.middleware";
-import { createMyCharityProfile, getMyProfile } from "../controllers/charityProfile.controller";
+import {
+	approveProfile,
+	createMyCharityProfile,
+	getMyProfile,
+	getPendingProfiles,
+} from "../controllers/charityProfile.controller";
 import { upload } from "../middlewares/upload.middleware";
 
 const charityProfileRouter = Router();
 
-charityProfileRouter.use(protect, authorize("CHARITY"));
+charityProfileRouter.get("/pending", protect, authorize("ADMIN"), getPendingProfiles);
+charityProfileRouter.patch("/:profileId/approve", protect, authorize("ADMIN"), approveProfile);
 
-charityProfileRouter.get("/me", getMyProfile);
-charityProfileRouter.post("/", upload.single("document"), createMyCharityProfile);
+charityProfileRouter.get("/me", protect, authorize("CHARITY"), getMyProfile);
+charityProfileRouter.post(
+	"/",
+	protect,
+	authorize("CHARITY"),
+	upload.single("document"),
+	createMyCharityProfile,
+);
 
 export default charityProfileRouter;

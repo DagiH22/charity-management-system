@@ -11,6 +11,24 @@ type CreateCharityProfileInput = {
   website?: string;
 };
 
+type PendingCharityProfileSelectResult = {
+  id: number;
+  userId: number;
+  organizationName: string;
+  description: string;
+  documentUrl: string;
+  phone: string | null;
+  address: string | null;
+  website: string | null;
+  createdAt: Date;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    createdAt: Date;
+  };
+};
+
 const charityProfileSelect = {
   id: true,
   userId: true,
@@ -77,4 +95,85 @@ export const getMyCharityProfile = async (userId: number) => {
   });
 
   return profile;
+};
+
+export const getPendingCharityProfiles = async () => {
+  const profiles = await prisma.charityProfile.findMany({
+    where: {
+      user: {
+        role: "CHARITY",
+        isVerified: false,
+      },
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+    select: {
+      ...charityProfileSelect,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+
+  return profiles as PendingCharityProfileSelectResult[];
+};
+
+export const approveCharityProfile = async (profileId: number) => {
+  const profile = await prisma.charityProfile.findUnique({
+    where: { id: profileId },
+    select: {
+      id: true,
+      userId: true,
+      user: {
+        select: {
+          id: true,
+          role: true,
+          isVerified: true,
+        },
+      },
+    },
+  });
+
+  if (!profile || profile.user.role !== "CHARITY") {
+    throw new ApiError(404, "Charity profile not found");
+  }
+
+  if (profile.user.isVerified) {
+    throw new ApiError(409, "Charity profile is already approved");
+  }
+
+  await prisma.user.update({
+    where: { id: profile.userId },
+    data: {
+      isVerified: true,
+    },
+  });
+
+  const approvedProfile = await prisma.charityProfile.findUnique({
+    where: { id: profileId },
+    select: {
+      ...charityProfileSelect,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          isVerified: true,
+          updatedAt: true,
+        },
+      },
+    },
+  });
+
+  if (!approvedProfile) {
+    throw new ApiError(404, "Charity profile not found after approval");
+  }
+
+  return approvedProfile;
 };

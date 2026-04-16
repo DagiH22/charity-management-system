@@ -1,10 +1,12 @@
 import axios from "axios";
 import type {
+  ApproveCharityProfileResponse,
   AuthSuccessResponse,
   AuthRole,
   CharityProfileResponse,
   CreateCharityProfileResponse,
   MeResponse,
+  PendingCharityProfilesResponse,
 } from "../types/auth";
 
 const TOKEN_KEY = "cms_auth_token";
@@ -111,4 +113,36 @@ export const getApiErrorMessage = (error: unknown): string => {
   }
 
   return "Something went wrong. Please try again.";
+};
+
+export const getPendingCharityProfilesRequest = async (token: string) => {
+  const { data } = await http.get<PendingCharityProfilesResponse>("/charity-profile/pending", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return data;
+};
+
+export const approveCharityProfileRequest = async (token: string, profileId: number) => {
+  const { data } = await http.patch<ApproveCharityProfileResponse>(
+    `/charity-profile/${profileId}/approve`,
+    undefined,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  return data;
+};
+
+export const getPublicFileUrl = (documentUrl: string) => {
+  if (documentUrl.startsWith("http://") || documentUrl.startsWith("https://")) {
+    return documentUrl;
+  }
+
+  return `${apiBaseUrl}${documentUrl}`;
 };

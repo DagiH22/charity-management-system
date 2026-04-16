@@ -23,6 +23,15 @@ export type CharityProfile = {
   createdAt: string;
 };
 
+export type PendingCharityRegistration = CharityProfile & {
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    createdAt: string;
+  };
+};
+
 export type AuthSuccessResponse = {
   success: true;
   message: string;
@@ -44,4 +53,20 @@ export type CreateCharityProfileResponse = {
   success: true;
   message: string;
   profile: CharityProfile;
+};
+
+export type PendingCharityProfilesResponse = {
+  success: true;
+  profiles: PendingCharityRegistration[];
+};
+
+export type ApproveCharityProfileResponse = {
+  success: true;
+  message: string;
+  profile: PendingCharityRegistration & {
+    user: PendingCharityRegistration["user"] & {
+      isVerified: boolean;
+      updatedAt: string;
+    };
+  };
 };

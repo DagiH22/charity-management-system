@@ -1,7 +1,12 @@
 import { Request, Response } from "express";
 import { ApiError } from "../utils/ApiError";
 import { asyncHandler } from "../utils/asyncHandler";
-import { createCharityProfile, getMyCharityProfile } from "../services/charityProfile.service";
+import {
+  approveCharityProfile,
+  createCharityProfile,
+  getMyCharityProfile,
+  getPendingCharityProfiles,
+} from "../services/charityProfile.service";
 import { uploadFile } from "../services/file.service";
 
 type UploadedFile = {
@@ -57,6 +62,47 @@ export const getMyProfile = asyncHandler(async (req: Request, res: Response) => 
 
   res.status(200).json({
     success: true,
+    profile,
+  });
+});
+
+export const getPendingProfiles = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw new ApiError(401, "Unauthorized");
+  }
+
+  if (req.user.role !== "ADMIN") {
+    throw new ApiError(403, "Forbidden: only admin can review pending profiles");
+  }
+
+  const profiles = await getPendingCharityProfiles();
+
+  res.status(200).json({
+    success: true,
+    profiles,
+  });
+});
+
+export const approveProfile = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw new ApiError(401, "Unauthorized");
+  }
+
+  if (req.user.role !== "ADMIN") {
+    throw new ApiError(403, "Forbidden: only admin can approve profiles");
+  }
+
+  const profileId = Number(req.params.profileId);
+
+  if (!Number.isInteger(profileId) || profileId <= 0) {
+    throw new ApiError(400, "Invalid profile id");
+  }
+
+  const profile = await approveCharityProfile(profileId);
+
+  res.status(200).json({
+    success: true,
+    message: "Charity profile approved successfully",
     profile,
   });
 });

@@ -52,12 +52,14 @@ type SafeUserWithProfile = {
 };
 
 const toAuthUser = (user: SafeUserWithProfile) => {
+  const isVerified = user.role === "CHARITY" ? user.isVerified : true;
+
   return {
     id: user.id,
     name: user.name,
     email: user.email,
     role: user.role,
-    isVerified: user.isVerified,
+    isVerified,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
     hasCharityProfile: Boolean(user.charityProfile),
@@ -65,9 +67,6 @@ const toAuthUser = (user: SafeUserWithProfile) => {
 };
 
 export const registerUser = async ({ name, email, password, role }: RegisterInput) => {
-  if (!["DONOR", "CHARITY"].includes(role)) {
-    throw new ApiError(400, "Only DONOR or CHARITY registration is allowed");
-  }
 
   const normalizedEmail = email.trim().toLowerCase();
 
@@ -87,6 +86,7 @@ export const registerUser = async ({ name, email, password, role }: RegisterInpu
       email: normalizedEmail,
       password: hashedPassword,
       role,
+      isVerified: role === "CHARITY" ? false : true,
     },
     select: toSafeUserSelect,
   });

@@ -44,7 +44,7 @@ export default function CharityProfileSetupPage({
     setSubmitError(null);
 
     if (!organizationName.trim() || !description.trim() || !documentFile) {
-      setSubmitError("organizationName, description and document are required");
+      setSubmitError("Organization name, description and document are required");
       return;
     }
 
@@ -89,12 +89,23 @@ export default function CharityProfileSetupPage({
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-900 px-4 py-10">
-      <div className="w-full max-w-2xl rounded-2xl bg-white p-8 shadow-[0_10px_40px_rgba(10,40,80,0.08)]">
-        <h1 className="text-3xl font-extrabold tracking-tight text-[#0b2b53]">Complete charity profile</h1>
-        <p className="mt-2 text-sm text-slate-500">This is step 2 of registration for charity accounts.</p>
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4 selection:bg-emerald-100 selection:text-emerald-900">
+      <div className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 sm:p-10 my-8">
+        <div className="mb-10 text-center">
+          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-500/30">
+            <svg className="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+            Complete Charity Profile
+          </h1>
+          <p className="mt-2 text-sm text-slate-500">
+            This is step 2 to finalize your charity registration
+          </p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <InputField
             id="organizationName"
             type="text"
@@ -106,7 +117,7 @@ export default function CharityProfileSetupPage({
           />
 
           <div>
-            <label htmlFor="description" className="block text-sm font-semibold text-slate-700">
+            <label htmlFor="description" className="mb-1.5 block text-sm font-medium text-slate-700">
               Description
             </label>
             <textarea
@@ -115,29 +126,31 @@ export default function CharityProfileSetupPage({
               rows={4}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="mt-2 block w-full rounded-lg border border-slate-300 px-4 py-3 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-900 transition-all placeholder:text-slate-400 hover:border-slate-300 focus:bg-white focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
               placeholder="Tell donors what your organization does..."
             />
           </div>
 
           <div>
-            <label htmlFor="document" className="block text-sm font-semibold text-slate-700">
+            <label htmlFor="document" className="mb-1.5 block text-sm font-medium text-slate-700">
               Verification Document
             </label>
-            <input
-              id="document"
-              type="file"
-              accept=".pdf,image/jpeg,image/png"
-              required
-              onChange={(e) => {
-                const selected = e.target.files?.[0] ?? null;
-                setDocumentFile(selected);
-              }}
-              className="mt-2 block w-full rounded-lg border border-slate-300 px-4 py-3 file:mr-4 file:rounded-md file:border-0 file:bg-emerald-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-emerald-700 hover:file:bg-emerald-100 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-            />
-            <p className="mt-1 text-xs text-slate-500">
+            <div className="rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 transition-all hover:border-slate-300 focus-within:border-emerald-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-500/20">
+              <input
+                id="document"
+                type="file"
+                accept=".pdf,image/jpeg,image/png"
+                required
+                onChange={(e) => {
+                  const selected = e.target.files?.[0] ?? null;
+                  setDocumentFile(selected);
+                }}
+                className="block w-full text-sm text-slate-500 file:mr-4 file:cursor-pointer file:rounded-lg file:border-0 file:bg-emerald-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-emerald-700 file:transition-colors hover:file:bg-emerald-100"
+              />
+            </div>
+            <p className="mt-2 text-xs text-slate-500">
               Accepted formats: PDF, JPG, JPEG, PNG
-              {documentFile ? ` • Selected: ${documentFile.name}` : ""}
+              {documentFile ? <span className="font-semibold text-emerald-600 block mt-1">✓ Selected: {documentFile.name}</span> : ""}
             </p>
           </div>
 
@@ -170,15 +183,21 @@ export default function CharityProfileSetupPage({
             placeholder="123 Main St, City, Country"
           />
 
-          {submitError && <p className="text-sm text-red-500">{submitError}</p>}
+          <div className="pt-4">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-xl bg-emerald-500 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:bg-emerald-600 hover:shadow-emerald-500/40 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
+            >
+              {isSubmitting ? "Saving profile..." : "Complete Registration"}
+            </button>
+          </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-lg bg-emerald-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition-all hover:bg-emerald-600 hover:shadow-emerald-500/40 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-          >
-            {isSubmitting ? "Saving profile..." : "Complete Registration"}
-          </button>
+          {submitError && (
+             <div className="rounded-lg bg-red-50 p-3 mt-4">
+              <p className="text-sm font-medium text-red-600 text-center">{submitError}</p>
+            </div>
+          )}
         </form>
       </div>
     </div>
