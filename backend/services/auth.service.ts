@@ -33,7 +33,36 @@ const toSafeUserSelect = {
   isVerified: true,
   createdAt: true,
   updatedAt: true,
+  charityProfile: {
+    select: {
+      id: true,
+    },
+  },
 } as const;
+
+type SafeUserWithProfile = {
+  id: number;
+  name: string;
+  email: string;
+  role: AppRole;
+  isVerified: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  charityProfile: { id: number } | null;
+};
+
+const toAuthUser = (user: SafeUserWithProfile) => {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    isVerified: user.isVerified,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+    hasCharityProfile: Boolean(user.charityProfile),
+  };
+};
 
 export const registerUser = async ({ name, email, password, role }: RegisterInput) => {
   if (!["DONOR", "CHARITY"].includes(role)) {
@@ -64,7 +93,7 @@ export const registerUser = async ({ name, email, password, role }: RegisterInpu
 
   const token = signToken(user.id, user.role);
 
-  return { user, token };
+  return { user: toAuthUser(user), token };
 };
 
 export const loginUser = async ({ email, password }: LoginInput) => {
@@ -95,7 +124,7 @@ export const loginUser = async ({ email, password }: LoginInput) => {
     throw new ApiError(404, "User not found");
   }
 
-  return { user: safeUser, token };
+  return { user: toAuthUser(safeUser), token };
 };
 
 export const getCurrentUser = async (userId: number) => {
@@ -108,5 +137,5 @@ export const getCurrentUser = async (userId: number) => {
     throw new ApiError(404, "User not found");
   }
 
-  return user;
+  return toAuthUser(user);
 };

@@ -10,6 +10,10 @@ export default function DashboardPage({ user }: DashboardPageProps) {
     return <Navigate to="/login" replace />;
   }
 
+  if (user.role === "CHARITY" && !user.hasCharityProfile) {
+    return <Navigate to="/charity-profile/setup" replace />;
+  }
+
   const isDonor = user.role === "DONOR";
   const isCharity = user.role === "CHARITY";
 

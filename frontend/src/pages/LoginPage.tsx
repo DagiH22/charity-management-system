@@ -21,6 +21,11 @@ export default function LoginPage({ user, onAuthSuccess }: LoginPageProps) {
 
   React.useEffect(() => {
     if (user) {
+      if (user.role === "CHARITY" && !user.hasCharityProfile) {
+        navigate("/charity-profile/setup");
+        return;
+      }
+
       navigate("/dashboard");
     }
   }, [navigate, user]);
@@ -43,6 +48,11 @@ export default function LoginPage({ user, onAuthSuccess }: LoginPageProps) {
       setIsSubmitting(true);
       const response = await loginRequest({ email, password });
       onAuthSuccess(response.token, response.user);
+      if (response.user.role === "CHARITY" && !response.user.hasCharityProfile) {
+        navigate("/charity-profile/setup");
+        return;
+      }
+
       navigate("/dashboard");
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));

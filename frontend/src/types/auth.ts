@@ -6,8 +6,21 @@ export type User = {
   email: string;
   role: AuthRole;
   isVerified: boolean;
+  hasCharityProfile: boolean;
   createdAt: string;
   updatedAt: string;
+};
+
+export type CharityProfile = {
+  id: number;
+  userId: number;
+  organizationName: string;
+  description: string;
+  documentUrl: string;
+  phone: string | null;
+  address: string | null;
+  website: string | null;
+  createdAt: string;
 };
 
 export type AuthSuccessResponse = {
@@ -20,4 +33,15 @@ export type AuthSuccessResponse = {
 export type MeResponse = {
   success: true;
   user: User;
+};
+
+export type CharityProfileResponse = {
+  success: true;
+  profile: CharityProfile | null;
+};
+
+export type CreateCharityProfileResponse = {
+  success: true;
+  message: string;
+  profile: CharityProfile;
 };

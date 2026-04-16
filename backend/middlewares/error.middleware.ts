@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { Prisma } from "@prisma/client";
+import multer from "multer";
 import { ApiError } from "../utils/ApiError";
 
 export const notFound = (_req: Request, _res: Response, next: NextFunction) => {
@@ -26,6 +27,20 @@ export const errorHandler = (
         message: "A unique field already exists",
       });
     }
+  }
+
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+
+  if (err instanceof Error && (err as Error & { code?: string }).code === "INVALID_FILE_TYPE") {
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+    });
   }
 
   console.error(err);

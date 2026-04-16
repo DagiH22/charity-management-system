@@ -1,5 +1,11 @@
 import axios from "axios";
-import type { AuthSuccessResponse, AuthRole, MeResponse } from "../types/auth";
+import type {
+  AuthSuccessResponse,
+  AuthRole,
+  CharityProfileResponse,
+  CreateCharityProfileResponse,
+  MeResponse,
+} from "../types/auth";
 
 const TOKEN_KEY = "cms_auth_token";
 
@@ -41,6 +47,54 @@ export const meRequest = async (token: string) => {
   const { data } = await http.get<MeResponse>("/auth/me", {
     headers: {
       Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return data;
+};
+
+export const getMyCharityProfileRequest = async (token: string) => {
+  const { data } = await http.get<CharityProfileResponse>("/charity-profile/me", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return data;
+};
+
+export const createMyCharityProfileRequest = async (
+  token: string,
+  payload: {
+    organizationName: string;
+    description: string;
+    document: File;
+    phone?: string;
+    address?: string;
+    website?: string;
+  },
+) => {
+  const formData = new FormData();
+  formData.append("organizationName", payload.organizationName);
+  formData.append("description", payload.description);
+  formData.append("document", payload.document);
+
+  if (payload.phone?.trim()) {
+    formData.append("phone", payload.phone.trim());
+  }
+
+  if (payload.address?.trim()) {
+    formData.append("address", payload.address.trim());
+  }
+
+  if (payload.website?.trim()) {
+    formData.append("website", payload.website.trim());
+  }
+
+  const { data } = await http.post<CreateCharityProfileResponse>("/charity-profile", formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
     },
   });
 
