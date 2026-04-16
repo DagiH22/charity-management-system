@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
+import CharityProfileSetupPage from "./pages/CharityProfileSetupPage";
 import AboutPage from "./pages/AboutPage";
 import { Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -47,6 +48,19 @@ export default function App() {
     setUser(null);
   };
 
+  const handleCharityProfileCompleted = () => {
+    setUser((prev) => {
+      if (!prev) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        hasCharityProfile: true,
+      };
+    });
+  };
+
   if (isBootstrapping) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-900">
@@ -64,6 +78,10 @@ export default function App() {
       </Route>
       <Route path="/login" element={<LoginPage user={user} onAuthSuccess={handleAuthSuccess} />} />
       <Route path="/register" element={<RegisterPage user={user} onAuthSuccess={handleAuthSuccess} />} />
+      <Route
+        path="/charity-profile/setup"
+        element={<CharityProfileSetupPage user={user} onProfileCompleted={handleCharityProfileCompleted} />}
+      />
     </Routes>
   );
 }

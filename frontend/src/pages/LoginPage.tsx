@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { validateEmail, validatePassword } from "../utils/validation";
+import { validateEmail } from "../utils/validation";
 import { InputField } from "../components/InputField";
 import { getApiErrorMessage, loginRequest } from "../services/auth.api";
 import type { User } from "../types/auth";
@@ -14,13 +14,16 @@ export default function LoginPage({ user, onAuthSuccess }: LoginPageProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   React.useEffect(() => {
     if (user) {
+      if (user.role === "CHARITY" && !user.hasCharityProfile) {
+        navigate("/charity-profile/setup");
+        return;
+      }
       navigate("/dashboard");
     }
   }, [navigate, user]);
@@ -30,12 +33,10 @@ export default function LoginPage({ user, onAuthSuccess }: LoginPageProps) {
     setSubmitError(null);
 
     const eError = validateEmail(email);
-    const pError = validatePassword(password);
 
     setEmailError(eError);
-    setPasswordError(pError);
 
-    if (eError || pError) {
+    if (eError) {
       return;
     }
 
@@ -43,6 +44,11 @@ export default function LoginPage({ user, onAuthSuccess }: LoginPageProps) {
       setIsSubmitting(true);
       const response = await loginRequest({ email, password });
       onAuthSuccess(response.token, response.user);
+      if (response.user.role === "CHARITY" && !response.user.hasCharityProfile) {
+        navigate("/charity-profile/setup");
+        return;
+      }
+
       navigate("/dashboard");
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));
@@ -52,24 +58,26 @@ export default function LoginPage({ user, onAuthSuccess }: LoginPageProps) {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-900">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-[0_10px_40px_rgba(10,40,80,0.08)]">
-        <div className="mb-8 text-center">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4 selection:bg-emerald-100 selection:text-emerald-900">
+      <div className="w-full max-w-md overflow-hidden rounded-3xl bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 sm:p-10">
+        <div className="mb-10 text-center">
           <Link
             to="/"
-            className="text-2xl font-extrabold tracking-[-0.02em] text-[#0b2b53] mb-6 inline-block"
+            className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-500/30 transition-transform hover:scale-105 active:scale-95"
           >
-            Charity<span className="text-emerald-500">.</span>
+            <svg className="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
           </Link>
-          <h1 className="text-3xl font-extrabold tracking-tight text-[#0b2b53]">
-            Welcome Back
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+            Welcome back
           </h1>
           <p className="mt-2 text-sm text-slate-500">
             Please sign in to your account
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-5">
           <InputField
             id="email"
             type="email"
@@ -82,10 +90,10 @@ export default function LoginPage({ user, onAuthSuccess }: LoginPageProps) {
           />
 
           <div>
-            <div className="flex items-center justify-between">
+            <div className="mb-1.5 flex items-center justify-between">
               <label
                 htmlFor="password"
-                className="block text-sm font-semibold text-slate-700"
+                className="block text-sm font-medium text-slate-700"
               >
                 Password
               </label>
@@ -102,33 +110,34 @@ export default function LoginPage({ user, onAuthSuccess }: LoginPageProps) {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`mt-2 block w-full rounded-lg border px-4 py-3 placeholder-slate-400 focus:outline-none focus:ring-1 ${
-                passwordError
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                  : "border-slate-300 focus:border-emerald-500 focus:ring-emerald-500"
-              }`}
+              className={`block w-full rounded-xl border bg-slate-50/50 px-4 py-3 text-sm text-slate-900 transition-all placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-offset-1 
+                  border-slate-200 hover:border-slate-300 focus:border-emerald-500 focus:ring-emerald-500/20
+              `}
               placeholder="••••••••"
             />
-            {passwordError && (
-              <p className="mt-1 text-xs text-red-500">{passwordError}</p>
-            )}
           </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full flex justify-center rounded-lg bg-emerald-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition-all hover:bg-emerald-600 hover:shadow-emerald-500/40 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-          >
-            {isSubmitting ? "Signing in..." : "Sign In"}
-          </button>
-          {submitError && <p className="text-sm text-red-500">{submitError}</p>}
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-xl bg-emerald-500 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:bg-emerald-600 hover:shadow-emerald-500/40 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
+            >
+              {isSubmitting ? "Signing in..." : "Sign In"}
+            </button>
+          </div>
+          {submitError && (
+            <div className="rounded-lg bg-red-50 p-3">
+              <p className="text-sm font-medium text-red-600 text-center">{submitError}</p>
+            </div>
+          )}
         </form>
 
-        <p className="mt-8 text-center text-sm text-slate-500">
+        <p className="mt-10 text-center text-sm text-slate-500">
           Not a member?{" "}
           <Link
             to="/register"
-            className="font-semibold text-emerald-600 hover:text-emerald-500"
+            className="font-semibold text-emerald-600 transition-colors hover:text-emerald-500"
           >
             Create an account
           </Link>
