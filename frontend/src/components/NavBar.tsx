@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import type { User } from "../types/auth";
+import { useAuthStore } from "../store/authStore";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -8,13 +8,9 @@ const navLinks = [
   { label: "About", href: "/about" },
 ];
 
-type NavBarProps = {
-  user: User | null;
-  onLogout: () => void;
-};
-
-export default function NavBar({ user, onLogout }: NavBarProps) {
+export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user, logout } = useAuthStore();
 
   return (
     <header className="sticky top-0 z-20 border-b border-[#e5ecf4] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,255,255,0.88))] backdrop-blur">
@@ -69,7 +65,7 @@ export default function NavBar({ user, onLogout }: NavBarProps) {
                 type="button"
                 onClick={() => {
                   setMenuOpen(false);
-                  onLogout();
+                  logout();
                 }}
               >
                 Logout
@@ -146,7 +142,7 @@ export default function NavBar({ user, onLogout }: NavBarProps) {
                   type="button"
                   onClick={() => {
                     setMenuOpen(false);
-                    onLogout()
+                    logout();
                   }}
                 >
                   Logout

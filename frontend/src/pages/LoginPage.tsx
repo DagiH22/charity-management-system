@@ -2,39 +2,27 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { validateEmail } from "../utils/validation";
 import { InputField } from "../components/InputField";
-import { getApiErrorMessage, loginRequest } from "../services/auth.api";
-import type { User } from "../types/auth";
+import { loginRequest } from "../services/auth.api";
+import { getApiErrorMessage } from "../services/apiErrors";
+import { useAuthStore } from "../store/authStore";
+import { getPostAuthRedirectPath } from "../utils/authRouting";
 
-type LoginPageProps = {
-  user: User | null;
-  onAuthSuccess: (token: string, user: User) => void;
-};
-
-export default function LoginPage({ user, onAuthSuccess }: LoginPageProps) {
+export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-
-  React.useEffect(() => {
-    if (user) {
-      if (user.role === "CHARITY" && !user.hasCharityProfile) {
-        navigate("/charity-profile/setup");
-        return;
-      }
-      navigate("/dashboard");
-    }
-  }, [navigate, user]);
+  const { setAuthSession } = useAuthStore();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError(null);
 
     const eError = validateEmail(email);
-
     setEmailError(eError);
+
 
     if (eError) {
       return;
@@ -43,13 +31,8 @@ export default function LoginPage({ user, onAuthSuccess }: LoginPageProps) {
     try {
       setIsSubmitting(true);
       const response = await loginRequest({ email, password });
-      onAuthSuccess(response.token, response.user);
-      if (response.user.role === "CHARITY" && !response.user.hasCharityProfile) {
-        navigate("/charity-profile/setup");
-        return;
-      }
-
-      navigate("/dashboard");
+      setAuthSession(response.token, response.user);
+      navigate(getPostAuthRedirectPath(response.user));
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));
     } finally {

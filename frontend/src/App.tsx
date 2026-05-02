@@ -6,82 +6,31 @@ import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import CharityProfileSetupPage from "./pages/CharityProfileSetupPage";
 import AboutPage from "./pages/AboutPage";
-import { Routes, Route } from "react-router-dom";
-import { useEffect, useState } from "react";
-import type { User } from "./types/auth";
-import { clearAuthToken, getAuthToken, meRequest, setAuthToken } from "./services/auth.api";
+import { Route, Routes } from "react-router-dom";
+import GuestRoute from "./routes/GuestRoute";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import CharityProfileSetupRoute from "./routes/CharityProfileSetupRoute";
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
-  const [isBootstrapping, setIsBootstrapping] = useState(true);
-
-  useEffect(() => {
-    const bootstrapAuth = async () => {
-      const token = getAuthToken();
-
-      if (!token) {
-        setIsBootstrapping(false);
-        return;
-      }
-
-      try {
-        const response = await meRequest(token);
-        setUser(response.user);
-      } catch {
-        clearAuthToken();
-        setUser(null);
-      } finally {
-        setIsBootstrapping(false);
-      }
-    };
-
-    void bootstrapAuth();
-  }, []);
-
-  const handleAuthSuccess = (token: string, nextUser: User) => {
-    setAuthToken(token);
-    setUser(nextUser);
-  };
-
-  const handleLogout = () => {
-    clearAuthToken();
-    setUser(null);
-  };
-
-  const handleCharityProfileCompleted = () => {
-    setUser((prev) => {
-      if (!prev) {
-        return prev;
-      }
-
-      return {
-        ...prev,
-        hasCharityProfile: true,
-      };
-    });
-  };
-
-  if (isBootstrapping) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-900">
-        <p className="text-sm font-semibold text-slate-600">Loading...</p>
-      </div>
-    );
-  }
-
   return (
     <Routes>
-      <Route element={<MainLayout user={user} onLogout={handleLogout} />}>
+      <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/dashboard" element={<DashboardPage user={user} />} />
         <Route path="/about" element={<AboutPage />} />
+
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+        </Route>
       </Route>
-      <Route path="/login" element={<LoginPage user={user} onAuthSuccess={handleAuthSuccess} />} />
-      <Route path="/register" element={<RegisterPage user={user} onAuthSuccess={handleAuthSuccess} />} />
-      <Route
-        path="/charity-profile/setup"
-        element={<CharityProfileSetupPage user={user} onProfileCompleted={handleCharityProfileCompleted} />}
-      />
+
+      <Route element={<GuestRoute />}>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+      </Route>
+
+      <Route element={<CharityProfileSetupRoute />}>
+        <Route path="/charity-profile/setup" element={<CharityProfileSetupPage />} />
+      </Route>
     </Routes>
   );
 }

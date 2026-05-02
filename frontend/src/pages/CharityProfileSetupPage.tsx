@@ -1,20 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { FormEvent } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import { createMyCharityProfileRequest, getApiErrorMessage, getAuthToken } from "../services/auth.api";
+import { useNavigate } from "react-router-dom";
+import { getAuthToken } from "../services/auth.api";
+import { createMyCharityProfileRequest } from "../services/charityProfile.api";
+import { getApiErrorMessage } from "../services/apiErrors";
 import { InputField } from "../components/InputField";
-import type { User } from "../types/auth";
+import { useAuthStore } from "../store/authStore";
 
-type CharityProfileSetupPageProps = {
-  user: User | null;
-  onProfileCompleted: () => void;
-};
-
-export default function CharityProfileSetupPage({
-  user,
-  onProfileCompleted,
-}: CharityProfileSetupPageProps) {
+export default function CharityProfileSetupPage() {
   const navigate = useNavigate();
+  const { completeCharityProfile } = useAuthStore();
 
   const [organizationName, setOrganizationName] = useState("");
   const [description, setDescription] = useState("");
@@ -24,20 +19,6 @@ export default function CharityProfileSetupPage({
   const [website, setWebsite] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (user?.role === "CHARITY" && user.hasCharityProfile) {
-      navigate("/dashboard", { replace: true });
-    }
-  }, [navigate, user]);
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (user.role !== "CHARITY") {
-    return <Navigate to="/dashboard" replace />;
-  }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -79,7 +60,7 @@ export default function CharityProfileSetupPage({
         website,
       });
 
-      onProfileCompleted();
+      completeCharityProfile();
       navigate("/dashboard", { replace: true });
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));
