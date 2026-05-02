@@ -2,15 +2,12 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { validateEmail, validatePassword } from "../utils/validation";
 import { InputField } from "../components/InputField";
-import { getApiErrorMessage, registerRequest } from "../services/auth.api";
-import type { User } from "../types/auth";
+import { registerRequest } from "../services/auth.api";
+import { getApiErrorMessage } from "../services/apiErrors";
+import { useAuthStore } from "../store/authStore";
+import { getPostAuthRedirectPath } from "../utils/authRouting";
 
-type RegisterPageProps = {
-  user: User | null;
-  onAuthSuccess: (token: string, user: User) => void;
-};
-
-export default function RegisterPage({ user, onAuthSuccess }: RegisterPageProps) {
+export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,16 +17,7 @@ export default function RegisterPage({ user, onAuthSuccess }: RegisterPageProps)
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-
-  React.useEffect(() => {
-    if (user) {
-      if (user.role === "CHARITY" && !user.hasCharityProfile) {
-        navigate("/charity-profile/setup");
-        return;
-      }
-      navigate("/dashboard");
-    }
-  }, [navigate, user]);
+  const { setAuthSession } = useAuthStore();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,13 +46,8 @@ export default function RegisterPage({ user, onAuthSuccess }: RegisterPageProps)
         password,
         role,
       });
-      onAuthSuccess(response.token, response.user);
-      if (response.user.role === "CHARITY" && !response.user.hasCharityProfile) {
-        navigate("/charity-profile/setup");
-        return;
-      }
-
-      navigate("/dashboard");
+      setAuthSession(response.token, response.user);
+      navigate(getPostAuthRedirectPath(response.user));
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));
     } finally {
