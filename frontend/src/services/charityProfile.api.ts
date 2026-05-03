@@ -85,3 +85,4 @@ export const getPublicFileUrl = (documentUrl: string) => {
 
   return `${apiBaseUrl}${documentUrl}`;
 };
+

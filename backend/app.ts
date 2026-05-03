@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import path from "node:path";
 import authRouter from "./routes/auth.routes";
+import campaignRouter from "./routes/campaign.routes";
 import charityProfileRouter from "./routes/charityProfile.routes";
 import { errorHandler, notFound } from "./middlewares/error.middleware";
 import { env } from "./utils/env";
@@ -9,7 +10,12 @@ import { prisma } from "./utils/prisma";
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173", 
+    credentials: true, 
+  })
+);
 app.use(express.json());
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
@@ -22,6 +28,7 @@ app.get("/", (_req, res) => {
 
 app.use("/auth", authRouter);
 app.use("/charity-profile", charityProfileRouter);
+app.use("/campaign", campaignRouter);
 
 app.use(notFound);
 app.use(errorHandler);

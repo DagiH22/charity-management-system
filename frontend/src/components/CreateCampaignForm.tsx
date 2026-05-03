@@ -7,6 +7,8 @@ import {
   type CampaignFormErrors,
   type CampaignFormValues,
 } from "../utils/validation";
+import { createCampaign } from "../services/campaign.api";
+import { getAuthToken } from "../services/auth.api";
 
 export default function CreateCampaignForm() {
   const navigate = useNavigate();
@@ -22,9 +24,14 @@ export default function CreateCampaignForm() {
     setSubmitMessage("");
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
 
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const token = getAuthToken();
+    
+    if (!token) {
+      return;
+    }
     const result = campaignSchema.safeParse(formValues);
 
     if (!result.success) {
@@ -43,9 +50,27 @@ export default function CreateCampaignForm() {
       return;
     }
 
-    setErrors({});
-    setSubmitMessage("Campaign created and submitted as Pending for admin approval.");
-    setFormValues(initialCampaignFormValues);
+    try {
+      setErrors({});
+      setSubmitMessage("Creating campaign...");
+
+      const data = await createCampaign(token, result.data);
+
+      setSubmitMessage(
+        "Campaign created successfully"
+      );
+
+      setFormValues(initialCampaignFormValues);
+
+    } catch (error: any) {
+      if (error.response?.data?.errors) {
+        setErrors(error.response.data.errors);
+        setSubmitMessage("");
+      } else {
+        console.log(error);
+        setSubmitMessage("Something went wrong. Please try again.");
+      }
+    }
   };
 
   return (
