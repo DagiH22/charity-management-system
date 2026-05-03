@@ -1,6 +1,7 @@
 import { useAuthStore } from "../store/authStore";
 import AdminDashboard from "./dashboard/AdminDashboard";
-import UserDashboard from "./dashboard/UserDashboard";
+import CharityDashboard from "./dashboard/CharityDashboard";
+import DonorDashboard from "./dashboard/DonorDashboard";
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
@@ -13,5 +14,9 @@ export default function DashboardPage() {
     return <AdminDashboard />;
   }
 
-  return <UserDashboard user={user} />;
+  if (user.role === "CHARITY") {
+    return <CharityDashboard user={user} />;
+  }
+
+  return <DonorDashboard user={user} />;
 }

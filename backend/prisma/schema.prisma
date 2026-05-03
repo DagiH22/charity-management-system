@@ -30,6 +30,8 @@ model User {
   charityProfile CharityProfile?
 }
 
+
+
 model CharityProfile {
   id               Int      @id @default(autoincrement())
   userId           Int      @unique
@@ -42,4 +44,29 @@ model CharityProfile {
   createdAt        DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaigns  Campaign[]
+}
+
+model Campaign {
+  id             Int       @id @default(autoincrement())
+  charityId      Int
+  title          String    @db.VarChar(150)
+  description    String
+  targetAmount   Decimal
+  currentAmount  Decimal   @default(0)
+  status         CampaignStatus @default(Pending)
+  startDate      DateTime
+  endDate        DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relation
+  charity        CharityProfile @relation(fields: [charityId], references: [id], onDelete: Cascade)
+}
+
+enum CampaignStatus {
+  Pending
+  Active
+  Closed
 }
