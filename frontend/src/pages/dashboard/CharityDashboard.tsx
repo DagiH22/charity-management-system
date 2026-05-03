@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import type { User } from "../../types/auth";
 import CharitySidebar from "../../components/CharitySidebar";
 
@@ -135,9 +136,12 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
               </svg>
             </div>
             <p className="font-medium text-slate-500">Nothing to show yet</p>
-            <button className="mt-2 rounded-lg bg-emerald-500 px-6 py-2 text-sm font-bold text-white shadow-lg transition hover:-translate-y-[1px] hover:bg-emerald-600 focus:outline-none">
+            <Link
+              className="mt-2 rounded-lg bg-emerald-500 px-6 py-2 text-sm font-bold text-white shadow-lg transition hover:-translate-y-[1px] hover:bg-emerald-600 focus:outline-none"
+              to="/dashboard/create-campaign"
+            >
               Create a Campaign
-            </button>
+            </Link>
           </div>
         </section>
       </div>

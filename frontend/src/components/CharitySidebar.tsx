@@ -1,13 +1,15 @@
 import { Link } from "react-router-dom";
+import type { User } from "../types/auth";
 
 type CharitySidebarProps = {
+  user?: User;
   isOpen: boolean;
   onClose: () => void;
 };
 
 const navigationItems = [
   { label: "Dashboard", href: "/dashboard" },
-  { label: "Create Campaign", href: "/dashboard#create-campaign" },
+  { label: "Create Campaign", href: "/dashboard/create-campaign" },
   { label: "My Campaigns", href: "/dashboard#my-campaigns" },
   { label: "Donations Summary", href: "/dashboard#donations-summary" },
   { label: "Notifications", href: "/dashboard#notifications" },
@@ -19,6 +21,11 @@ export default function CharitySidebar({
   isOpen,
   onClose,
 }: CharitySidebarProps) {
+  const closeOnMobile = () => {
+    if (window.matchMedia("(max-width: 1023px)").matches) {
+      onClose();
+    }
+  };
 
   return (
     <aside
@@ -43,7 +50,7 @@ export default function CharitySidebar({
             key={item.label}
             className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200 hover:text-[#0b2b53]"
             to={item.href}
-            onClick={onClose}
+            onClick={closeOnMobile}
           >
             {item.label}
           </Link>

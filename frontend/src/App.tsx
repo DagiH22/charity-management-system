@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
+import CreateCampaignPage from "./pages/CreateCampaignPage";
 import CharityProfileSetupPage from "./pages/CharityProfileSetupPage";
 import AboutPage from "./pages/AboutPage";
 import { Route, Routes } from "react-router-dom";
@@ -20,6 +21,7 @@ export default function App() {
 
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/dashboard/create-campaign" element={<CreateCampaignPage />} />
         </Route>
       </Route>
 
