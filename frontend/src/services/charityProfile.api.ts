@@ -65,7 +65,7 @@ export const getPendingCharityProfilesRequest = async (token: string) => {
 };
 
 export const approveCharityProfileRequest = async (token: string, profileId: number) => {
-  const { data } = await http.patch<ApproveCharityProfileResponse>(
+  const { data } = await http.put<ApproveCharityProfileResponse>(
     `/charity-profile/${profileId}/approve`,
     undefined,
     {

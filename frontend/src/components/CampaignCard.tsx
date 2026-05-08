@@ -1,57 +1,145 @@
-import { Link } from "react-router-dom";
+import type { Campaign } from "../types/campaign";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { closeCampaign } from "../services/campaign.api";
+import { getAuthToken } from "../services/auth.api";
 
-type CampaignCardProps = {
-  title: string;
-  description: string;
-  raised: number;
-  goal: number;
-  to: string;
-};
+interface CampaignCardProps {
+  campaign: Campaign;
+  onCampaignClosed?: (id: number) => void;
+  isOwner?: boolean;
+}
 
-export default function CampaignCard({
-  title,
-  description,
-  raised,
-  goal,
-  to,
-}: CampaignCardProps) {
-  const progress = Math.min((raised / goal) * 100, 100);
+const CampaignCard = ({ campaign, onCampaignClosed, isOwner = false }: CampaignCardProps) => {
+  const progressPercentage = Math.min(
+    (campaign.currentAmount / campaign.targetAmount) * 100,
+    100,
+  );
+  const navigate = useNavigate();
+  const [closing, setClosing] = useState(false);
+  const [status, setStatus] = useState(campaign.status);
+
+  async function handleCloseCampaign(id: number): Promise<void> {
+    if (!window.confirm("Are you sure you want to close this campaign? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      setClosing(true);
+      const token = getAuthToken();
+      if (!token) {
+        alert("You must be logged in to close a campaign");
+        return;
+      }
+
+      await closeCampaign(token, id.toString());
+      setStatus("Closed");
+      onCampaignClosed?.(id);
+      alert("Campaign closed successfully!");
+    } catch (error: any) {
+      alert(
+        error.response?.data?.message ||
+          "Failed to close campaign"
+      );
+    } finally {
+      setClosing(false);
+    }
+  }
 
   return (
-    <article className="group relative overflow-hidden bg-[#f7fbff] p-6 shadow-[0_14px_30px_rgba(10,40,80,0.04)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(10,40,80,0.08)]">
-      <div className="absolute inset-x-6 top-0 h-1 rounded-full bg-[linear-gradient(90deg,#10b981,#0b2b53)] opacity-80" />
+    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-lg">
+      {/* Header */}
+      <div className="mb-5 flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">
+            {campaign.title}
+          </h2>
 
-      <div className="flex h-full flex-col">
-        <div className="inline-flex w-fit rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.18em] text-emerald-700">
-          Featured Cause
+          <p className="mt-1 text-sm text-gray-500">
+            {new Date(campaign.startDate).toLocaleDateString()} -{" "}
+            {new Date(campaign.endDate).toLocaleDateString()}
+          </p>
         </div>
 
-        <h3 className="mt-5 text-xl font-extrabold leading-snug text-[#0b2b53]">
-          {title}
-        </h3>
-
-        <p className="mt-3 text-sm leading-7 text-slate-600">{description}</p>
-
-        <div className="mt-6">
-          <div className="flex items-center justify-between gap-3 text-sm font-semibold text-[#3d5674]">
-            <span>${raised.toLocaleString()}</span>
-            <span>${goal.toLocaleString()}</span>
-          </div>
-          <div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-200">
-            <div
-              className="h-full rounded-full bg-[linear-gradient(90deg,#10b981,#0b2b53)] transition-all duration-500"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
-
-        <Link
-          className="mt-6 inline-flex w-fit items-center bg-[#edf6ff] px-5 py-2.5 text-sm font-bold text-[#0b2b53] transition hover:bg-emerald-50"
-          to={to}
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+            status === "Active"
+              ? "bg-green-100 text-green-700"
+              : status === "Pending"
+                ? "bg-yellow-100 text-yellow-700"
+                : "bg-red-100 text-red-700"
+          }`}
         >
-          View Details
-        </Link>
+          {status}
+        </span>
       </div>
-    </article>
+
+      {/* Description */}
+      <p className="mb-6 line-clamp-4 text-sm leading-relaxed text-gray-600">
+        {campaign.description}
+      </p>
+
+      {/* Donation Progress */}
+      <div className="mb-4">
+        <div className="mb-2 flex items-center justify-between text-sm font-medium">
+          <span className="text-gray-600">
+            Raised: ${campaign.currentAmount.toLocaleString()}
+          </span>
+
+          <span className="text-emerald-600">
+            Goal: ${campaign.targetAmount.toLocaleString()}
+          </span>
+        </div>
+
+        <div className="h-3 w-full overflow-hidden rounded-full bg-gray-200">
+          <div
+            className="h-full rounded-full bg-emerald-500 transition-all"
+            style={{ width: `${progressPercentage}%` }}
+          />
+        </div>
+
+        <p className="mt-2 text-right text-xs font-medium text-gray-500">
+          {progressPercentage.toFixed(0)}% completed
+        </p>
+      </div>
+
+      {/* Footer */}
+      <div className="mt-6 flex items-center justify-between border-t border-gray-100 pt-4">
+        <button className="rounded-xl bg-emerald-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-emerald-700">
+          View Details
+        </button>
+        {isOwner ? (
+          status !== "Closed" ? (
+          <div className="flex items-center gap-3">
+            <button
+              className="rounded-xl border border-emerald-600 px-4 py-2 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50"
+              onClick={() =>
+                navigate(`/dashboard/edit-campaign/${campaign.id}`)
+              }
+            >
+              Edit
+            </button>
+            <button
+              className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-70"
+              onClick={() => handleCloseCampaign(campaign.id)}
+              disabled={closing}
+            >
+              {closing ? "Closing..." : "Close"}
+            </button>
+          </div>
+          ) : (
+          <span className="rounded-full bg-gray-200 px-4 py-2 text-sm font-medium text-gray-600">
+            Closed
+          </span>
+        )
+        ) : (
+          <div className="text-sm text-gray-500">
+            By {campaign.charity?.organizationName || "Unknown"}
+          </div>
+        )}
+      </div>
+    </div>
   );
-}
+};
+
+export default CampaignCard;

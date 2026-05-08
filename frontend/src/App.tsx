@@ -11,6 +11,9 @@ import { Route, Routes } from "react-router-dom";
 import GuestRoute from "./routes/GuestRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import CharityProfileSetupRoute from "./routes/CharityProfileSetupRoute";
+import MyCampaigns from "./pages/MyCampaigns";
+import EditCampaign from "./pages/EditCampaignPage";
+import CampaignsPage from "./pages/CampaignsPage";
 
 export default function App() {
   return (
@@ -18,10 +21,13 @@ export default function App() {
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/campaigns" element={<CampaignsPage />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/dashboard/create-campaign" element={<CreateCampaignPage />} />
+          <Route path="/dashboard/my-campaigns" element={<MyCampaigns />} />
+          <Route path="/dashboard/edit-campaign/:id" element={<EditCampaign />} />
         </Route>
       </Route>
 

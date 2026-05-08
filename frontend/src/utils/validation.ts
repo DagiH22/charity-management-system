@@ -84,3 +84,21 @@ export const validatePassword = (password: string): string | null => {
     return "Password must contain at least one number";
   return null;
 };
+export const editCampaignSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(3, "Title must be at least 3 characters")
+    .max(150, "Title must be less than 150 characters"),
+
+  description: z
+    .string()
+    .trim()
+    .min(20, "Description must be at least 20 characters"),
+
+  targetAmount: z.coerce
+    .number()
+    .positive("Target amount must be greater than 0"),
+
+  endDate: z.string().min(1, "End date is required"),
+});

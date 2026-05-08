@@ -11,7 +11,7 @@ import { upload } from "../middlewares/upload.middleware";
 const charityProfileRouter = Router();
 
 charityProfileRouter.get("/pending", protect, authorize("ADMIN"), getPendingProfiles);
-charityProfileRouter.patch("/:profileId/approve", protect, authorize("ADMIN"), approveProfile);
+charityProfileRouter.put("/:profileId/approve", protect, authorize("ADMIN"), approveProfile);
 
 charityProfileRouter.get("/me", protect, authorize("CHARITY"), getMyProfile);
 charityProfileRouter.post(

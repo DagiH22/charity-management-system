@@ -60,9 +60,10 @@ const toAuthUser = (user: SafeUserWithProfile) => {
     email: user.email,
     role: user.role,
     isVerified,
+    hasCharityProfile: Boolean(user.charityProfile),
+    charityId: user.charityProfile?.id,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
-    hasCharityProfile: Boolean(user.charityProfile),
   };
 };
 

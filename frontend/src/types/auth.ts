@@ -7,6 +7,7 @@ export type User = {
   role: AuthRole;
   isVerified: boolean;
   hasCharityProfile: boolean;
+  charityId?: number;
   createdAt: string;
   updatedAt: string;
 };

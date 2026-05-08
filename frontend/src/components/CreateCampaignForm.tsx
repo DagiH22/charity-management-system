@@ -66,6 +66,9 @@ export default function CreateCampaignForm() {
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
         setSubmitMessage("");
+      } else if(error.response?.data?.message){
+        setErrors(error.response.data.message)
+        setSubmitMessage(error.response.data.message);
       } else {
         console.log(error);
         setSubmitMessage("Something went wrong. Please try again.");

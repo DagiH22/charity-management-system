@@ -1,35 +1,34 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import CampaignCard from "../components/CampaignCard";
 import Footer from "../components/Footer";
+import type { Campaign } from "../types/campaign";
+import { getFeaturedCampaigns } from "../services/campaign.api";
 
-const featuredCampaigns = [
-  {
-    title: "Help Children Go to School",
-    description:
-      "Providing school supplies for underprivileged kids so they can learn with confidence.",
-    raised: 5000,
-    goal: 10000,
-    to: "/campaigns",
-  },
-  {
-    title: "Meals for Families in Need",
-    description:
-      "Supporting community kitchens with food packages for families facing difficult times.",
-    raised: 3200,
-    goal: 7000,
-    to: "/campaigns",
-  },
-  {
-    title: "Clean Water for Rural Villages",
-    description:
-      "Funding safe water access and small infrastructure projects for underserved areas.",
-    raised: 7800,
-    goal: 12000,
-    to: "/campaigns",
-  },
-];
+
 
 const HomePage = () => {
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        setLoading(true);
+
+        const data = await getFeaturedCampaigns();
+        setCampaigns(data.data);
+        
+      } catch (error: any) {
+        setError(error.response?.data?.message || "Failed to fetch campaigns.");
+
+      }finally{
+        setLoading(false);
+      }
+    }
+    fetchCampaigns();
+  }, [])
   return (
     <div className="pb-16">
       <section className="mx-auto flex max-w-[1200px] flex-col items-center gap-12 px-[6vw] py-12 lg:flex-row lg:items-start lg:py-20">
@@ -99,12 +98,16 @@ const HomePage = () => {
                 See All Campaigns
               </Link>
             </div>
-
-            <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {featuredCampaigns.map((campaign) => (
-                <CampaignCard key={campaign.title} {...campaign} />
-              ))}
+            <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3 py-5">
+              {
+                campaigns.map((campaign) => (
+                  <div key={campaign.id}>
+                    <CampaignCard campaign={campaign}/>
+                  </div>
+                ))
+              }
             </div>
+
           </div>
         </div>
       </section>

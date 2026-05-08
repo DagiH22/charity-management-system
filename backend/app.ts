@@ -10,20 +10,21 @@ import { prisma } from "./utils/prisma";
 
 const app = express();
 
-app.use(
-  cors({
-    origin: "http://localhost:5173", 
-    credentials: true, 
-  })
-);
+
+const corsOptions = {
+  origin: "http://localhost:5173",
+  methods: ['GET', 'POST', 'PUT','PATCH', 'DELETE'],
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.get("/", (_req, res) => {
-	res.status(200).json({
-		success: true,
-		message: "Authentication API is running",
-	});
+  res.status(200).json({
+    success: true,
+    message: "Authentication API is running",
+  });
 });
 
 app.use("/auth", authRouter);
@@ -34,18 +35,18 @@ app.use(notFound);
 app.use(errorHandler);
 
 const server = app.listen(env.PORT, () => {
-	console.log(`Server is running on http://localhost:${env.PORT}`);
+  console.log(`Server is running on http://localhost:${env.PORT}`);
 });
 
 const shutdown = async () => {
-	await prisma.$disconnect();
-	server.close(() => process.exit(0));
+  await prisma.$disconnect();
+  server.close(() => process.exit(0));
 };
 
 process.on("SIGINT", () => {
-	void shutdown();
+  void shutdown();
 });
 
 process.on("SIGTERM", () => {
-	void shutdown();
+  void shutdown();
 });

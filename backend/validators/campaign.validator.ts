@@ -51,3 +51,24 @@ export const createCampaignSchema = z
       }
     }
   });
+
+export const updateCampaignSchema = z
+  .object({
+    title: z
+      .string()
+      .trim()
+      .min(3)
+      .max(150),
+
+    description: z
+      .string()
+      .trim()
+      .min(20),
+
+    targetAmount: z.coerce
+      .number()
+      .positive(),
+
+    endDate: z.string(),
+  })
+  .partial();

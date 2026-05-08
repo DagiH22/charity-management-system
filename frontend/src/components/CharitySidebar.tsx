@@ -10,11 +10,11 @@ type CharitySidebarProps = {
 const navigationItems = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Create Campaign", href: "/dashboard/create-campaign" },
-  { label: "My Campaigns", href: "/dashboard#my-campaigns" },
-  { label: "Donations Summary", href: "/dashboard#donations-summary" },
-  { label: "Notifications", href: "/dashboard#notifications" },
-  { label: "Profile / Organization Info", href: "/dashboard#organization-profile" },
-  { label: "Settings", href: "/dashboard#settings" },
+  { label: "My Campaigns", href: "/dashboard/my-campaigns" },
+  { label: "Donations Summary", href: "/dashboard/donations-summary" },
+  { label: "Notifications", href: "/dashboard/notifications" },
+  { label: "Profile / Organization Info", href: "/dashboard/organization-profile" },
+  { label: "Settings", href: "/dashboard/settings" },
 ];
 
 export default function CharitySidebar({

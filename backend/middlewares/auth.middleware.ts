@@ -22,6 +22,10 @@ const safeUserSelect = {
 } as const;
 
 export const protect = async (req: Request, _res: Response, next: NextFunction) => {
+  // Skip preflight OPTIONS requests
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -63,3 +67,17 @@ export const authorize = (...roles: AppRole[]) => {
     return next();
   };
 };
+
+export const verifiedCharityOnly = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user) {
+      return next(new ApiError(401, "Unauthorized"));
+    }
+
+  if(!req.user.isVerified){
+    return next(
+      new ApiError(403, "Your charity account is not verified yet.")
+    )
+  }
+
+  return next();
+}
