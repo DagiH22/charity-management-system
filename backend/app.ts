@@ -10,11 +10,31 @@ import { prisma } from "./utils/prisma";
 
 const app = express();
 
+const allowedOrigins = env.FRONTEND_URLS.split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
-const corsOptions = {
-  origin: "http://localhost:5173",
-  methods: ['GET', 'POST', 'PUT','PATCH', 'DELETE'],
+const corsOptions: cors.CorsOptions = {
+  origin: (
+    origin: string | undefined,
+    callback: (err: Error | null, allow?: boolean) => void,
+  ) => {
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS origin not allowed: ${origin}`));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
+
+app.use(cors(corsOptions));
 app.use(cors(corsOptions));
 
 app.use(express.json());
