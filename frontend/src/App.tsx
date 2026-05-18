@@ -14,6 +14,12 @@ import CharityProfileSetupRoute from "./routes/CharityProfileSetupRoute";
 import MyCampaigns from "./pages/MyCampaigns";
 import EditCampaign from "./pages/EditCampaignPage";
 import CampaignsPage from "./pages/CampaignsPage";
+import CampaignDetailsPage from "./pages/CampaignDetailsPage";
+
+// Donor Pages
+import DonorDonationsPage from "./pages/DonorDonationsPage";
+import DonorAnonymousPage from "./pages/DonorAnonymousPage";
+import DonorFollowingPage from "./pages/DonorFollowingPage";
 
 export default function App() {
   return (
@@ -22,12 +28,28 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/campaigns" element={<CampaignsPage />} />
+        <Route path="/campaigns/:id" element={<CampaignDetailsPage />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/dashboard/create-campaign" element={<CreateCampaignPage />} />
+          <Route
+            path="/dashboard/create-campaign"
+            element={<CreateCampaignPage />}
+          />
           <Route path="/dashboard/my-campaigns" element={<MyCampaigns />} />
-          <Route path="/dashboard/edit-campaign/:id" element={<EditCampaign />} />
+          <Route
+            path="/dashboard/edit-campaign/:id"
+            element={<EditCampaign />}
+          />
+          <Route path="/dashboard/donations" element={<DonorDonationsPage />} />
+          <Route
+            path="/dashboard/anonymous-donations"
+            element={<DonorAnonymousPage />}
+          />
+          <Route
+            path="/dashboard/following-campaigns"
+            element={<DonorFollowingPage />}
+          />
         </Route>
       </Route>
 
@@ -37,7 +59,10 @@ export default function App() {
       </Route>
 
       <Route element={<CharityProfileSetupRoute />}>
-        <Route path="/charity-profile/setup" element={<CharityProfileSetupPage />} />
+        <Route
+          path="/charity-profile/setup"
+          element={<CharityProfileSetupPage />}
+        />
       </Route>
     </Routes>
   );
