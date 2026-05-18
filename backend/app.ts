@@ -2,8 +2,9 @@ import express from "express";
 import cors from "cors";
 import path from "node:path";
 import authRouter from "./routes/auth.routes";
-import campaignRouter from "./routes/campaign.routes";
 import charityProfileRouter from "./routes/charityProfile.routes";
+import campaignRouter from "./routes/campaign.routes";
+import donorRouter from "./routes/donor.routes";
 import { errorHandler, notFound } from "./middlewares/error.middleware";
 import { env } from "./utils/env";
 import { prisma } from "./utils/prisma";
@@ -47,9 +48,10 @@ app.get("/", (_req, res) => {
   });
 });
 
-app.use("/auth", authRouter);
-app.use("/charity-profile", charityProfileRouter);
-app.use("/campaign", campaignRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/charity-profile", charityProfileRouter);
+app.use("/api/campaign", campaignRouter);
+app.use("/api/donor", donorRouter);
 
 app.use(notFound);
 app.use(errorHandler);

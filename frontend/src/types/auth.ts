@@ -8,6 +8,7 @@ export type User = {
   isVerified: boolean;
   hasCharityProfile: boolean;
   charityId?: number;
+  profileImage?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -71,5 +72,3 @@ export type ApproveCharityProfileResponse = {
     };
   };
 };
-
-

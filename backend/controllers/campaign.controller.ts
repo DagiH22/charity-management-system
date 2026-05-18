@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
-import { createCampaignSchema, updateCampaignSchema } from "../validators/campaign.validator";
+import {
+  createCampaignSchema,
+  updateCampaignSchema,
+} from "../validators/campaign.validator";
 import {
   updateCampaignService,
   closeCampaignService,
@@ -9,9 +12,26 @@ import {
   createCampaignService,
   getMyCampaignsService,
   getAllCampaignsService,
-  getFeaturedCampaignsService
+  getFeaturedCampaignsService,
+  getPublicCampaignByIdService,
 } from "../services/campaign.service";
 
+export const getPublicCampaignById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const campaignId = Number(req.params.id);
+
+    if (Number.isNaN(campaignId)) {
+      throw new ApiError(400, "Invalid campaign id");
+    }
+
+    const campaign = await getPublicCampaignByIdService(campaignId);
+
+    res.status(200).json({
+      success: true,
+      data: campaign,
+    });
+  },
+);
 
 export const getCampaignById = asyncHandler(
   async (req: Request, res: Response) => {
@@ -21,10 +41,7 @@ export const getCampaignById = asyncHandler(
       throw new ApiError(400, "Invalid campaign id");
     }
 
-    const campaign = await getCampaignByIdService(
-      req.user!.id,
-      campaignId,
-    );
+    const campaign = await getCampaignByIdService(req.user!.id, campaignId);
 
     res.status(200).json({
       success: true,
@@ -47,9 +64,8 @@ export const createCampaign = asyncHandler(
       success: true,
       data: campaign,
     });
-  }
+  },
 );
-
 
 export const getMyCampaigns = asyncHandler(
   async (req: Request, res: Response) => {
@@ -62,9 +78,6 @@ export const getMyCampaigns = asyncHandler(
   },
 );
 
-
-
-
 export const updateCampaign = asyncHandler(
   async (req: Request, res: Response) => {
     const campaignId = Number(req.params.id);
@@ -76,10 +89,7 @@ export const updateCampaign = asyncHandler(
     const result = updateCampaignSchema.safeParse(req.body);
 
     if (!result.success) {
-      throw new ApiError(
-        400,
-        "Validation failed",
-      );
+      throw new ApiError(400, "Validation failed");
     }
 
     const updatedCampaign = await updateCampaignService(
@@ -103,10 +113,7 @@ export const closeCampaign = asyncHandler(
       throw new ApiError(400, "Invalid campaign id");
     }
 
-    const campaign = await closeCampaignService(
-      req.user!.id,
-      campaignId,
-    );
+    const campaign = await closeCampaignService(req.user!.id, campaignId);
 
     res.status(200).json({
       success: true,
@@ -118,7 +125,6 @@ export const closeCampaign = asyncHandler(
 
 export const getAllCampaigns = asyncHandler(
   async (req: Request, res: Response) => {
-
     const campaigns = await getAllCampaignsService();
 
     res.status(200).json({
@@ -130,7 +136,6 @@ export const getAllCampaigns = asyncHandler(
 
 export const getFeaturedCampaigns = asyncHandler(
   async (req: Request, res: Response) => {
-
     const campaigns = await getFeaturedCampaignsService();
 
     res.status(200).json({
@@ -139,4 +144,3 @@ export const getFeaturedCampaigns = asyncHandler(
     });
   },
 );
-

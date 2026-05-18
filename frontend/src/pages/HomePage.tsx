@@ -5,8 +5,6 @@ import Footer from "../components/Footer";
 import type { Campaign } from "../types/campaign";
 import { getFeaturedCampaigns } from "../services/campaign.api";
 
-
-
 const HomePage = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(false);
@@ -19,16 +17,14 @@ const HomePage = () => {
 
         const data = await getFeaturedCampaigns();
         setCampaigns(data.data);
-        
       } catch (error: any) {
         setError(error.response?.data?.message || "Failed to fetch campaigns.");
-
-      }finally{
+      } finally {
         setLoading(false);
       }
-    }
+    };
     fetchCampaigns();
-  }, [])
+  }, []);
   return (
     <div className="pb-16">
       <section className="mx-auto flex max-w-[1200px] flex-col items-center gap-12 px-[6vw] py-12 lg:flex-row lg:items-start lg:py-20">
@@ -87,9 +83,13 @@ const HomePage = () => {
                   Support causes that matter the most
                 </h2>
                 <p className="mt-3 max-w-2xl text-base leading-relaxed text-slate-600">
-                  Explore a few urgent campaigns and help us turn generosity into
-                  real, measurable change.
+                  Explore a few urgent campaigns and help us turn generosity
+                  into real, measurable change.
                 </p>
+                {loading && (
+                  <p className="text-emerald-500 mt-2">Loading campaigns...</p>
+                )}
+                {error && <p className="text-red-500 mt-2">{error}</p>}
               </div>
               <Link
                 className="inline-flex w-fit bg-[#edf6ff] px-5 py-2.5 text-sm font-bold text-[#0b2b53] shadow-sm transition hover:bg-emerald-50"
@@ -99,15 +99,12 @@ const HomePage = () => {
               </Link>
             </div>
             <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3 py-5">
-              {
-                campaigns.map((campaign) => (
-                  <div key={campaign.id}>
-                    <CampaignCard campaign={campaign}/>
-                  </div>
-                ))
-              }
+              {campaigns.map((campaign) => (
+                <div key={campaign.id}>
+                  <CampaignCard campaign={campaign} />
+                </div>
+              ))}
             </div>
-
           </div>
         </div>
       </section>

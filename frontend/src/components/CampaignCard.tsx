@@ -10,7 +10,11 @@ interface CampaignCardProps {
   isOwner?: boolean;
 }
 
-const CampaignCard = ({ campaign, onCampaignClosed, isOwner = false }: CampaignCardProps) => {
+const CampaignCard = ({
+  campaign,
+  onCampaignClosed,
+  isOwner = false,
+}: CampaignCardProps) => {
   const progressPercentage = Math.min(
     (campaign.currentAmount / campaign.targetAmount) * 100,
     100,
@@ -20,7 +24,11 @@ const CampaignCard = ({ campaign, onCampaignClosed, isOwner = false }: CampaignC
   const [status, setStatus] = useState(campaign.status);
 
   async function handleCloseCampaign(id: number): Promise<void> {
-    if (!window.confirm("Are you sure you want to close this campaign? This action cannot be undone.")) {
+    if (
+      !window.confirm(
+        "Are you sure you want to close this campaign? This action cannot be undone.",
+      )
+    ) {
       return;
     }
 
@@ -37,10 +45,7 @@ const CampaignCard = ({ campaign, onCampaignClosed, isOwner = false }: CampaignC
       onCampaignClosed?.(id);
       alert("Campaign closed successfully!");
     } catch (error: any) {
-      alert(
-        error.response?.data?.message ||
-          "Failed to close campaign"
-      );
+      alert(error.response?.data?.message || "Failed to close campaign");
     } finally {
       setClosing(false);
     }
@@ -51,9 +56,7 @@ const CampaignCard = ({ campaign, onCampaignClosed, isOwner = false }: CampaignC
       {/* Header */}
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">
-            {campaign.title}
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-800">{campaign.title}</h2>
 
           <p className="mt-1 text-sm text-gray-500">
             {new Date(campaign.startDate).toLocaleDateString()} -{" "}
@@ -105,33 +108,36 @@ const CampaignCard = ({ campaign, onCampaignClosed, isOwner = false }: CampaignC
 
       {/* Footer */}
       <div className="mt-6 flex items-center justify-between border-t border-gray-100 pt-4">
-        <button className="rounded-xl bg-emerald-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-emerald-700">
+        <button
+          className="rounded-xl bg-emerald-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
+          onClick={() => navigate(`/campaigns/${campaign.id}`)}
+        >
           View Details
         </button>
         {isOwner ? (
           status !== "Closed" ? (
-          <div className="flex items-center gap-3">
-            <button
-              className="rounded-xl border border-emerald-600 px-4 py-2 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50"
-              onClick={() =>
-                navigate(`/dashboard/edit-campaign/${campaign.id}`)
-              }
-            >
-              Edit
-            </button>
-            <button
-              className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-70"
-              onClick={() => handleCloseCampaign(campaign.id)}
-              disabled={closing}
-            >
-              {closing ? "Closing..." : "Close"}
-            </button>
-          </div>
+            <div className="flex items-center gap-3">
+              <button
+                className="rounded-xl border border-emerald-600 px-4 py-2 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50"
+                onClick={() =>
+                  navigate(`/dashboard/edit-campaign/${campaign.id}`)
+                }
+              >
+                Edit
+              </button>
+              <button
+                className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-70"
+                onClick={() => handleCloseCampaign(campaign.id)}
+                disabled={closing}
+              >
+                {closing ? "Closing..." : "Close"}
+              </button>
+            </div>
           ) : (
-          <span className="rounded-full bg-gray-200 px-4 py-2 text-sm font-medium text-gray-600">
-            Closed
-          </span>
-        )
+            <span className="rounded-full bg-gray-200 px-4 py-2 text-sm font-medium text-gray-600">
+              Closed
+            </span>
+          )
         ) : (
           <div className="text-sm text-gray-500">
             By {campaign.charity?.organizationName || "Unknown"}

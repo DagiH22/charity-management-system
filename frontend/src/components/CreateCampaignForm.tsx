@@ -24,11 +24,10 @@ export default function CreateCampaignForm() {
     setSubmitMessage("");
   };
 
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const token = getAuthToken();
-    
+
     if (!token) {
       return;
     }
@@ -54,23 +53,19 @@ export default function CreateCampaignForm() {
       setErrors({});
       setSubmitMessage("Creating campaign...");
 
-      const data = await createCampaign(token, result.data);
+      await createCampaign(token, result.data);
 
-      setSubmitMessage(
-        "Campaign created successfully"
-      );
+      setSubmitMessage("Campaign created successfully");
 
       setFormValues(initialCampaignFormValues);
-
     } catch (error: any) {
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
         setSubmitMessage("");
-      } else if(error.response?.data?.message){
-        setErrors(error.response.data.message)
+      } else if (error.response?.data?.message) {
+        setErrors(error.response.data.message);
         setSubmitMessage(error.response.data.message);
       } else {
-        console.log(error);
         setSubmitMessage("Something went wrong. Please try again.");
       }
     }
@@ -79,7 +74,9 @@ export default function CreateCampaignForm() {
   return (
     <section className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_40px_rgba(10,40,80,0.05)] sm:p-8">
       <div className="border-b border-slate-100 pb-5">
-        <h2 className="text-xl font-bold text-[#0b2b53]">Create Campaign Form</h2>
+        <h2 className="text-xl font-bold text-[#0b2b53]">
+          Create Campaign Form
+        </h2>
       </div>
 
       <form className="mt-6 space-y-8" onSubmit={handleSubmit} noValidate>
@@ -128,7 +125,9 @@ export default function CreateCampaignForm() {
               name="description"
               placeholder="Describe your campaign..."
               value={formValues.description}
-              onChange={(event) => updateField("description", event.target.value)}
+              onChange={(event) =>
+                updateField("description", event.target.value)
+              }
             />
             {errors.description && (
               <p className="mt-1.5 text-sm font-medium text-rose-600">
@@ -161,7 +160,9 @@ export default function CreateCampaignForm() {
               step="0.01"
               type="number"
               value={formValues.targetAmount}
-              onChange={(event) => updateField("targetAmount", event.target.value)}
+              onChange={(event) =>
+                updateField("targetAmount", event.target.value)
+              }
             />
             {errors.targetAmount && (
               <p className="mt-1.5 text-sm font-medium text-rose-600">
@@ -172,7 +173,9 @@ export default function CreateCampaignForm() {
         </fieldset>
 
         <fieldset>
-          <legend className="mb-5 text-base font-bold text-[#0b2b53]">Dates</legend>
+          <legend className="mb-5 text-base font-bold text-[#0b2b53]">
+            Dates
+          </legend>
 
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
@@ -190,7 +193,9 @@ export default function CreateCampaignForm() {
                 name="startDate"
                 type="date"
                 value={formValues.startDate}
-                onChange={(event) => updateField("startDate", event.target.value)}
+                onChange={(event) =>
+                  updateField("startDate", event.target.value)
+                }
               />
               {errors.startDate && (
                 <p className="mt-1.5 text-sm font-medium text-rose-600">
