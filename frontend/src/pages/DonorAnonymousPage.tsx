@@ -107,10 +107,7 @@ export default function DonorAnonymousPage() {
         </div>
       ) : (
         <>
-          <DonationTable
-            items={donations?.items || []}
-            forceAnonymousBadge
-          />
+          <DonationTable items={donations?.items || []} forceAnonymousBadge />
           <div className="flex items-center justify-between pt-4">
             <button
               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
