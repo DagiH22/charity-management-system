@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
+import { ApiError } from "../utils/ApiError";
 import {
   getCharityDashboardService,
   getCharityCampaignsService,
@@ -87,6 +88,9 @@ export const getCharityContributions = asyncHandler(
 export const getCharityCampaignContributions = asyncHandler(
   async (req: Request, res: Response) => {
     const campaignId = Number(req.params.campaignId);
+    if (!Number.isFinite(campaignId) || campaignId <= 0) {
+      throw new ApiError(400, "Invalid campaign id");
+    }
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 8);
     const search = req.query.search ? String(req.query.search) : undefined;

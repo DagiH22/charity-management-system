@@ -30,9 +30,18 @@ const buildDateFilter = (dateFrom?: string, dateTo?: string) => {
     return undefined;
   }
 
+  const fromDate = dateFrom ? new Date(dateFrom) : undefined;
+  const toDate = dateTo ? new Date(dateTo) : undefined;
+  const isValidFrom = fromDate && !Number.isNaN(fromDate.getTime());
+  const isValidTo = toDate && !Number.isNaN(toDate.getTime());
+
+  if (!isValidFrom && !isValidTo) {
+    return undefined;
+  }
+
   return {
-    ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
-    ...(dateTo ? { lte: new Date(dateTo) } : {}),
+    ...(isValidFrom ? { gte: fromDate } : {}),
+    ...(isValidTo ? { lte: toDate } : {}),
   } as Prisma.DateTimeFilter;
 };
 
