@@ -7,6 +7,7 @@ type UpdateCampaignPayload = {
   description?: string;
   targetAmount?: number;
   endDate?: string;
+  imageUrl?: string | null;
 };
 type CreateCampaignPayload = {
   title: string;
@@ -14,6 +15,7 @@ type CreateCampaignPayload = {
   targetAmount: number;
   startDate: string;
   endDate: string;
+  imageUrl?: string;
 };
 
 export const getCampaignByIdService = async (
@@ -106,6 +108,7 @@ export const createCampaignService = async (
       startDate,
       endDate,
       status: "ACTIVE",
+      imageUrl: payload.imageUrl?.trim() || null,
     },
   });
 
@@ -246,6 +249,10 @@ export const updateCampaignService = async (
 
       ...(payload.endDate && {
         endDate: new Date(payload.endDate),
+      }),
+
+      ...(payload.imageUrl !== undefined && {
+        imageUrl: payload.imageUrl?.trim() || null,
       }),
     },
   });

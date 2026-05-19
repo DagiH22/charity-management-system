@@ -15,6 +15,11 @@ import {
   getFeaturedCampaignsService,
   getPublicCampaignByIdService,
 } from "../services/campaign.service";
+import { uploadFile } from "../services/file.service";
+
+type UploadedFile = {
+  filename: string;
+};
 
 export const getPublicCampaignById = asyncHandler(
   async (req: Request, res: Response) => {
@@ -141,6 +146,26 @@ export const getFeaturedCampaigns = asyncHandler(
     res.status(200).json({
       success: true,
       data: campaigns,
+    });
+  },
+);
+
+export const uploadCampaignImage = asyncHandler(
+  async (req: Request, res: Response) => {
+    const requestWithFile = req as Request & { file?: UploadedFile };
+
+    if (!req.user) {
+      throw new ApiError(401, "Unauthorized");
+    }
+
+    const imageUrl = uploadFile(
+      requestWithFile.file,
+      "Campaign image is required",
+    );
+
+    res.status(201).json({
+      success: true,
+      imageUrl,
     });
   },
 );

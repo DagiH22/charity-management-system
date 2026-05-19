@@ -3,12 +3,17 @@ import { useNavigate, useParams } from "react-router-dom";
 import { editCampaignSchema } from "../utils/validation";
 import type { EditCampaignFormValues } from "../types/campaign";
 import { getAuthToken } from "../services/auth.api";
-import { getCampaignById, updateCampaign, closeCampaign } from "../services/campaign.api";
+import {
+  getCampaignById,
+  updateCampaign,
+  closeCampaign,
+  uploadCampaignImage,
+} from "../services/campaign.api";
+import ImageUploadField from "../components/ImageUploadField";
+import { validateImageFile } from "../utils/fileValidation";
+import { resolveAssetUrl } from "../utils/media";
 
-
-type EditCampaignErrors = Partial<
-  Record<keyof EditCampaignFormValues, string>
->;
+type EditCampaignErrors = Partial<Record<keyof EditCampaignFormValues, string>>;
 
 const EditCampaign = () => {
   const { id } = useParams();
@@ -21,20 +26,38 @@ const EditCampaign = () => {
   const [submitMessage, setSubmitMessage] = useState("");
   const [campaignStatus, setCampaignStatus] = useState<string>("");
   const [errors, setErrors] = useState<EditCampaignErrors>({});
-  const [formValues, setFormValues] =
-    useState<EditCampaignFormValues>({
-      title: "",
-      description: "",
-      targetAmount: "",
-      endDate: "",
-    });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [formValues, setFormValues] = useState<EditCampaignFormValues>({
+    title: "",
+    description: "",
+    targetAmount: "",
+    endDate: "",
+  });
+
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreview(null);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(imageFile);
+    setImagePreview(previewUrl);
+
+    return () => {
+      URL.revokeObjectURL(previewUrl);
+    };
+  }, [imageFile]);
 
   useEffect(() => {
     const fetchCampaign = async () => {
       try {
         const token = getAuthToken();
-        if(!token)
-          return;
+        if (!token) return;
 
         const data = await getCampaignById(token, id);
 
@@ -47,10 +70,11 @@ const EditCampaign = () => {
           targetAmount: campaign.targetAmount,
           endDate: campaign.endDate.split("T")[0],
         });
+        setImageUrl(campaign.imageUrl || null);
       } catch (error: any) {
-        if(error.response?.data?.message){
+        if (error.response?.data?.message) {
           setSubmitMessage(error.response.data.message);
-        }else{
+        } else {
           setSubmitMessage("Failed to load campaign");
         }
       } finally {
@@ -62,9 +86,7 @@ const EditCampaign = () => {
   }, [id]);
 
   const handleChange = (
-    event: ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement
-    >,
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = event.target;
 
@@ -81,20 +103,16 @@ const EditCampaign = () => {
     }
   };
 
-  const handleSubmit = async (
-    event: FormEvent<HTMLFormElement>,
-  ) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const result =
-      editCampaignSchema.safeParse(formValues);
+    const result = editCampaignSchema.safeParse(formValues);
 
     if (!result.success) {
       const nextErrors: EditCampaignErrors = {};
 
       result.error.issues.forEach((issue) => {
-        const field =
-          issue.path[0] as keyof EditCampaignFormValues;
+        const field = issue.path[0] as keyof EditCampaignFormValues;
 
         if (field && !nextErrors[field]) {
           nextErrors[field] = issue.message;
@@ -106,35 +124,54 @@ const EditCampaign = () => {
       return;
     }
 
+    if (imageError) {
+      setSubmitMessage("Please fix the campaign image before saving.");
+      return;
+    }
+
     try {
       setSubmitting(true);
       setSubmitMessage("");
 
       const token = getAuthToken();
-        if(!token)
-          return;
+      if (!token) return;
+      let nextImageUrl = imageUrl;
+      if (imageFile) {
+        setIsUploadingImage(true);
+        const uploadResponse = await uploadCampaignImage(
+          token,
+          imageFile,
+          (progress) => setUploadProgress(progress),
+        );
+        nextImageUrl = uploadResponse.imageUrl;
+      }
 
-      await updateCampaign(token, id, result.data);
+      await updateCampaign(token, id, {
+        ...result.data,
+        imageUrl: nextImageUrl,
+      });
 
-      setSubmitMessage(
-        "Campaign updated successfully 🎉",
-      );
+      setSubmitMessage("Campaign updated successfully 🎉");
 
       setTimeout(() => {
         navigate("/dashboard/my-campaigns");
       }, 1500);
     } catch (error: any) {
       setSubmitMessage(
-        error.response?.data?.message ||
-          "Failed to update campaign",
+        error.response?.data?.message || "Failed to update campaign",
       );
     } finally {
       setSubmitting(false);
+      setIsUploadingImage(false);
     }
   };
 
   const handleCloseCampaign = async () => {
-    if (!window.confirm("Are you sure you want to close this campaign? This action cannot be undone.")) {
+    if (
+      !window.confirm(
+        "Are you sure you want to close this campaign? This action cannot be undone.",
+      )
+    ) {
       return;
     }
 
@@ -155,8 +192,7 @@ const EditCampaign = () => {
       }, 1500);
     } catch (error: any) {
       setSubmitMessage(
-        error.response?.data?.message ||
-          "Failed to close campaign",
+        error.response?.data?.message || "Failed to close campaign",
       );
     } finally {
       setClosing(false);
@@ -166,9 +202,7 @@ const EditCampaign = () => {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <p className="text-lg font-medium text-gray-600">
-          Loading campaign...
-        </p>
+        <p className="text-lg font-medium text-gray-600">Loading campaign...</p>
       </div>
     );
   }
@@ -177,19 +211,47 @@ const EditCampaign = () => {
     <div className="min-h-screen bg-gray-50 px-6 py-10">
       <div className="mx-auto max-w-3xl rounded-3xl bg-white p-8 shadow-sm">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">
-            Edit Campaign
-          </h1>
+          <h1 className="text-4xl font-bold text-gray-800">Edit Campaign</h1>
 
           <p className="mt-2 text-gray-500">
             Update your fundraising campaign details.
           </p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6"
-        >
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <ImageUploadField
+            label="Campaign Banner"
+            description="Update your campaign banner image."
+            previewUrl={imagePreview || resolveAssetUrl(imageUrl)}
+            onFileSelect={(file) => {
+              if (!file) {
+                setImageFile(null);
+                setImageError(null);
+                return;
+              }
+
+              const validationError = validateImageFile(file);
+              if (validationError) {
+                setImageError(validationError);
+                setImageFile(null);
+                return;
+              }
+
+              setImageError(null);
+              setImageFile(file);
+            }}
+            onRemove={() => {
+              setImageFile(null);
+              setImageUrl(null);
+              setImageError(null);
+            }}
+            error={imageError}
+            isUploading={isUploadingImage}
+            uploadProgress={uploadProgress}
+            helperText="JPG, PNG, or WEBP up to 5MB"
+            variant="banner"
+          />
+
           {/* Title */}
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">
@@ -205,9 +267,7 @@ const EditCampaign = () => {
             />
 
             {errors.title && (
-              <p className="mt-2 text-sm text-red-500">
-                {errors.title}
-              </p>
+              <p className="mt-2 text-sm text-red-500">{errors.title}</p>
             )}
           </div>
 
@@ -226,9 +286,7 @@ const EditCampaign = () => {
             />
 
             {errors.description && (
-              <p className="mt-2 text-sm text-red-500">
-                {errors.description}
-              </p>
+              <p className="mt-2 text-sm text-red-500">{errors.description}</p>
             )}
           </div>
 
@@ -247,9 +305,7 @@ const EditCampaign = () => {
             />
 
             {errors.targetAmount && (
-              <p className="mt-2 text-sm text-red-500">
-                {errors.targetAmount}
-              </p>
+              <p className="mt-2 text-sm text-red-500">{errors.targetAmount}</p>
             )}
           </div>
 
@@ -268,9 +324,7 @@ const EditCampaign = () => {
             />
 
             {errors.endDate && (
-              <p className="mt-2 text-sm text-red-500">
-                {errors.endDate}
-              </p>
+              <p className="mt-2 text-sm text-red-500">{errors.endDate}</p>
             )}
           </div>
 
@@ -280,9 +334,7 @@ const EditCampaign = () => {
             disabled={submitting}
             className="w-full rounded-xl bg-emerald-600 py-3 text-lg font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {submitting
-              ? "Updating Campaign..."
-              : "Update Campaign"}
+            {submitting ? "Updating Campaign..." : "Update Campaign"}
           </button>
 
           {/* Close Campaign Button */}
@@ -293,9 +345,7 @@ const EditCampaign = () => {
               disabled={closing}
               className="w-full rounded-xl bg-red-600 py-3 text-lg font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {closing
-                ? "Closing Campaign..."
-                : "Close Campaign"}
+              {closing ? "Closing Campaign..." : "Close Campaign"}
             </button>
           )}
 

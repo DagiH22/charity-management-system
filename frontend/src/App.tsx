@@ -11,10 +11,14 @@ import { Route, Routes } from "react-router-dom";
 import GuestRoute from "./routes/GuestRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import CharityProfileSetupRoute from "./routes/CharityProfileSetupRoute";
+import DonorRoute from "./routes/DonorRoute";
+import CharityRoute from "./routes/CharityRoute";
 import MyCampaigns from "./pages/MyCampaigns";
 import EditCampaign from "./pages/EditCampaignPage";
 import CampaignsPage from "./pages/CampaignsPage";
 import CampaignDetailsPage from "./pages/CampaignDetailsPage";
+import CharityCampaignsPage from "./pages/CharityCampaignsPage";
+import CharityContributionsPage from "./pages/CharityContributionsPage";
 
 // Donor Pages
 import DonorDonationsPage from "./pages/DonorDonationsPage";
@@ -32,24 +36,41 @@ export default function App() {
 
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route
-            path="/dashboard/create-campaign"
-            element={<CreateCampaignPage />}
-          />
-          <Route path="/dashboard/my-campaigns" element={<MyCampaigns />} />
-          <Route
-            path="/dashboard/edit-campaign/:id"
-            element={<EditCampaign />}
-          />
-          <Route path="/dashboard/donations" element={<DonorDonationsPage />} />
-          <Route
-            path="/dashboard/anonymous-donations"
-            element={<DonorAnonymousPage />}
-          />
-          <Route
-            path="/dashboard/following-campaigns"
-            element={<DonorFollowingPage />}
-          />
+
+          <Route element={<CharityRoute />}>
+            <Route
+              path="/dashboard/create-campaign"
+              element={<CreateCampaignPage />}
+            />
+            <Route path="/dashboard/my-campaigns" element={<MyCampaigns />} />
+            <Route
+              path="/dashboard/edit-campaign/:id"
+              element={<EditCampaign />}
+            />
+            <Route
+              path="/charity/campaigns"
+              element={<CharityCampaignsPage />}
+            />
+            <Route
+              path="/charity/contributions"
+              element={<CharityContributionsPage />}
+            />
+          </Route>
+
+          <Route element={<DonorRoute />}>
+            <Route
+              path="/dashboard/donations"
+              element={<DonorDonationsPage />}
+            />
+            <Route
+              path="/dashboard/anonymous-donations"
+              element={<DonorAnonymousPage />}
+            />
+            <Route
+              path="/dashboard/following-campaigns"
+              element={<DonorFollowingPage />}
+            />
+          </Route>
         </Route>
       </Route>
 

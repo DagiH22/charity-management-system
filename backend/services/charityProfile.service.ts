@@ -6,6 +6,7 @@ type CreateCharityProfileInput = {
   organizationName: string;
   description: string;
   documentUrl: string;
+  logoUrl?: string | null;
   phone?: string;
   address?: string;
   website?: string;
@@ -17,6 +18,7 @@ type PendingCharityProfileSelectResult = {
   organizationName: string;
   description: string;
   documentUrl: string;
+  logo: string | null;
   phone: string | null;
   address: string | null;
   website: string | null;
@@ -29,12 +31,23 @@ type PendingCharityProfileSelectResult = {
   };
 };
 
+type UpdateCharityProfileInput = {
+  userId: number;
+  organizationName?: string;
+  description?: string;
+  phone?: string;
+  address?: string;
+  website?: string;
+  logoUrl?: string | null;
+};
+
 const charityProfileSelect = {
   id: true,
   userId: true,
   organizationName: true,
   description: true,
   documentUrl: true,
+  logo: true,
   phone: true,
   address: true,
   website: true,
@@ -46,6 +59,7 @@ export const createCharityProfile = async ({
   organizationName,
   description,
   documentUrl,
+  logoUrl,
   phone,
   address,
   website,
@@ -78,6 +92,7 @@ export const createCharityProfile = async ({
       organizationName: organizationName.trim(),
       description: description.trim(),
       documentUrl: documentUrl.trim(),
+      logo: logoUrl?.trim() || null,
       phone: phone?.trim() || null,
       address: address?.trim() || null,
       website: website?.trim() || null,
@@ -95,6 +110,40 @@ export const getMyCharityProfile = async (userId: number) => {
   });
 
   return profile;
+};
+
+export const updateMyCharityProfile = async ({
+  userId,
+  organizationName,
+  description,
+  phone,
+  address,
+  website,
+  logoUrl,
+}: UpdateCharityProfileInput) => {
+  const profile = await prisma.charityProfile.findUnique({
+    where: { userId },
+    select: { id: true },
+  });
+
+  if (!profile) {
+    throw new ApiError(404, "Charity profile not found");
+  }
+
+  const updatedProfile = await prisma.charityProfile.update({
+    where: { userId },
+    data: {
+      ...(organizationName && { organizationName: organizationName.trim() }),
+      ...(description && { description: description.trim() }),
+      ...(phone !== undefined && { phone: phone?.trim() || null }),
+      ...(address !== undefined && { address: address?.trim() || null }),
+      ...(website !== undefined && { website: website?.trim() || null }),
+      ...(logoUrl !== undefined && { logo: logoUrl?.trim() || null }),
+    },
+    select: charityProfileSelect,
+  });
+
+  return updatedProfile;
 };
 
 export const getPendingCharityProfiles = async () => {

@@ -13,8 +13,10 @@ import {
   getAllCampaigns,
   getFeaturedCampaigns,
   getPublicCampaignById,
+  uploadCampaignImage,
 } from "../controllers/campaign.controller";
 import { donateToCampaign } from "../controllers/donation.controller";
+import { imageUpload } from "../middlewares/upload.middleware";
 
 const campaignRouter = Router();
 
@@ -43,6 +45,14 @@ campaignRouter.post(
   authorize("CHARITY"),
   verifiedCharityOnly,
   createCampaign,
+);
+campaignRouter.post(
+  "/image",
+  protect,
+  authorize("CHARITY"),
+  verifiedCharityOnly,
+  imageUpload.single("image"),
+  uploadCampaignImage,
 );
 campaignRouter.put(
   "/:id",

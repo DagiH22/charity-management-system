@@ -19,6 +19,7 @@ export type CharityProfile = {
   organizationName: string;
   description: string;
   documentUrl: string;
+  logo?: string | null;
   phone: string | null;
   address: string | null;
   website: string | null;

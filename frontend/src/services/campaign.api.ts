@@ -1,6 +1,16 @@
 import { http } from "./httpClient";
 
-export const createCampaign = async (token: string, payload: any) => {
+export const createCampaign = async (
+  token: string,
+  payload: {
+    title: string;
+    description: string;
+    targetAmount: number;
+    startDate: string;
+    endDate: string;
+    imageUrl?: string | null;
+  },
+) => {
   const { data } = await http.post("/campaign/create", payload, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -41,6 +51,7 @@ export const updateCampaign = async (
     description: string;
     targetAmount: number;
     endDate: string;
+    imageUrl?: string | null;
   },
 ) => {
   const response = await http.put(`/campaign/${id}`, data, {
@@ -49,6 +60,31 @@ export const updateCampaign = async (
     },
   });
   return response.data;
+};
+
+export const uploadCampaignImage = async (
+  token: string,
+  file: File,
+  onUploadProgress?: (progress: number) => void,
+) => {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const { data } = await http.post("/campaign/image", formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
+    onUploadProgress: (event) => {
+      if (!event.total) {
+        return;
+      }
+      const progress = Math.round((event.loaded / event.total) * 100);
+      onUploadProgress?.(progress);
+    },
+  });
+
+  return data;
 };
 
 export const closeCampaign = async (token: string, id: string | undefined) => {

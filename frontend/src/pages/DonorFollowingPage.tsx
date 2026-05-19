@@ -2,6 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { getDonorFollowingCampaigns } from "../services/donor.api";
 import { getAuthToken } from "../services/auth.api";
+import { resolveAssetUrl } from "../utils/media";
 
 type FollowedCampaign = {
   id: number;
@@ -155,7 +156,7 @@ export default function DonorFollowingPage() {
                   <div className="flex gap-4">
                     <img
                       src={
-                        camp.imageUrl ||
+                        resolveAssetUrl(camp.imageUrl) ||
                         "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400&q=80"
                       }
                       alt={camp.title}
