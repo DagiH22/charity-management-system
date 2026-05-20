@@ -1,23 +1,43 @@
-import { Link } from "react-router-dom";
-import type { User } from "../types/auth";
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "../utils/cn";
+import {
+  HomeIcon,
+  PlusCircleIcon,
+  RectangleGroupIcon,
+  CurrencyDollarIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 
 type CharitySidebarProps = {
-  user?: User;
   isOpen: boolean;
   onClose: () => void;
 };
 
 const navigationItems = [
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Create Campaign", href: "/dashboard/create-campaign" },
-  { label: "All Campaigns", href: "/charity/campaigns" },
-  { label: "Contributions", href: "/charity/contributions" },
+  { label: "Dashboard", href: "/dashboard", icon: HomeIcon },
+  {
+    label: "Create Campaign",
+    href: "/dashboard/create-campaign",
+    icon: PlusCircleIcon,
+  },
+  {
+    label: "All Campaigns",
+    href: "/charity/campaigns",
+    icon: RectangleGroupIcon,
+  },
+  {
+    label: "Contributions",
+    href: "/charity/contributions",
+    icon: CurrencyDollarIcon,
+  },
 ];
 
 export default function CharitySidebar({
   isOpen,
   onClose,
 }: CharitySidebarProps) {
+  const location = useLocation();
+
   const closeOnMobile = () => {
     if (window.matchMedia("(max-width: 1023px)").matches) {
       onClose();
@@ -25,34 +45,82 @@ export default function CharitySidebar({
   };
 
   return (
-    <aside
-      className={`absolute bottom-0 left-0 top-0 z-30 w-72 shrink-0 border-r border-slate-200 bg-slate-100 px-3 py-5 transition-transform duration-200 lg:static lg:w-64 lg:translate-x-0 ${
-        isOpen ? "translate-x-0" : "-translate-x-full lg:hidden"
-      }`}
-    >
-      <div className="flex items-center justify-between gap-3 px-2 pb-4">
-        <button
-          className="inline-flex ml-[85%] h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg font-semibold text-slate-600 transition hover:bg-slate-200 hover:text-[#0b2b53]"
-          type="button"
-          aria-label="Close charity sidebar"
+    <>
+      {/* Mobile backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-slate-900/80 backdrop-blur-sm transition-opacity lg:hidden"
           onClick={onClose}
-        >
-          x
-        </button>
-      </div>
+          aria-hidden="true"
+        />
+      )}
 
-      <nav className="space-y-1" aria-label="Charity dashboard">
-        {navigationItems.map((item) => (
-          <Link
-            key={item.label}
-            className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200 hover:text-[#0b2b53]"
-            to={item.href}
-            onClick={closeOnMobile}
+      {/* Sidebar component */}
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-72 flex-col bg-white border-r border-slate-200 transition-transform duration-300 ease-in-out lg:static lg:z-auto lg:flex lg:w-72 lg:translate-x-0 shadow-xl lg:shadow-none",
+          isOpen ? "translate-x-0 flex" : "-translate-x-full hidden",
+        )}
+      >
+        <div className="flex shrink-0 items-center justify-between px-6 h-16 border-b border-slate-100 lg:hidden">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#0b2b53] text-sm font-bold text-white shadow-sm">
+              C
+            </span>
+            <span className="text-xl font-bold tracking-tight text-[#0b2b53]">
+              Charity<span className="text-emerald-500">Hub</span>
+            </span>
+          </div>
+          <button
+            type="button"
+            className="-m-2.5 p-2.5 text-slate-500 hover:text-slate-700 transition-colors"
+            onClick={onClose}
           >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
-    </aside>
+            <span className="sr-only">Close sidebar</span>
+            <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+          </button>
+        </div>
+
+        <nav
+          className="flex flex-1 flex-col overflow-y-auto pt-6 pb-4"
+          aria-label="Sidebar"
+        >
+          <div className="px-4 space-y-1">
+            {navigationItems.map((item) => {
+              const isActive =
+                location.pathname === item.href ||
+                (item.href !== "/dashboard" &&
+                  location.pathname.startsWith(item.href));
+              const Icon = item.icon;
+
+              return (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  onClick={closeOnMobile}
+                  className={cn(
+                    "group flex items-center gap-x-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-200",
+                    isActive
+                      ? "bg-emerald-50 text-emerald-700"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                  )}
+                >
+                  <Icon
+                    className={cn(
+                      "h-5 w-5 shrink-0 transition-colors duration-200",
+                      isActive
+                        ? "text-emerald-600"
+                        : "text-slate-400 group-hover:text-slate-600",
+                    )}
+                    aria-hidden="true"
+                  />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      </aside>
+    </>
   );
 }
