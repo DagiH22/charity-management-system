@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import path from "node:path";
 import authRouter from "./routes/auth.routes";
 import charityProfileRouter from "./routes/charityProfile.routes";
@@ -37,9 +38,9 @@ const corsOptions: cors.CorsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(cors(corsOptions));
 
 app.use(express.json());
+app.use(cookieParser());
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.get("/", (_req, res) => {

@@ -38,7 +38,6 @@ export type PendingCharityRegistration = CharityProfile & {
 export type AuthSuccessResponse = {
   success: true;
   message: string;
-  token: string;
   user: User;
 };
 

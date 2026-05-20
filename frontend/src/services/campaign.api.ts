@@ -1,7 +1,6 @@
 import { http } from "./httpClient";
 
 export const createCampaign = async (
-  token: string,
   payload: {
     title: string;
     description: string;
@@ -11,40 +10,24 @@ export const createCampaign = async (
     imageUrl?: string | null;
   },
 ) => {
-  const { data } = await http.post("/campaign/create", payload, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const { data } = await http.post("/campaign/create", payload);
 
   return data;
 };
 
-export const getMyCampaigns = async (token: string) => {
-  const { data } = await http.get(`/campaign/my-campaigns`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export const getMyCampaigns = async () => {
+  const { data } = await http.get(`/campaign/my-campaigns`);
 
   return data;
 };
 
-export const getCampaignById = async (
-  token: string,
-  id: string | undefined,
-) => {
-  const { data } = await http.get(`/campaign/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export const getCampaignById = async (id: string | undefined) => {
+  const { data } = await http.get(`/campaign/${id}`);
 
   return data;
 };
 
 export const updateCampaign = async (
-  token: string,
   id: string | undefined,
   data: {
     title: string;
@@ -54,16 +37,11 @@ export const updateCampaign = async (
     imageUrl?: string | null;
   },
 ) => {
-  const response = await http.put(`/campaign/${id}`, data, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await http.put(`/campaign/${id}`, data);
   return response.data;
 };
 
 export const uploadCampaignImage = async (
-  token: string,
   file: File,
   onUploadProgress?: (progress: number) => void,
 ) => {
@@ -72,7 +50,6 @@ export const uploadCampaignImage = async (
 
   const { data } = await http.post("/campaign/image", formData, {
     headers: {
-      Authorization: `Bearer ${token}`,
       "Content-Type": "multipart/form-data",
     },
     onUploadProgress: (event) => {
@@ -87,16 +64,8 @@ export const uploadCampaignImage = async (
   return data;
 };
 
-export const closeCampaign = async (token: string, id: string | undefined) => {
-  const response = await http.put(
-    `/campaign/${id}/close`,
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  );
+export const closeCampaign = async (id: string | undefined) => {
+  const response = await http.put(`/campaign/${id}/close`, {});
   return response.data;
 };
 
@@ -117,7 +86,6 @@ export const getPublicCampaignById = async (id: string | undefined) => {
 };
 
 export const donateToCampaignRequest = async (
-  token: string,
   id: string | undefined,
   payload: {
     amount: number;
@@ -125,10 +93,6 @@ export const donateToCampaignRequest = async (
     message?: string;
   },
 ) => {
-  const { data } = await http.post(`/campaign/${id}/donate`, payload, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const { data } = await http.post(`/campaign/${id}/donate`, payload);
   return data;
 };

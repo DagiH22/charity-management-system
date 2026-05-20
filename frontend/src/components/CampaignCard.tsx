@@ -2,7 +2,6 @@ import type { Campaign } from "../types/campaign";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { closeCampaign } from "../services/campaign.api";
-import { getAuthToken } from "../services/auth.api";
 import { resolveAssetUrl } from "../utils/media";
 
 interface CampaignCardProps {
@@ -35,13 +34,7 @@ const CampaignCard = ({
 
     try {
       setClosing(true);
-      const token = getAuthToken();
-      if (!token) {
-        alert("You must be logged in to close a campaign");
-        return;
-      }
-
-      await closeCampaign(token, id.toString());
+      await closeCampaign(id.toString());
       setStatus("Closed");
       onCampaignClosed?.(id);
       alert("Campaign closed successfully!");

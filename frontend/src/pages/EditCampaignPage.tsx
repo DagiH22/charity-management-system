@@ -2,7 +2,6 @@ import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { editCampaignSchema } from "../utils/validation";
 import type { EditCampaignFormValues } from "../types/campaign";
-import { getAuthToken } from "../services/auth.api";
 import {
   getCampaignById,
   updateCampaign,
@@ -56,10 +55,7 @@ const EditCampaign = () => {
   useEffect(() => {
     const fetchCampaign = async () => {
       try {
-        const token = getAuthToken();
-        if (!token) return;
-
-        const data = await getCampaignById(token, id);
+        const data = await getCampaignById(id);
 
         const campaign = data.data;
 
@@ -133,20 +129,16 @@ const EditCampaign = () => {
       setSubmitting(true);
       setSubmitMessage("");
 
-      const token = getAuthToken();
-      if (!token) return;
       let nextImageUrl = imageUrl;
       if (imageFile) {
         setIsUploadingImage(true);
-        const uploadResponse = await uploadCampaignImage(
-          token,
-          imageFile,
-          (progress) => setUploadProgress(progress),
+        const uploadResponse = await uploadCampaignImage(imageFile, (progress) =>
+          setUploadProgress(progress),
         );
         nextImageUrl = uploadResponse.imageUrl;
       }
 
-      await updateCampaign(token, id, {
+      await updateCampaign(id, {
         ...result.data,
         imageUrl: nextImageUrl,
       });
@@ -179,10 +171,7 @@ const EditCampaign = () => {
       setClosing(true);
       setSubmitMessage("");
 
-      const token = getAuthToken();
-      if (!token) return;
-
-      await closeCampaign(token, id);
+      await closeCampaign(id);
 
       setSubmitMessage("Campaign closed successfully 🎉");
       setCampaignStatus("Closed");

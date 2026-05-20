@@ -5,6 +5,7 @@ export const apiBaseUrl =
 
 export const http = axios.create({
   baseURL: `${apiBaseUrl}/api`,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },

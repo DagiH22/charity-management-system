@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import type { User } from "../../types/auth";
 import CharitySidebar from "../../components/CharitySidebar";
-import { getAuthToken } from "../../services/auth.api";
 import { getCharityDashboard } from "../../services/charityDashboard.api";
 import { getApiErrorMessage } from "../../services/apiErrors";
 import type {
@@ -50,12 +49,7 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
       try {
         setIsLoading(true);
         setError(null);
-        const token = getAuthToken();
-        if (!token) {
-          setError("Session expired. Please login again.");
-          return;
-        }
-        const response = await getCharityDashboard(token);
+        const response = await getCharityDashboard();
         setDashboard(response.data);
       } catch (err) {
         setError(getApiErrorMessage(err));

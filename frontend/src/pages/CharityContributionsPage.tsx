@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import CharitySidebar from "../components/CharitySidebar";
-import { getAuthToken } from "../services/auth.api";
 import {
   getCharityCampaignContributions,
   getCharityCampaigns,
@@ -78,11 +77,7 @@ export default function CharityContributionsPage() {
   useEffect(() => {
     const loadCampaignOptions = async () => {
       try {
-        const token = getAuthToken();
-        if (!token) {
-          return;
-        }
-        const response = await getCharityCampaigns(token, {
+        const response = await getCharityCampaigns({
           page: 1,
           limit: 100,
           sortBy: "createdAt",
@@ -102,12 +97,7 @@ export default function CharityContributionsPage() {
       try {
         setIsLoading(true);
         setError(null);
-        const token = getAuthToken();
-        if (!token) {
-          setError("Session expired. Please login again.");
-          return;
-        }
-        const response = await getCharityContributions(token, {
+        const response = await getCharityContributions({
           page,
           limit: 5,
           donationLimit: 4,
@@ -144,12 +134,7 @@ export default function CharityContributionsPage() {
     }));
 
     try {
-      const token = getAuthToken();
-      if (!token) {
-        throw new Error("Session expired. Please login again.");
-      }
       const response = await getCharityCampaignContributions(
-        token,
         campaignId,
         {
           page: nextPage,

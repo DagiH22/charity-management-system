@@ -3,7 +3,6 @@ import CampaignCard from "../components/CampaignCard";
 import { getMyCampaigns } from "../services/campaign.api";
 import type { Campaign } from "../types/campaign";
 import { useAuthStore } from "../store/authStore";
-import { getAuthToken } from "../services/auth.api";
 import { Navigate } from "react-router-dom";
 
 const MyCampaigns = () => {
@@ -24,10 +23,7 @@ const MyCampaigns = () => {
     const fetchCampaigns = async () => {
       try {
         setLoading(true);
-        const token = getAuthToken();
-        if(!token)
-          return;
-        const data = await getMyCampaigns(token);
+        const data = await getMyCampaigns();
         setCampaigns(data.data);
       } catch (err: any) {
         setError(

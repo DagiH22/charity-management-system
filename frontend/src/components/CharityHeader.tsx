@@ -18,8 +18,8 @@ export default function CharityHeader({ onMenuClick }: CharityHeaderProps) {
   const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/login");
   };
 

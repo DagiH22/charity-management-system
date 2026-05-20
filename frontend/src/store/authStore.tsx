@@ -1,13 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { User } from "../types/auth";
-import { clearAuthToken, getAuthToken, meRequest, setAuthToken } from "../services/auth.api";
+import { logoutRequest, meRequest } from "../services/auth.api";
 
 type AuthStoreValue = {
   user: User | null;
   isBootstrapping: boolean;
-  setAuthSession: (token: string, nextUser: User) => void;
-  logout: () => void;
+  setAuthSession: (nextUser: User) => void;
+  logout: () => Promise<void>;
   completeCharityProfile: () => void;
 };
 
@@ -23,18 +23,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     const bootstrapAuth = async () => {
-      const token = getAuthToken();
-
-      if (!token) {
-        setIsBootstrapping(false);
-        return;
-      }
-
       try {
-        const response = await meRequest(token);
+        const response = await meRequest();
         setUser(response.user);
       } catch {
-        clearAuthToken();
         setUser(null);
       } finally {
         setIsBootstrapping(false);
@@ -44,14 +36,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     void bootstrapAuth();
   }, []);
 
-  const setAuthSession = useCallback((token: string, nextUser: User) => {
-    setAuthToken(token);
+  const setAuthSession = useCallback((nextUser: User) => {
     setUser(nextUser);
   }, []);
 
-  const logout = useCallback(() => {
-    clearAuthToken();
-    setUser(null);
+  const logout = useCallback(async () => {
+    try {
+      await logoutRequest();
+    } finally {
+      setUser(null);
+    }
   }, []);
 
   const completeCharityProfile = useCallback(() => {
