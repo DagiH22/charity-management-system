@@ -8,6 +8,7 @@ export type Campaign = {
   startDate: string;
   endDate: string;
   charityId: number;
+  imageUrl?: string | null;
   charity?: {
     id: number;
     organizationName: string;

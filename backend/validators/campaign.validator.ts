@@ -20,6 +20,7 @@ export const createCampaignSchema = z
     startDate: z.string().min(1, "Start date is required"),
 
     endDate: z.string().min(1, "End date is required"),
+    imageUrl: z.string().trim().optional(),
   })
   .superRefine((values, context) => {
     const startDate = new Date(values.startDate);
@@ -41,7 +42,10 @@ export const createCampaignSchema = z
       });
     }
 
-    if (!Number.isNaN(startDate.getTime()) && !Number.isNaN(endDate.getTime())) {
+    if (
+      !Number.isNaN(startDate.getTime()) &&
+      !Number.isNaN(endDate.getTime())
+    ) {
       if (endDate < startDate) {
         context.addIssue({
           code: z.ZodIssueCode.custom,
@@ -54,21 +58,13 @@ export const createCampaignSchema = z
 
 export const updateCampaignSchema = z
   .object({
-    title: z
-      .string()
-      .trim()
-      .min(3)
-      .max(150),
+    title: z.string().trim().min(3).max(150),
 
-    description: z
-      .string()
-      .trim()
-      .min(20),
+    description: z.string().trim().min(20),
 
-    targetAmount: z.coerce
-      .number()
-      .positive(),
+    targetAmount: z.coerce.number().positive(),
 
     endDate: z.string(),
+    imageUrl: z.string().trim().nullable().optional(),
   })
   .partial();

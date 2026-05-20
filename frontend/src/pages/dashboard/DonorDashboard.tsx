@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { getDonorDashboard } from "../../services/donor.api";
 
 import { getAuthToken } from "../../services/auth.api";
+import { resolveAssetUrl } from "../../utils/media";
 
 type DonorDashboardProps = {
   user: User;
@@ -232,7 +233,7 @@ export default function DonorDashboard({ user }: DonorDashboardProps) {
                     >
                       <img
                         src={
-                          camp.imageUrl ||
+                          resolveAssetUrl(camp.imageUrl) ||
                           "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400&q=80"
                         }
                         alt=""

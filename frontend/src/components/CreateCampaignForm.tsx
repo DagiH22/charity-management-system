@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -7,8 +7,10 @@ import {
   type CampaignFormErrors,
   type CampaignFormValues,
 } from "../utils/validation";
-import { createCampaign } from "../services/campaign.api";
+import { createCampaign, uploadCampaignImage } from "../services/campaign.api";
 import { getAuthToken } from "../services/auth.api";
+import ImageUploadField from "./ImageUploadField";
+import { validateImageFile } from "../utils/fileValidation";
 
 export default function CreateCampaignForm() {
   const navigate = useNavigate();
@@ -17,6 +19,25 @@ export default function CreateCampaignForm() {
   );
   const [errors, setErrors] = useState<CampaignFormErrors>({});
   const [submitMessage, setSubmitMessage] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreview(null);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(imageFile);
+    setImagePreview(previewUrl);
+
+    return () => {
+      URL.revokeObjectURL(previewUrl);
+    };
+  }, [imageFile]);
 
   const updateField = (field: keyof CampaignFormValues, value: string) => {
     setFormValues((prev) => ({ ...prev, [field]: value }));
@@ -49,15 +70,36 @@ export default function CreateCampaignForm() {
       return;
     }
 
+    if (imageError) {
+      setSubmitMessage("Please fix the campaign image before submitting.");
+      return;
+    }
+
     try {
       setErrors({});
       setSubmitMessage("Creating campaign...");
 
-      await createCampaign(token, result.data);
+      let imageUrl: string | null | undefined;
+      if (imageFile) {
+        setIsUploadingImage(true);
+        const uploadResponse = await uploadCampaignImage(
+          token,
+          imageFile,
+          (progress) => setUploadProgress(progress),
+        );
+        imageUrl = uploadResponse.imageUrl;
+      }
+
+      await createCampaign(token, {
+        ...result.data,
+        imageUrl,
+      });
 
       setSubmitMessage("Campaign created successfully");
 
       setFormValues(initialCampaignFormValues);
+      setImageFile(null);
+      setUploadProgress(0);
     } catch (error: any) {
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
@@ -68,6 +110,8 @@ export default function CreateCampaignForm() {
       } else {
         setSubmitMessage("Something went wrong. Please try again.");
       }
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -80,6 +124,38 @@ export default function CreateCampaignForm() {
       </div>
 
       <form className="mt-6 space-y-8" onSubmit={handleSubmit} noValidate>
+        <ImageUploadField
+          label="Campaign Banner"
+          description="Upload a banner image to represent your campaign."
+          previewUrl={imagePreview}
+          onFileSelect={(file) => {
+            if (!file) {
+              setImageFile(null);
+              setImageError(null);
+              return;
+            }
+
+            const validationError = validateImageFile(file);
+            if (validationError) {
+              setImageError(validationError);
+              setImageFile(null);
+              return;
+            }
+
+            setImageError(null);
+            setImageFile(file);
+          }}
+          onRemove={() => {
+            setImageFile(null);
+            setImageError(null);
+          }}
+          error={imageError}
+          isUploading={isUploadingImage}
+          uploadProgress={uploadProgress}
+          helperText="JPG, PNG, or WEBP up to 5MB"
+          variant="banner"
+        />
+
         <fieldset className="space-y-5">
           <legend className="text-base font-bold text-[#0b2b53]">
             Basic Information

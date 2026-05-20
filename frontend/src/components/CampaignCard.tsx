@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { closeCampaign } from "../services/campaign.api";
 import { getAuthToken } from "../services/auth.api";
+import { resolveAssetUrl } from "../utils/media";
 
 interface CampaignCardProps {
   campaign: Campaign;
@@ -53,6 +54,17 @@ const CampaignCard = ({
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-lg">
+      <div className="mb-4 overflow-hidden rounded-xl">
+        <img
+          src={
+            resolveAssetUrl(campaign.imageUrl) ||
+            "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1200&q=80"
+          }
+          alt={campaign.title}
+          className="h-40 w-full object-cover"
+          loading="lazy"
+        />
+      </div>
       {/* Header */}
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>

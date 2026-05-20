@@ -1,16 +1,26 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
-
-const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "Campaigns", href: "/campaigns" },
-  { label: "About", href: "/about" },
-];
+import { UserCircleIcon } from "@heroicons/react/24/outline";
 
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
+
+  const isCharity = user?.role === "CHARITY";
+
+  const publicNavLinks = [
+    { label: "Home", href: "/" },
+    { label: "Campaigns", href: "/campaigns" },
+    { label: "About", href: "/about" },
+  ];
+
+  const charityNavLinks = [
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Campaigns", href: "/charity/campaigns" },
+  ];
+
+  const navLinks = isCharity ? charityNavLinks : publicNavLinks;
 
   return (
     <header className="sticky top-0 z-20 border-b border-[#e5ecf4] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,255,255,0.88))] backdrop-blur">
@@ -54,22 +64,7 @@ export default function NavBar() {
             </Link>
           ) : (
             <>
-              <Link
-                className="hidden rounded-full border border-[#dce8f4] bg-white px-5 py-2 text-sm font-semibold text-[#0b2b53] lg:inline-flex"
-                to="/dashboard"
-              >
-                Dashboard
-              </Link>
-              <button
-                className="hidden rounded-full bg-[#0b2b53] px-5 py-2 text-sm font-semibold text-white lg:inline-flex"
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  logout();
-                }}
-              >
-                Logout
-              </button>
+              <UserCircleIcon className="h-9 w-9 text-[#0b2b53] cursor-pointer hover:opacity-80 transition hidden lg:block" />
             </>
           )}
 
@@ -130,23 +125,7 @@ export default function NavBar() {
               </Link>
             ) : (
               <div className="mt-2 flex items-center gap-3">
-                <Link
-                  className="inline-flex w-fit rounded-full bg-[#0b2b53] px-6 py-2.5 text-sm font-bold text-white"
-                  to="/dashboard"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
-                <button
-                  className="inline-flex w-fit rounded-full border border-[#dce8f4] bg-white px-6 py-2.5 text-sm font-bold text-[#0b2b53]"
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    logout();
-                  }}
-                >
-                  Logout
-                </button>
+                <UserCircleIcon className="h-9 w-9 text-[#0b2b53]" />
               </div>
             )}
           </div>
