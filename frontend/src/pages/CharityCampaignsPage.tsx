@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import CharitySidebar from "../components/CharitySidebar";
-import { getAuthToken } from "../services/auth.api";
 import { getCharityCampaigns } from "../services/charityDashboard.api";
 import { getApiErrorMessage } from "../services/apiErrors";
 import { useAuthStore } from "../store/authStore";
@@ -77,12 +76,7 @@ export default function CharityCampaignsPage() {
       try {
         setIsLoading(true);
         setError(null);
-        const token = getAuthToken();
-        if (!token) {
-          setError("Session expired. Please login again.");
-          return;
-        }
-        const response = await getCharityCampaigns(token, {
+        const response = await getCharityCampaigns({
           page,
           limit: 9,
           search: search || undefined,

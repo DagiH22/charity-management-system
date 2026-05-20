@@ -6,21 +6,15 @@ import type {
 } from "../types/auth";
 import { apiBaseUrl, http } from "./httpClient";
 
-export const getMyCharityProfileRequest = async (token: string) => {
+export const getMyCharityProfileRequest = async () => {
   const { data } = await http.get<CharityProfileResponse>(
     "/charity-profile/me",
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
   );
 
   return data;
 };
 
 export const updateMyCharityProfileRequest = async (
-  token: string,
   payload: {
     organizationName?: string;
     description?: string;
@@ -67,7 +61,6 @@ export const updateMyCharityProfileRequest = async (
     formData,
     {
       headers: {
-        Authorization: `Bearer ${token}`,
         "Content-Type": "multipart/form-data",
       },
       onUploadProgress: (event) => {
@@ -84,7 +77,6 @@ export const updateMyCharityProfileRequest = async (
 };
 
 export const createMyCharityProfileRequest = async (
-  token: string,
   payload: {
     organizationName: string;
     description: string;
@@ -122,7 +114,6 @@ export const createMyCharityProfileRequest = async (
     formData,
     {
       headers: {
-        Authorization: `Bearer ${token}`,
         "Content-Type": "multipart/form-data",
       },
       onUploadProgress: (event) => {
@@ -138,31 +129,18 @@ export const createMyCharityProfileRequest = async (
   return data;
 };
 
-export const getPendingCharityProfilesRequest = async (token: string) => {
+export const getPendingCharityProfilesRequest = async () => {
   const { data } = await http.get<PendingCharityProfilesResponse>(
     "/charity-profile/pending",
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
   );
 
   return data;
 };
 
-export const approveCharityProfileRequest = async (
-  token: string,
-  profileId: number,
-) => {
+export const approveCharityProfileRequest = async (profileId: number) => {
   const { data } = await http.put<ApproveCharityProfileResponse>(
     `/charity-profile/${profileId}/approve`,
     undefined,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
   );
 
   return data;

@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getDonorDashboard } from "../../services/donor.api";
 
-import { getAuthToken } from "../../services/auth.api";
 import { resolveAssetUrl } from "../../utils/media";
 
 type DonorDashboardProps = {
@@ -18,12 +17,7 @@ export default function DonorDashboard({ user }: DonorDashboardProps) {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const token = getAuthToken();
-        if (!token) {
-          setLoading(false);
-          return;
-        }
-        const result = await getDonorDashboard(token);
+        const result = await getDonorDashboard();
         setData(result.data);
       } catch {
         // Swallow fetch errors; empty states handle display.

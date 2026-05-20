@@ -1,14 +1,11 @@
 import { http } from "./httpClient";
 
-export const getCharityDashboard = async (token: string) => {
-  const { data } = await http.get("/charity-dashboard/overview", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export const getCharityDashboard = async () => {
+  const { data } = await http.get("/charity-dashboard/overview");
   return data;
 };
 
 export const getCharityCampaigns = async (
-  token: string,
   params?: {
     page?: number;
     limit?: number;
@@ -24,15 +21,11 @@ export const getCharityCampaigns = async (
     sortOrder?: "asc" | "desc";
   },
 ) => {
-  const { data } = await http.get("/charity-dashboard/campaigns", {
-    headers: { Authorization: `Bearer ${token}` },
-    params,
-  });
+  const { data } = await http.get("/charity-dashboard/campaigns", { params });
   return data;
 };
 
 export const getCharityContributions = async (
-  token: string,
   params?: {
     page?: number;
     limit?: number;
@@ -45,15 +38,11 @@ export const getCharityContributions = async (
     sortOrder?: "asc" | "desc";
   },
 ) => {
-  const { data } = await http.get("/charity-dashboard/contributions", {
-    headers: { Authorization: `Bearer ${token}` },
-    params,
-  });
+  const { data } = await http.get("/charity-dashboard/contributions", { params });
   return data;
 };
 
 export const getCharityCampaignContributions = async (
-  token: string,
   campaignId: number,
   params?: {
     page?: number;
@@ -67,10 +56,7 @@ export const getCharityCampaignContributions = async (
 ) => {
   const { data } = await http.get(
     `/charity-dashboard/contributions/${campaignId}`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-      params,
-    },
+    { params },
   );
   return data;
 };

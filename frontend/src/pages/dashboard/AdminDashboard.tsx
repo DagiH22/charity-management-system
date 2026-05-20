@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { getAuthToken } from "../../services/auth.api";
 import {
   approveCharityProfileRequest,
   getPendingCharityProfilesRequest,
@@ -16,18 +15,11 @@ export default function AdminDashboard() {
   const [approvalMessage, setApprovalMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = getAuthToken();
-
-    if (!token) {
-      setPendingError("Session expired. Please login again.");
-      return;
-    }
-
     const loadPendingProfiles = async () => {
       try {
         setIsLoadingPending(true);
         setPendingError(null);
-        const response = await getPendingCharityProfilesRequest(token);
+        const response = await getPendingCharityProfilesRequest();
         setPendingProfiles(response.profiles);
       } catch (error) {
         setPendingError(getApiErrorMessage(error));
@@ -40,19 +32,12 @@ export default function AdminDashboard() {
   }, []);
 
   const handleApprove = async (profileId: number) => {
-    const token = getAuthToken();
-
-    if (!token) {
-      setPendingError("Session expired. Please login again.");
-      return;
-    }
-
     try {
       setApprovingProfileId(profileId);
       setApprovalMessage(null);
       setPendingError(null);
 
-      await approveCharityProfileRequest(token, profileId);
+      await approveCharityProfileRequest(profileId);
 
       setPendingProfiles((prev) => prev.filter((profile) => profile.id !== profileId));
       setApprovalMessage("Charity profile approved successfully.");

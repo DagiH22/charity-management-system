@@ -31,7 +31,7 @@ export default function LoginPage() {
     try {
       setIsSubmitting(true);
       const response = await loginRequest({ email, password });
-      setAuthSession(response.token, response.user);
+      setAuthSession(response.user);
       navigate(getPostAuthRedirectPath(response.user));
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));

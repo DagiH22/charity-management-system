@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAuthToken } from "../services/auth.api";
 import {
   createMyCharityProfileRequest,
   getMyCharityProfileRequest,
@@ -35,13 +34,8 @@ export default function CharityProfileSetupPage() {
 
   useEffect(() => {
     const loadProfile = async () => {
-      const token = getAuthToken();
-      if (!token) {
-        return;
-      }
-
       try {
-        const response = await getMyCharityProfileRequest(token);
+        const response = await getMyCharityProfileRequest();
         if (response.profile) {
           setOrganizationName(response.profile.organizationName);
           setDescription(response.profile.description);
@@ -119,21 +113,12 @@ export default function CharityProfileSetupPage() {
       }
     }
 
-    const token = getAuthToken();
-
-    if (!token) {
-      setSubmitError("Session expired. Please login again.");
-      navigate("/login", { replace: true });
-      return;
-    }
-
     try {
       setIsSubmitting(true);
       setUploadProgress(0);
 
       if (isEditingProfile) {
         await updateMyCharityProfileRequest(
-          token,
           {
             organizationName,
             description,
@@ -147,7 +132,6 @@ export default function CharityProfileSetupPage() {
         );
       } else {
         await createMyCharityProfileRequest(
-          token,
           {
             organizationName,
             description,

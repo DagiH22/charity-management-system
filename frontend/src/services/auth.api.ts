@@ -1,21 +1,5 @@
-import type {
-  AuthSuccessResponse,
-  AuthRole,
-  MeResponse,
-} from "../types/auth";
+import type { AuthSuccessResponse, AuthRole, MeResponse } from "../types/auth";
 import { http } from "./httpClient";
-
-const TOKEN_KEY = "cms_auth_token";
-
-export const getAuthToken = () => localStorage.getItem(TOKEN_KEY);
-
-export const setAuthToken = (token: string) => {
-  localStorage.setItem(TOKEN_KEY, token);
-};
-
-export const clearAuthToken = () => {
-  localStorage.removeItem(TOKEN_KEY);
-};
 
 export const registerRequest = async (payload: {
   name: string;
@@ -32,12 +16,12 @@ export const loginRequest = async (payload: { email: string; password: string })
   return data;
 };
 
-export const meRequest = async (token: string) => {
-  const { data } = await http.get<MeResponse>("/auth/me", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export const meRequest = async () => {
+  const { data } = await http.get<MeResponse>("/auth/me");
+  return data;
+};
 
+export const logoutRequest = async () => {
+  const { data } = await http.post("/auth/logout");
   return data;
 };

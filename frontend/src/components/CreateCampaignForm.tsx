@@ -8,7 +8,6 @@ import {
   type CampaignFormValues,
 } from "../utils/validation";
 import { createCampaign, uploadCampaignImage } from "../services/campaign.api";
-import { getAuthToken } from "../services/auth.api";
 import ImageUploadField from "./ImageUploadField";
 import { validateImageFile } from "../utils/fileValidation";
 
@@ -47,11 +46,6 @@ export default function CreateCampaignForm() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const token = getAuthToken();
-
-    if (!token) {
-      return;
-    }
     const result = campaignSchema.safeParse(formValues);
 
     if (!result.success) {
@@ -82,15 +76,13 @@ export default function CreateCampaignForm() {
       let imageUrl: string | null | undefined;
       if (imageFile) {
         setIsUploadingImage(true);
-        const uploadResponse = await uploadCampaignImage(
-          token,
-          imageFile,
-          (progress) => setUploadProgress(progress),
+        const uploadResponse = await uploadCampaignImage(imageFile, (progress) =>
+          setUploadProgress(progress),
         );
         imageUrl = uploadResponse.imageUrl;
       }
 
-      await createCampaign(token, {
+      await createCampaign({
         ...result.data,
         imageUrl,
       });

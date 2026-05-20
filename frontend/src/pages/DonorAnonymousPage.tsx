@@ -1,5 +1,4 @@
 ﻿import { useEffect, useState } from "react";
-import { getAuthToken } from "../services/auth.api";
 import { getDonorAnonymousDonations } from "../services/donor.api";
 import { DonationTable } from "../components/DonationTable";
 import type { DonationItem } from "../components/DonationTable";
@@ -27,13 +26,7 @@ export default function DonorAnonymousPage() {
     const fetchDonations = async () => {
       try {
         setLoading(true);
-        const token = getAuthToken();
-        if (!token) {
-          setError("Authentication required to view anonymous donations.");
-          setLoading(false);
-          return;
-        }
-        const result = await getDonorAnonymousDonations(token, {
+        const result = await getDonorAnonymousDonations({
           page,
           limit: 8,
           search: search || undefined,

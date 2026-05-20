@@ -5,7 +5,6 @@ import {
   donateToCampaignRequest,
 } from "../services/campaign.api";
 import { useAuthStore } from "../store/authStore";
-import { getAuthToken } from "../services/auth.api";
 import FullScreenLoader from "../components/FullScreenLoader";
 import {
   getDonorFollowingCampaigns,
@@ -116,9 +115,7 @@ export default function CampaignDetailsPage() {
     if (!isLoggedIn || !campaign) return;
     const fetchFollowStatus = async () => {
       try {
-        const token = getAuthToken();
-        if (!token) return;
-        const result = await getDonorFollowingCampaigns(token, {
+        const result = await getDonorFollowingCampaigns({
           page: 1,
           limit: 100,
         });
@@ -203,9 +200,7 @@ export default function CampaignDetailsPage() {
       return;
     }
     try {
-      const token = getAuthToken();
-      if (!token) return;
-      const result = await toggleFollowCampaign(token, campaign.id);
+      const result = await toggleFollowCampaign(campaign.id);
       setIsFollowing(Boolean(result.followed));
       setToastMessage(
         result.followed
@@ -239,16 +234,13 @@ export default function CampaignDetailsPage() {
     setIsSubmitting(true);
 
     try {
-      const token = getAuthToken();
-      if (!token) throw new Error("Missing auth token");
-
       const payload = {
         amount: currentDonationValue,
         isAnonymous,
         message: undefined,
       };
 
-      const res = await donateToCampaignRequest(token, id, payload);
+      const res = await donateToCampaignRequest(id, payload);
 
       const donation = res.data.donation;
 

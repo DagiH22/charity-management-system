@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
 
   const isCharity = user?.role === "CHARITY";
 
@@ -21,6 +22,12 @@ export default function NavBar() {
   ];
 
   const navLinks = isCharity ? charityNavLinks : publicNavLinks;
+
+  const handleLogout = async () => {
+    await logout();
+    setMenuOpen(false);
+    navigate("/login");
+  };
 
   return (
     <header className="sticky top-0 z-20 border-b border-[#e5ecf4] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,255,255,0.88))] backdrop-blur">
@@ -65,6 +72,13 @@ export default function NavBar() {
           ) : (
             <>
               <UserCircleIcon className="h-9 w-9 text-[#0b2b53] cursor-pointer hover:opacity-80 transition hidden lg:block" />
+              <button
+                type="button"
+                onClick={() => void handleLogout()}
+                className="hidden rounded-full border border-[#dce8f4] bg-white px-5 py-2.5 text-sm font-semibold text-[#0b2b53] shadow-[0_10px_20px_rgba(11,43,83,0.08)] transition hover:-translate-y-[1px] hover:bg-[#f2f8ff] lg:inline-flex"
+              >
+                Logout
+              </button>
             </>
           )}
 
@@ -126,6 +140,13 @@ export default function NavBar() {
             ) : (
               <div className="mt-2 flex items-center gap-3">
                 <UserCircleIcon className="h-9 w-9 text-[#0b2b53]" />
+                <button
+                  type="button"
+                  onClick={() => void handleLogout()}
+                  className="rounded-full border border-[#dce8f4] bg-white px-4 py-2 text-sm font-semibold text-[#0b2b53] shadow-sm transition hover:bg-[#f2f8ff]"
+                >
+                  Logout
+                </button>
               </div>
             )}
           </div>

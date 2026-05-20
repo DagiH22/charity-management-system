@@ -11,6 +11,8 @@ type AuthJwtPayload = JwtPayload & {
   role: AppRole;
 };
 
+const AUTH_COOKIE_NAME = "cms_auth";
+
 const safeUserSelect = {
   id: true,
   name: true,
@@ -26,13 +28,11 @@ export const protect = async (req: Request, _res: Response, next: NextFunction) 
   if (req.method === 'OPTIONS') {
     return next();
   }
-  const authHeader = req.headers.authorization;
+  const token = req.cookies?.[AUTH_COOKIE_NAME];
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (!token) {
     return next(new ApiError(401, "Unauthorized: token is missing"));
   }
-
-  const token = authHeader.split(" ")[1];
 
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET) as AuthJwtPayload;

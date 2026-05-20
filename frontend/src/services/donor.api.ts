@@ -1,14 +1,11 @@
 import { http } from "./httpClient";
 
-export const getDonorDashboard = async (token: string) => {
-  const { data } = await http.get("/donor/dashboard", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export const getDonorDashboard = async () => {
+  const { data } = await http.get("/donor/dashboard");
   return data;
 };
 
 export const getDonorDonations = async (
-  token: string,
   params?: {
     page?: number;
     limit?: number;
@@ -17,15 +14,11 @@ export const getDonorDonations = async (
     sortOrder?: "asc" | "desc";
   },
 ) => {
-  const { data } = await http.get("/donor/donations", {
-    headers: { Authorization: `Bearer ${token}` },
-    params,
-  });
+  const { data } = await http.get("/donor/donations", { params });
   return data;
 };
 
 export const getDonorAnonymousDonations = async (
-  token: string,
   params?: {
     page?: number;
     limit?: number;
@@ -34,15 +27,11 @@ export const getDonorAnonymousDonations = async (
     sortOrder?: "asc" | "desc";
   },
 ) => {
-  const { data } = await http.get("/donor/anonymous-donations", {
-    headers: { Authorization: `Bearer ${token}` },
-    params,
-  });
+  const { data } = await http.get("/donor/anonymous-donations", { params });
   return data;
 };
 
 export const getDonorFollowingCampaigns = async (
-  token: string,
   params?: {
     page?: number;
     limit?: number;
@@ -51,18 +40,11 @@ export const getDonorFollowingCampaigns = async (
     sortOrder?: "asc" | "desc";
   },
 ) => {
-  const { data } = await http.get("/donor/following", {
-    headers: { Authorization: `Bearer ${token}` },
-    params,
-  });
+  const { data } = await http.get("/donor/following", { params });
   return data;
 };
 
-export const toggleFollowCampaign = async (token: string, id: number) => {
-  const { data } = await http.post(
-    `/donor/campaign/${id}/follow`,
-    {},
-    { headers: { Authorization: `Bearer ${token}` } },
-  );
+export const toggleFollowCampaign = async (id: number) => {
+  const { data } = await http.post(`/donor/campaign/${id}/follow`, {});
   return data;
 };

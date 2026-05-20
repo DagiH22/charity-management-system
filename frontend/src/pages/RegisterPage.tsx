@@ -46,7 +46,7 @@ export default function RegisterPage() {
         password,
         role,
       });
-      setAuthSession(response.token, response.user);
+      setAuthSession(response.user);
       navigate(getPostAuthRedirectPath(response.user));
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));

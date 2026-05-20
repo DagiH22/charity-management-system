@@ -1,7 +1,6 @@
 ﻿import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDonorFollowingCampaigns } from "../services/donor.api";
-import { getAuthToken } from "../services/auth.api";
 import { resolveAssetUrl } from "../utils/media";
 
 type FollowedCampaign = {
@@ -42,13 +41,7 @@ export default function DonorFollowingPage() {
     const fetchFollowing = async () => {
       try {
         setLoading(true);
-        const token = getAuthToken();
-        if (!token) {
-          setError("Authentication required to view followed campaigns.");
-          setLoading(false);
-          return;
-        }
-        const result = await getDonorFollowingCampaigns(token, {
+        const result = await getDonorFollowingCampaigns({
           page,
           limit: 6,
           search: search || undefined,
