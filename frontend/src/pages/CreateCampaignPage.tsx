@@ -54,37 +54,26 @@ export default function CreateCampaignPage() {
       />
 
       <div className="min-w-0 flex-1 px-[6vw] py-12 lg:px-8">
-        <header className="mx-auto mb-8 max-w-3xl">
-          <div className="mb-5 flex items-start gap-4">
+        <header className="mb-10">
+          <div className="flex items-start gap-4">
             <button
-              className="inline-flex h-10 w-10 shrink-0 flex-col items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white shadow-sm transition hover:bg-slate-100"
+              className="inline-flex h-10 w-10 shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 lg:hidden"
               type="button"
               aria-label={sidebarOpen ? "Close charity sidebar" : "Open charity sidebar"}
               aria-expanded={sidebarOpen}
               onClick={() => setSidebarOpen((prev) => !prev)}
             >
-              <span className="h-0.5 w-4 rounded-full bg-slate-700" />
-              <span className="h-0.5 w-4 rounded-full bg-slate-700" />
-              <span className="h-0.5 w-4 rounded-full bg-slate-700" />
+              <span className="h-0.5 w-5 rounded-full bg-slate-600 transition-all" />
+              <span className="h-0.5 w-5 rounded-full bg-slate-600 transition-all" />
+              <span className="h-0.5 w-5 rounded-full bg-slate-600 transition-all" />
             </button>
 
             <div className="min-w-0">
-              <nav className="mb-2 text-sm font-medium text-slate-500" aria-label="Breadcrumb">
-                <Link className="hover:text-[#0b2b53]" to="/">
-                  Home
-                </Link>
-                <span className="px-2">/</span>
-                <Link className="hover:text-[#0b2b53]" to="/dashboard">
-                  Dashboard
-                </Link>
-                <span className="px-2">/</span>
-                <span className="text-slate-700">Create Campaign</span>
-              </nav>
-              <h1 className="text-3xl font-extrabold tracking-tight text-[#0b2b53]">
+              <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
                 Create Campaign
               </h1>
-              <p className="mt-2 text-lg text-slate-500">
-                Start a new fundraising campaign
+              <p className="mt-1.5 text-base text-slate-500">
+                Start a new fundraising campaign to support your cause.
               </p>
             </div>
           </div>

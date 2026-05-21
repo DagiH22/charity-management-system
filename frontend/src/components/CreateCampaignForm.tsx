@@ -116,11 +116,14 @@ export default function CreateCampaignForm() {
   };
 
   return (
-    <section className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_40px_rgba(10,40,80,0.05)] sm:p-8">
+    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_40px_rgba(10,40,80,0.04)] sm:p-8">
       <div className="border-b border-slate-100 pb-5">
-        <h2 className="text-xl font-bold text-[#0b2b53]">
-          Create Campaign Form
+        <h2 className="text-xl font-bold text-slate-900">
+          Campaign Details
         </h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Fill in the information below to start your new fundraising campaign.
+        </p>
       </div>
 
       <form className="mt-6 space-y-8" onSubmit={handleSubmit} noValidate>
@@ -157,7 +160,7 @@ export default function CreateCampaignForm() {
         />
 
         <fieldset className="space-y-5">
-          <legend className="text-base font-bold text-[#0b2b53]">
+          <legend className="text-base font-bold text-slate-900 mb-2">
             Basic Information
           </legend>
 
@@ -169,8 +172,8 @@ export default function CreateCampaignForm() {
               Campaign Title
             </label>
             <input
-              className={`w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition focus:border-[#0b2b53] focus:ring-4 focus:ring-[#0b2b53]/10 ${
-                errors.title ? "border-rose-300" : "border-slate-200"
+              className={`w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-all hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
+                errors.title ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200"
               }`}
               id="title"
               name="title"
@@ -180,7 +183,7 @@ export default function CreateCampaignForm() {
               onChange={(event) => updateField("title", event.target.value)}
             />
             {errors.title && (
-              <p className="mt-1.5 text-sm font-medium text-rose-600">
+              <p className="mt-1.5 text-sm font-medium text-red-600">
                 {errors.title}
               </p>
             )}
@@ -194,8 +197,8 @@ export default function CreateCampaignForm() {
               Description
             </label>
             <textarea
-              className={`min-h-36 w-full resize-y rounded-xl border bg-white px-4 py-3 text-sm outline-none transition focus:border-[#0b2b53] focus:ring-4 focus:ring-[#0b2b53]/10 ${
-                errors.description ? "border-rose-300" : "border-slate-200"
+              className={`min-h-36 w-full resize-y rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-all hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
+                errors.description ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200"
               }`}
               id="description"
               name="description"
@@ -206,15 +209,15 @@ export default function CreateCampaignForm() {
               }
             />
             {errors.description && (
-              <p className="mt-1.5 text-sm font-medium text-rose-600">
+              <p className="mt-1.5 text-sm font-medium text-red-600">
                 {errors.description}
               </p>
             )}
           </div>
         </fieldset>
 
-        <fieldset>
-          <legend className="mb-5 text-base font-bold text-[#0b2b53]">
+        <fieldset className="pt-6 border-t border-slate-100">
+          <legend className="mb-5 text-base font-bold text-slate-900">
             Financial Info
           </legend>
 
@@ -226,8 +229,8 @@ export default function CreateCampaignForm() {
               Fundraising Goal
             </label>
             <input
-              className={`w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition focus:border-[#0b2b53] focus:ring-4 focus:ring-[#0b2b53]/10 ${
-                errors.targetAmount ? "border-rose-300" : "border-slate-200"
+              className={`w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-all hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
+                errors.targetAmount ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200"
               }`}
               id="targetAmount"
               min="1"
@@ -241,15 +244,15 @@ export default function CreateCampaignForm() {
               }
             />
             {errors.targetAmount && (
-              <p className="mt-1.5 text-sm font-medium text-rose-600">
+              <p className="mt-1.5 text-sm font-medium text-red-600">
                 {errors.targetAmount}
               </p>
             )}
           </div>
         </fieldset>
 
-        <fieldset>
-          <legend className="mb-5 text-base font-bold text-[#0b2b53]">
+        <fieldset className="pt-6 border-t border-slate-100">
+          <legend className="mb-5 text-base font-bold text-slate-900">
             Dates
           </legend>
 
@@ -262,8 +265,8 @@ export default function CreateCampaignForm() {
                 Start Date
               </label>
               <input
-                className={`w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition focus:border-[#0b2b53] focus:ring-4 focus:ring-[#0b2b53]/10 ${
-                  errors.startDate ? "border-rose-300" : "border-slate-200"
+                className={`w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-all hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
+                  errors.startDate ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200"
                 }`}
                 id="startDate"
                 name="startDate"
@@ -274,7 +277,7 @@ export default function CreateCampaignForm() {
                 }
               />
               {errors.startDate && (
-                <p className="mt-1.5 text-sm font-medium text-rose-600">
+                <p className="mt-1.5 text-sm font-medium text-red-600">
                   {errors.startDate}
                 </p>
               )}
@@ -288,8 +291,8 @@ export default function CreateCampaignForm() {
                 End Date
               </label>
               <input
-                className={`w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition focus:border-[#0b2b53] focus:ring-4 focus:ring-[#0b2b53]/10 ${
-                  errors.endDate ? "border-rose-300" : "border-slate-200"
+                className={`w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-all hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
+                  errors.endDate ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200"
                 }`}
                 id="endDate"
                 name="endDate"
@@ -298,7 +301,7 @@ export default function CreateCampaignForm() {
                 onChange={(event) => updateField("endDate", event.target.value)}
               />
               {errors.endDate && (
-                <p className="mt-1.5 text-sm font-medium text-rose-600">
+                <p className="mt-1.5 text-sm font-medium text-red-600">
                   {errors.endDate}
                 </p>
               )}
@@ -312,16 +315,16 @@ export default function CreateCampaignForm() {
           </div>
         )}
 
-        <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:justify-end">
+        <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-8 sm:flex-row sm:justify-end">
           <button
-            className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-100"
+            className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200 focus:ring-offset-2"
             type="button"
             onClick={() => navigate(-1)}
           >
             Cancel
           </button>
           <button
-            className="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white shadow-[0_12px_22px_rgba(14,204,110,0.22)] transition hover:-translate-y-[1px] hover:bg-emerald-600"
+            className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-emerald-500 hover:shadow-emerald-200/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-70 disabled:pointer-events-none"
             type="submit"
           >
             Create Campaign

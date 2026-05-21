@@ -5,7 +5,7 @@ import { UserCircleIcon } from "@heroicons/react/24/outline";
 
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
 
   const isCharity = user?.role === "CHARITY";
 
@@ -63,9 +63,33 @@ export default function NavBar() {
               Login
             </Link>
           ) : (
-            <>
-              <UserCircleIcon className="h-9 w-9 text-[#0b2b53] cursor-pointer hover:opacity-80 transition hidden lg:block" />
-            </>
+            <div className="relative hidden lg:block group">
+              <button type="button" className="flex items-center focus:outline-none">
+                <UserCircleIcon className="h-9 w-9 text-[#0b2b53] cursor-pointer hover:opacity-80 transition" />
+              </button>
+              <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-2xl bg-white py-2 shadow-lg ring-1 ring-black/5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="px-4 py-3 border-b border-slate-100 mb-1">
+                  <p className="text-sm font-bold text-slate-900 truncate">{user.name}</p>
+                  <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                </div>
+                <Link to="/settings" className="block px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors">
+                  Settings
+                </Link>
+                <Link to="/profile" className="block px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors">
+                  Edit Profile
+                </Link>
+                <div className="h-px bg-slate-100 my-1"></div>
+                <button
+                  onClick={() => {
+                    logout();
+                    window.location.href = '/';
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
           )}
 
           <button
@@ -124,8 +148,38 @@ export default function NavBar() {
                 Login
               </Link>
             ) : (
-              <div className="mt-2 flex items-center gap-3">
-                <UserCircleIcon className="h-9 w-9 text-[#0b2b53]" />
+              <div className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-5">
+                <div className="flex items-center gap-3 px-2 mb-3">
+                  <UserCircleIcon className="h-10 w-10 text-[#0b2b53]" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-slate-900 truncate">{user.name}</p>
+                    <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                  </div>
+                </div>
+                <Link
+                  to="/settings"
+                  className="rounded-xl px-4 py-2.5 text-[0.98rem] font-semibold text-[#48617f] hover:bg-[#f2f8ff] hover:text-[#0b2b53] transition"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Settings
+                </Link>
+                <Link
+                  to="/profile"
+                  className="rounded-xl px-4 py-2.5 text-[0.98rem] font-semibold text-[#48617f] hover:bg-[#f2f8ff] hover:text-[#0b2b53] transition"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Edit Profile
+                </Link>
+                <button
+                  onClick={() => {
+                    logout();
+                    setMenuOpen(false);
+                    window.location.href = '/';
+                  }}
+                  className="w-full text-left rounded-xl px-4 py-2.5 text-[0.98rem] font-bold text-red-600 hover:bg-red-50 transition"
+                >
+                  Logout
+                </button>
               </div>
             )}
           </div>
