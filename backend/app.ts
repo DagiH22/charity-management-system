@@ -7,6 +7,7 @@ import charityProfileRouter from "./routes/charityProfile.routes";
 import campaignRouter from "./routes/campaign.routes";
 import donorRouter from "./routes/donor.routes";
 import charityDashboardRouter from "./routes/charityDashboard.routes";
+import notificationRouter from "./routes/notification.routes";
 import { errorHandler, notFound } from "./middlewares/error.middleware";
 import { env } from "./utils/env";
 import { prisma } from "./utils/prisma";
@@ -55,6 +56,7 @@ app.use("/api/charity-profile", charityProfileRouter);
 app.use("/api/campaign", campaignRouter);
 app.use("/api/donor", donorRouter);
 app.use("/api/charity-dashboard", charityDashboardRouter);
+app.use("/api/notifications", notificationRouter);
 
 app.use(notFound);
 app.use(errorHandler);

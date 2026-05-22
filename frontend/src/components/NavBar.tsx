@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
+import NotificationBell from "./NotificationBell";
 
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
 
   const isCharity = user?.role === "CHARITY";
 
@@ -61,6 +63,7 @@ export default function NavBar() {
           ))}
         </nav>
         <div className="flex items-center gap-3">
+          {user && <NotificationBell />}
           {!user ? (
             <Link
               className="hidden rounded-full border border-emerald-300 bg-emerald-500 px-6 py-2.5 text-sm font-bold text-white shadow-[0_12px_22px_rgba(14,204,110,0.24)] transition hover:-translate-y-[1px] hover:bg-emerald-600 lg:inline-flex"
@@ -87,8 +90,7 @@ export default function NavBar() {
                 <div className="h-px bg-slate-100 my-1"></div>
                 <button
                   onClick={() => {
-                    logout();
-                    window.location.href = '/';
+                    void handleLogout();
                   }}
                   className="block w-full text-left px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors"
                 >
@@ -178,9 +180,7 @@ export default function NavBar() {
                 </Link>
                 <button
                   onClick={() => {
-                    logout();
-                    setMenuOpen(false);
-                    window.location.href = '/';
+                    void handleLogout();
                   }}
                   className="w-full text-left rounded-xl px-4 py-2.5 text-[0.98rem] font-bold text-red-600 hover:bg-red-50 transition"
                 >

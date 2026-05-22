@@ -3,6 +3,7 @@ import type {
   CharityProfileResponse,
   CreateCharityProfileResponse,
   PendingCharityProfilesResponse,
+  RejectCharityProfileResponse,
 } from "../types/auth";
 import { apiBaseUrl, http } from "./httpClient";
 
@@ -140,6 +141,15 @@ export const getPendingCharityProfilesRequest = async () => {
 export const approveCharityProfileRequest = async (profileId: number) => {
   const { data } = await http.put<ApproveCharityProfileResponse>(
     `/charity-profile/${profileId}/approve`,
+    undefined,
+  );
+
+  return data;
+};
+
+export const rejectCharityProfileRequest = async (profileId: number) => {
+  const { data } = await http.put<RejectCharityProfileResponse>(
+    `/charity-profile/${profileId}/reject`,
     undefined,
   );
 

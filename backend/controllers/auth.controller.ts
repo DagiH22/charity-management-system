@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
-import { getCurrentUser, loginUser, registerUser } from "../services/auth.service";
+import { getCurrentUser, loginUser, registerUser, resetPassword } from "../services/auth.service";
 import { env } from "../utils/env";
 
 type AppRole = "DONOR" | "CHARITY" | "ADMIN";
@@ -117,6 +117,31 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => {
 
   res.status(200).json({
     success: true,
+    user,
+  });
+});
+
+export const resetUserPassword = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw new ApiError(401, "Unauthorized");
+  }
+
+  const body = (req.body ?? {}) as {
+    oldPassword?: string;
+    newPassword?: string;
+  };
+
+  const { oldPassword, newPassword } = body;
+
+  if (!oldPassword || !newPassword) {
+    throw new ApiError(400, "oldPassword and newPassword are required");
+  }
+
+  const user = await resetPassword(req.user.id, oldPassword, newPassword);
+
+  res.status(200).json({
+    success: true,
+    message: "Password reset successful",
     user,
   });
 });

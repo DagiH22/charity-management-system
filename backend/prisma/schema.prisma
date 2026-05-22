@@ -23,6 +23,7 @@ model User {
   charityProfile    CharityProfile?
   donations         Donation[]
   followedCampaigns FollowCampaign[]
+  notifications     Notification[]
 }
 
 model CharityProfile {
@@ -106,6 +107,22 @@ model BankAccount {
   @@index([userId], map: "BankAccount_userId_fkey")
 }
 
+model Notification {
+  id               Int             @id @default(autoincrement())
+  userId           Int
+  title            String          @db.VarChar(150)
+  message          String          @db.Text
+  notificationType NotificationType @map("type")
+  isRead           Boolean         @default(false)
+  metadata         Json?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "Notification_userId_fkey")
+  @@index([userId, isRead, createdAt], map: "Notification_userId_isRead_createdAt_idx")
+}
+
 enum Role {
   DONOR
   CHARITY
@@ -128,4 +145,11 @@ enum DonationStatus {
 enum BankAccountType {
   PERSONAL
   BUSINESS
+}
+
+enum NotificationType {
+  DONATION
+  CAMPAIGN
+  AUTH
+  SYSTEM
 }

@@ -5,4 +5,5 @@
 
 */
 -- AlterTable
-ALTER TABLE `campaign` MODIFY `status` ENUM('Active', 'Closed') NOT NULL DEFAULT 'Active';
+ALTER TABLE `Campaign` MODIFY `status` ENUM('ACTIVE', 'CLOSED', 'DRAFT') NOT NULL DEFAULT 'ACTIVE';
+
