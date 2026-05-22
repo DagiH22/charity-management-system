@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import {
   getPublicCampaignById,
@@ -410,8 +410,17 @@ export default function CampaignDetailsPage() {
               </h2>
 
               {donationError && (
-                <div className="mb-4 text-red-500 bg-red-50 p-3 rounded-lg text-sm">
-                  {donationError}
+                <div className="mb-4 flex items-center justify-between rounded-lg bg-red-50 p-3 text-sm text-red-500">
+                  <span>{donationError}</span>
+                  <button 
+                    onClick={() => setDonationError("")}
+                    className="text-red-400 hover:text-red-600 focus:outline-none"
+                    aria-label="Close error message"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
               )}
 
@@ -603,8 +612,13 @@ export default function CampaignDetailsPage() {
             <div className="bg-emerald-500 p-6 text-center text-white relative">
               <button
                 onClick={() => setShowReceipt(false)}
-                className="absolute top-4 right-4 text-white/80 hover:text-white"
-              ></button>
+                className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors focus:outline-none"
+                aria-label="Close receipt"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
               <h3 className="text-2xl font-extrabold">Donation Successful!</h3>
               <p className="mt-1 opacity-90">Thank you for your generosity.</p>
             </div>
