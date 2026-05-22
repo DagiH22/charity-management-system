@@ -24,6 +24,7 @@ model User {
   donations         Donation[]
   followedCampaigns FollowCampaign[]
   notifications     Notification[]
+  passwordReset     PasswordReset?
 }
 
 model CharityProfile {
@@ -121,6 +122,16 @@ model Notification {
 
   @@index([userId], map: "Notification_userId_fkey")
   @@index([userId, isRead, createdAt], map: "Notification_userId_isRead_createdAt_idx")
+}
+
+model PasswordReset {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique @map("user_id")
+  resetCode      String   @db.VarChar(6) @map("reset_code")
+  expirationDate DateTime @map("expiration_date")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("PasswordReset")
 }
 
 enum Role {

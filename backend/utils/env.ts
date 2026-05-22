@@ -17,4 +17,8 @@ export const env = {
   DATABASE_URL: getEnv("DATABASE_URL"),
   JWT_SECRET: getEnv("JWT_SECRET"),
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN ?? "7d",
+  MAILTRAP_HOST: getEnv("MAILTRAP_HOST"),
+  MAILTRAP_PORT: Number(process.env.MAILTRAP_PORT ?? 2525),
+  MAILTRAP_USER: getEnv("MAILTRAP_USER"),
+  MAILTRAP_PASS: getEnv("MAILTRAP_PASS"),
 };

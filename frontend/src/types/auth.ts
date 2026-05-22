@@ -80,3 +80,17 @@ export type RejectCharityProfileResponse = {
     rejected: true;
   };
 };
+
+export type GenericSuccessResponse = {
+  success: true;
+  message: string;
+};
+
+export type VerifyResetOtpResponse = {
+  success: true;
+  message: string;
+  data: {
+    resetToken: string;
+    expiresIn: string;
+  };
+};
