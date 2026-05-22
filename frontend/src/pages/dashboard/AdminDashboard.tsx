@@ -3,6 +3,7 @@ import {
   approveCharityProfileRequest,
   getPendingCharityProfilesRequest,
   getPublicFileUrl,
+  rejectCharityProfileRequest,
 } from "../../services/charityProfile.api";
 import { getApiErrorMessage } from "../../services/apiErrors";
 import type { PendingCharityRegistration } from "../../types/auth";
@@ -12,6 +13,7 @@ export default function AdminDashboard() {
   const [isLoadingPending, setIsLoadingPending] = useState(false);
   const [pendingError, setPendingError] = useState<string | null>(null);
   const [approvingProfileId, setApprovingProfileId] = useState<number | null>(null);
+  const [rejectingProfileId, setRejectingProfileId] = useState<number | null>(null);
   const [approvalMessage, setApprovalMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,6 +47,23 @@ export default function AdminDashboard() {
       setPendingError(getApiErrorMessage(error));
     } finally {
       setApprovingProfileId(null);
+    }
+  };
+
+  const handleReject = async (profileId: number) => {
+    try {
+      setRejectingProfileId(profileId);
+      setApprovalMessage(null);
+      setPendingError(null);
+
+      await rejectCharityProfileRequest(profileId);
+
+      setPendingProfiles((prev) => prev.filter((profile) => profile.id !== profileId));
+      setApprovalMessage("Charity profile rejected successfully.");
+    } catch (error) {
+      setPendingError(getApiErrorMessage(error));
+    } finally {
+      setRejectingProfileId(null);
     }
   };
 
@@ -99,16 +118,28 @@ export default function AdminDashboard() {
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    disabled={approvingProfileId === profile.id}
-                    onClick={() => {
-                      void handleApprove(profile.id);
-                    }}
-                    className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    {approvingProfileId === profile.id ? "Approving..." : "Approve"}
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      disabled={approvingProfileId === profile.id}
+                      onClick={() => {
+                        void handleApprove(profile.id);
+                      }}
+                      className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {approvingProfileId === profile.id ? "Approving..." : "Approve"}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={rejectingProfileId === profile.id}
+                      onClick={() => {
+                        void handleReject(profile.id);
+                      }}
+                      className="rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 shadow-sm transition hover:border-red-300 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {rejectingProfileId === profile.id ? "Rejecting..." : "Reject"}
+                    </button>
+                  </div>
                 </div>
 
                 <p className="mt-3 text-sm leading-6 text-slate-700">{profile.description}</p>

@@ -3,6 +3,7 @@ import jwt, { SignOptions } from "jsonwebtoken";
 import { prisma } from "../utils/prisma";
 import { ApiError } from "../utils/ApiError";
 import { env } from "../utils/env";
+import { createNotification } from "./notification.service";
 
 const SALT_ROUNDS = 12;
 type AppRole = "DONOR" | "CHARITY" | "ADMIN";
@@ -139,4 +140,58 @@ export const getCurrentUser = async (userId: number) => {
   }
 
   return toAuthUser(user);
+};
+
+export const resetPassword = async (
+  userId: number,
+  oldPassword: string,
+  newPassword: string,
+) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, password: true, email: true, name: true },
+  });
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+
+  if (!isPasswordValid) {
+    throw new ApiError(400, "Current password is incorrect");
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword },
+    });
+
+    await createNotification(
+      {
+        userId: user.id,
+        title: "Password reset successful",
+        message: "Your password was successfully reset.",
+        type: "AUTH",
+        metadata: {
+          email: user.email,
+        },
+      },
+      tx,
+    );
+  });
+
+  const updatedUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: toSafeUserSelect,
+  });
+
+  if (!updatedUser) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return toAuthUser(updatedUser);
 };

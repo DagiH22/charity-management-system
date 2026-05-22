@@ -72,3 +72,11 @@ export type ApproveCharityProfileResponse = {
     };
   };
 };
+
+export type RejectCharityProfileResponse = {
+  success: true;
+  message: string;
+  data: {
+    rejected: true;
+  };
+};

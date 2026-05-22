@@ -1,5 +1,6 @@
 import { prisma } from "../utils/prisma";
 import { ApiError } from "../utils/ApiError";
+import { createNotification } from "./notification.service";
 
 type CreateCharityProfileInput = {
   userId: number;
@@ -197,11 +198,27 @@ export const approveCharityProfile = async (profileId: number) => {
     throw new ApiError(409, "Charity profile is already approved");
   }
 
-  await prisma.user.update({
-    where: { id: profile.userId },
-    data: {
-      isVerified: true,
-    },
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: profile.userId },
+      data: {
+        isVerified: true,
+      },
+    });
+
+    await createNotification(
+      {
+        userId: profile.userId,
+        title: "Charity profile approved",
+        message:
+          "Your charity profile has been approved. You can now create and manage campaigns.",
+        type: "AUTH",
+        metadata: {
+          profileId: profile.id,
+        },
+      },
+      tx,
+    );
   });
 
   const approvedProfile = await prisma.charityProfile.findUnique({
@@ -225,4 +242,51 @@ export const approveCharityProfile = async (profileId: number) => {
   }
 
   return approvedProfile;
+};
+
+export const rejectCharityProfile = async (profileId: number) => {
+  const profile = await prisma.charityProfile.findUnique({
+    where: { id: profileId },
+    select: {
+      id: true,
+      userId: true,
+      user: {
+        select: {
+          id: true,
+          role: true,
+          isVerified: true,
+        },
+      },
+    },
+  });
+
+  if (!profile || profile.user.role !== "CHARITY") {
+    throw new ApiError(404, "Charity profile not found");
+  }
+
+  if (profile.user.isVerified) {
+    throw new ApiError(409, "Charity profile is already approved");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await createNotification(
+      {
+        userId: profile.userId,
+        title: "Charity profile rejected",
+        message:
+          "Your charity profile submission was rejected. Please update your information and submit again.",
+        type: "AUTH",
+        metadata: {
+          profileId: profile.id,
+        },
+      },
+      tx,
+    );
+
+    await tx.charityProfile.delete({
+      where: { id: profileId },
+    });
+  });
+
+  return { rejected: true };
 };

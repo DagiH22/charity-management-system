@@ -3,11 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import {
   Bars3Icon,
-  BellIcon,
   UserCircleIcon,
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
+import NotificationBell from "./NotificationBell";
 
 interface CharityHeaderProps {
   onMenuClick: () => void;
@@ -53,13 +53,10 @@ export default function CharityHeader({ onMenuClick }: CharityHeaderProps) {
         </div>
 
         <div className="flex items-center gap-x-4 lg:gap-x-6">
-          <button
-            type="button"
-            className="-m-2.5 p-2.5 text-slate-400 hover:text-slate-500 transition-colors"
-          >
-            <span className="sr-only">View notifications</span>
-            <BellIcon className="h-6 w-6" aria-hidden="true" />
-          </button>
+          <NotificationBell
+            buttonClassName="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-slate-700"
+            iconClassName="h-5 w-5"
+          />
 
           {/* Separator */}
           <div

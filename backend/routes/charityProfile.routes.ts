@@ -5,6 +5,7 @@ import {
   createMyCharityProfile,
   getMyProfile,
   getPendingProfiles,
+  rejectProfile,
   updateMyProfile,
 } from "../controllers/charityProfile.controller";
 import { imageUpload, profileUpload } from "../middlewares/upload.middleware";
@@ -22,6 +23,12 @@ charityProfileRouter.put(
   protect,
   authorize("ADMIN"),
   approveProfile,
+);
+charityProfileRouter.put(
+  "/:profileId/reject",
+  protect,
+  authorize("ADMIN"),
+  rejectProfile,
 );
 
 charityProfileRouter.get("/me", protect, authorize("CHARITY"), getMyProfile);

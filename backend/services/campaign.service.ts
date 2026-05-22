@@ -1,6 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { ApiError } from "../utils/ApiError";
 import { prisma } from "../utils/prisma";
+import { createBulkNotifications } from "./notification.service";
+import type { NotificationInput } from "./notification.service";
 
 type UpdateCampaignPayload = {
   title?: string;
@@ -25,7 +27,7 @@ export const getCampaignByIdService = async (
   // Find charity profile
   const charityProfile = await prisma.charityProfile.findUnique({
     where: { userId },
-    select: { id: true },
+    select: { id: true, userId: true },
   });
 
   if (!charityProfile) {
@@ -124,6 +126,13 @@ export const donateToCampaignService = async (
 ) => {
   const campaign = await prisma.campaign.findUnique({
     where: { id: campaignId },
+    include: {
+      charity: {
+        select: {
+          userId: true,
+        },
+      },
+    },
   });
 
   if (!campaign) {
@@ -171,6 +180,34 @@ export const donateToCampaignService = async (
         },
       },
     });
+
+    await createBulkNotifications([
+      {
+        userId: donorId,
+        title: "Donation successful",
+        message: `Your donation of ${Number(amount).toLocaleString()} ETB to ${campaign.title} was successful.`,
+        type: "DONATION",
+        metadata: {
+          campaignId,
+          donationId: createdDonation.id,
+          amount,
+          isAnonymous,
+        },
+      },
+      {
+        userId: campaign.charity.userId,
+        title: "New donation received",
+        message: `${isAnonymous ? "An anonymous donor" : "A donor"} contributed ${Number(amount).toLocaleString()} ETB to ${campaign.title}.`,
+        type: "DONATION",
+        metadata: {
+          campaignId,
+          donationId: createdDonation.id,
+          amount,
+          isAnonymous,
+          donorId,
+        },
+      },
+    ] as NotificationInput[], tx);
 
     return [createdDonation, updated];
   });
@@ -231,30 +268,54 @@ export const updateCampaignService = async (
     throw new ApiError(400, "Closed campaigns cannot be edited");
   }
 
-  const updatedCampaign = await prisma.campaign.update({
-    where: { id: campaignId },
+  const updatedCampaign = await prisma.$transaction(async (tx) => {
+    const updated = await tx.campaign.update({
+      where: { id: campaignId },
 
-    data: {
-      ...(payload.title && {
-        title: payload.title,
-      }),
+      data: {
+        ...(payload.title && {
+          title: payload.title,
+        }),
 
-      ...(payload.description && {
-        description: payload.description,
-      }),
+        ...(payload.description && {
+          description: payload.description,
+        }),
 
-      ...(payload.targetAmount && {
-        targetAmount: new Prisma.Decimal(payload.targetAmount),
-      }),
+        ...(payload.targetAmount && {
+          targetAmount: new Prisma.Decimal(payload.targetAmount),
+        }),
 
-      ...(payload.endDate && {
-        endDate: new Date(payload.endDate),
-      }),
+        ...(payload.endDate && {
+          endDate: new Date(payload.endDate),
+        }),
 
-      ...(payload.imageUrl !== undefined && {
-        imageUrl: payload.imageUrl?.trim() || null,
-      }),
-    },
+        ...(payload.imageUrl !== undefined && {
+          imageUrl: payload.imageUrl?.trim() || null,
+        }),
+      },
+    });
+
+    const followers = await tx.followCampaign.findMany({
+      where: { campaignId },
+      select: { userId: true },
+    });
+
+    if (followers.length) {
+      await createBulkNotifications(
+        followers.map((follower) => ({
+          userId: follower.userId,
+          title: "Campaign updated",
+          message: `${updated.title} has been updated.`,
+          type: "CAMPAIGN",
+          metadata: {
+            campaignId,
+          },
+        })) as NotificationInput[],
+        tx,
+      );
+    }
+
+    return updated;
   });
 
   return updatedCampaign;
@@ -266,7 +327,7 @@ export const closeCampaignService = async (
 ) => {
   const charityProfile = await prisma.charityProfile.findUnique({
     where: { userId },
-    select: { id: true },
+    select: { id: true, userId: true },
   });
 
   if (!charityProfile) {
@@ -291,12 +352,42 @@ export const closeCampaignService = async (
     throw new ApiError(400, "Campaign is already closed");
   }
 
-  const closedCampaign = await prisma.campaign.update({
-    where: { id: campaignId },
+  const closedCampaign = await prisma.$transaction(async (tx) => {
+    const updated = await tx.campaign.update({
+      where: { id: campaignId },
 
-    data: {
-      status: "CLOSED",
-    },
+      data: {
+        status: "CLOSED",
+      },
+    });
+
+    const followers = await tx.followCampaign.findMany({
+      where: { campaignId },
+      select: { userId: true },
+    });
+
+    await createBulkNotifications([
+      {
+        userId: charityProfile.userId,
+        title: "Campaign closed",
+        message: `${updated.title} has been closed successfully.`,
+        type: "CAMPAIGN",
+        metadata: {
+          campaignId,
+        },
+      },
+      ...followers.map((follower) => ({
+        userId: follower.userId,
+        title: "Campaign closed",
+        message: `${updated.title} has been closed.`,
+        type: "CAMPAIGN",
+        metadata: {
+          campaignId,
+        },
+      })),
+    ] as NotificationInput[], tx);
+
+    return updated;
   });
 
   return closedCampaign;

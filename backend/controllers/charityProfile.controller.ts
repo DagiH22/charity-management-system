@@ -6,6 +6,7 @@ import {
   createCharityProfile,
   getMyCharityProfile,
   getPendingCharityProfiles,
+  rejectCharityProfile,
   updateMyCharityProfile,
 } from "../services/charityProfile.service";
 import { uploadFile } from "../services/file.service";
@@ -175,3 +176,27 @@ export const approveProfile = asyncHandler(
     });
   },
 );
+
+export const rejectProfile = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw new ApiError(401, "Unauthorized");
+  }
+
+  if (req.user.role !== "ADMIN") {
+    throw new ApiError(403, "Forbidden: only admin can reject profiles");
+  }
+
+  const profileId = Number(req.params.profileId);
+
+  if (!Number.isInteger(profileId) || profileId <= 0) {
+    throw new ApiError(400, "Invalid profile id");
+  }
+
+  const result = await rejectCharityProfile(profileId);
+
+  res.status(200).json({
+    success: true,
+    message: "Charity profile rejected successfully",
+    data: result,
+  });
+});
