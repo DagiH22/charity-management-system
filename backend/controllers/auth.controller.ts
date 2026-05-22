@@ -1,7 +1,15 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
-import { getCurrentUser, loginUser, registerUser, resetPassword } from "../services/auth.service";
+import {
+  forgotPassword,
+  getCurrentUser,
+  loginUser,
+  registerUser,
+  resetPassword,
+  resetPasswordWithToken,
+  verifyPasswordResetOtp,
+} from "../services/auth.service";
 import { env } from "../utils/env";
 
 type AppRole = "DONOR" | "CHARITY" | "ADMIN";
@@ -145,3 +153,81 @@ export const resetUserPassword = asyncHandler(async (req: Request, res: Response
     user,
   });
 });
+
+const FORGOT_PASSWORD_GENERIC_MESSAGE =
+  "If an account with that email exists, a reset code has been sent.";
+
+export const forgotUserPassword = asyncHandler(
+  async (req: Request, res: Response) => {
+    const body = (req.body ?? {}) as {
+      email?: string;
+    };
+
+    const email = body.email?.trim();
+
+    if (!email) {
+      throw new ApiError(400, "email is required");
+    }
+
+    await forgotPassword(email);
+
+    res.status(200).json({
+      success: true,
+      message: FORGOT_PASSWORD_GENERIC_MESSAGE,
+    });
+  },
+);
+
+export const verifyPasswordResetCode = asyncHandler(
+  async (req: Request, res: Response) => {
+    const body = (req.body ?? {}) as {
+      email?: string;
+      otp?: string;
+    };
+
+    const email = body.email?.trim();
+    const otp = body.otp?.trim();
+
+    if (!email || !otp) {
+      throw new ApiError(400, "email and otp are required");
+    }
+
+    if (!/^\d{6}$/.test(otp)) {
+      throw new ApiError(400, "OTP must be a 6-digit code");
+    }
+
+    const { resetToken } = await verifyPasswordResetOtp(email, otp);
+
+    res.status(200).json({
+      success: true,
+      message: "OTP verified",
+      data: {
+        resetToken,
+        expiresIn: "10m",
+      },
+    });
+  },
+);
+
+export const resetForgottenPassword = asyncHandler(
+  async (req: Request, res: Response) => {
+    const body = (req.body ?? {}) as {
+      resetToken?: string;
+      newPassword?: string;
+    };
+
+    const resetToken = body.resetToken?.trim();
+    const newPassword = body.newPassword;
+
+    if (!resetToken || !newPassword) {
+      throw new ApiError(400, "resetToken and newPassword are required");
+    }
+
+    await resetPasswordWithToken(resetToken, newPassword);
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successful",
+    });
+  },
+);

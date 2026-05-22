@@ -64,7 +64,7 @@ export default function NotificationDropdown({
         </div>
       </div>
 
-      <div className="max-h-[32rem] overflow-y-auto">
+      <div className="max-h-[20rem] overflow-y-auto">
         {isLoading ? (
           <div className="px-4 py-6 text-sm text-slate-500">Loading notifications...</div>
         ) : notifications.length === 0 ? (

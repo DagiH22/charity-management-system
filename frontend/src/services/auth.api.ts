@@ -1,4 +1,10 @@
-import type { AuthSuccessResponse, AuthRole, MeResponse } from "../types/auth";
+import type {
+  AuthSuccessResponse,
+  AuthRole,
+  GenericSuccessResponse,
+  MeResponse,
+  VerifyResetOtpResponse,
+} from "../types/auth";
 import { http } from "./httpClient";
 
 export const registerRequest = async (payload: {
@@ -23,5 +29,35 @@ export const meRequest = async () => {
 
 export const logoutRequest = async () => {
   const { data } = await http.post("/auth/logout");
+  return data;
+};
+
+export const forgotPasswordRequest = async (payload: { email: string }) => {
+  const { data } = await http.post<GenericSuccessResponse>(
+    "/auth/forgot-password",
+    payload,
+  );
+  return data;
+};
+
+export const verifyResetOtpRequest = async (payload: {
+  email: string;
+  otp: string;
+}) => {
+  const { data } = await http.post<VerifyResetOtpResponse>(
+    "/auth/verify-otp",
+    payload,
+  );
+  return data;
+};
+
+export const resetForgottenPasswordRequest = async (payload: {
+  resetToken: string;
+  newPassword: string;
+}) => {
+  const { data } = await http.post<GenericSuccessResponse>(
+    "/auth/reset-password",
+    payload,
+  );
   return data;
 };
