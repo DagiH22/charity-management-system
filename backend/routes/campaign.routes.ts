@@ -15,13 +15,17 @@ import {
   getPublicCampaignById,
   uploadCampaignImage,
 } from "../controllers/campaign.controller";
-import { donateToCampaign } from "../controllers/donation.controller";
+import {
+  donateToCampaign,
+  handleChapaDonationWebhook,
+} from "../controllers/donation.controller";
 import { imageUpload } from "../middlewares/upload.middleware";
 
 const campaignRouter = Router();
 
 campaignRouter.get("/all", getAllCampaigns);
 campaignRouter.get("/featured", getFeaturedCampaigns);
+campaignRouter.post("/chapa/webhook", handleChapaDonationWebhook);
 campaignRouter.get(
   "/my-campaigns",
   protect,

@@ -1,5 +1,38 @@
 import { http } from "./httpClient";
 
+export type CampaignDonationCheckoutFields = {
+  public_key: string;
+  tx_ref: string;
+  amount: string;
+  currency: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  title: string;
+  description: string;
+  callback_url: string;
+  return_url: string;
+  meta?: string;
+};
+
+export type CampaignDonationCheckout = {
+  donation: {
+    id: number;
+    donorId: number;
+    campaignId: number;
+    amount: string;
+    isAnonymous: boolean;
+    message: string | null;
+    transactionId: string | null;
+    status: "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
+    donatedAt: string;
+  };
+  chapa: {
+    actionUrl: string;
+    fields: CampaignDonationCheckoutFields;
+  };
+};
+
 export const createCampaign = async (
   payload: {
     title: string;
@@ -91,8 +124,17 @@ export const donateToCampaignRequest = async (
     amount: number;
     isAnonymous: boolean;
     message?: string;
+    returnUrl?: string;
   },
 ) => {
-  const { data } = await http.post(`/campaign/${id}/donate`, payload);
+  const { data } = await http.post<{
+    success: boolean;
+    data: CampaignDonationCheckout;
+  }>(`/campaign/${id}/donate`, payload);
+  return data;
+};
+
+export const getDonationByTxRef = async (txRef: string) => {
+  const { data } = await http.get(`/donation/${encodeURIComponent(txRef)}`);
   return data;
 };

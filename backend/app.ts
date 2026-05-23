@@ -5,6 +5,7 @@ import path from "node:path";
 import authRouter from "./routes/auth.routes";
 import charityProfileRouter from "./routes/charityProfile.routes";
 import campaignRouter from "./routes/campaign.routes";
+import donationRouter from "./routes/donation.routes";
 import donorRouter from "./routes/donor.routes";
 import charityDashboardRouter from "./routes/charityDashboard.routes";
 import notificationRouter from "./routes/notification.routes";
@@ -40,7 +41,15 @@ const corsOptions: cors.CorsOptions = {
 
 app.use(cors(corsOptions));
 
-app.use(express.json());
+app.use(
+  express.json({
+    verify: (req, _res, buf) => {
+      (req as express.Request & { rawBody?: string }).rawBody = buf.toString(
+        "utf8",
+      );
+    },
+  }),
+);
 app.use(cookieParser());
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
@@ -54,6 +63,7 @@ app.get("/", (_req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/charity-profile", charityProfileRouter);
 app.use("/api/campaign", campaignRouter);
+app.use("/api/donation", donationRouter);
 app.use("/api/donor", donorRouter);
 app.use("/api/charity-dashboard", charityDashboardRouter);
 app.use("/api/notifications", notificationRouter);

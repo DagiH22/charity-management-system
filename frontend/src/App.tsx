@@ -21,6 +21,7 @@ import CampaignDetailsPage from "./pages/CampaignDetailsPage";
 import CharityCampaignsPage from "./pages/CharityCampaignsPage";
 import CharityContributionsPage from "./pages/CharityContributionsPage";
 import NotificationsPage from "./pages/NotificationsPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 // Donor Pages
 import DonorDonationsPage from "./pages/DonorDonationsPage";
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/campaigns" element={<CampaignsPage />} />
         <Route path="/campaigns/:id" element={<CampaignDetailsPage />} />
+        <Route path="*" element={<NotFoundPage />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
