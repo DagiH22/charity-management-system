@@ -19,6 +19,7 @@ type PendingCharityProfileSelectResult = {
   organizationName: string;
   description: string;
   documentUrl: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
   logo: string | null;
   phone: string | null;
   address: string | null;
@@ -48,6 +49,7 @@ const charityProfileSelect = {
   organizationName: true,
   description: true,
   documentUrl: true,
+  status: true,
   logo: true,
   phone: true,
   address: true,
@@ -124,7 +126,7 @@ export const updateMyCharityProfile = async ({
 }: UpdateCharityProfileInput) => {
   const profile = await prisma.charityProfile.findUnique({
     where: { userId },
-    select: { id: true },
+    select: { id: true, status: true },
   });
 
   if (!profile) {
@@ -140,6 +142,12 @@ export const updateMyCharityProfile = async ({
       ...(address !== undefined && { address: address?.trim() || null }),
       ...(website !== undefined && { website: website?.trim() || null }),
       ...(logoUrl !== undefined && { logo: logoUrl?.trim() || null }),
+      ...(profile.status === "REJECTED"
+        ? {
+            status: "PENDING",
+            verifiedAt: null,
+          }
+        : {}),
     },
     select: charityProfileSelect,
   });
@@ -150,9 +158,9 @@ export const updateMyCharityProfile = async ({
 export const getPendingCharityProfiles = async () => {
   const profiles = await prisma.charityProfile.findMany({
     where: {
+      status: "PENDING",
       user: {
         role: "CHARITY",
-        isVerified: false,
       },
     },
     orderBy: {
@@ -187,6 +195,7 @@ export const approveCharityProfile = async (profileId: number) => {
           isVerified: true,
         },
       },
+      status: true,
     },
   });
 
@@ -194,8 +203,12 @@ export const approveCharityProfile = async (profileId: number) => {
     throw new ApiError(404, "Charity profile not found");
   }
 
-  if (profile.user.isVerified) {
+  if (profile.status === "APPROVED" || profile.user.isVerified) {
     throw new ApiError(409, "Charity profile is already approved");
+  }
+
+  if (profile.status === "REJECTED") {
+    throw new ApiError(409, "Charity profile is already rejected");
   }
 
   await prisma.$transaction(async (tx) => {
@@ -203,6 +216,14 @@ export const approveCharityProfile = async (profileId: number) => {
       where: { id: profile.userId },
       data: {
         isVerified: true,
+      },
+    });
+
+    await tx.charityProfile.update({
+      where: { id: profile.id },
+      data: {
+        status: "APPROVED",
+        verifiedAt: new Date(),
       },
     });
 
@@ -257,6 +278,7 @@ export const rejectCharityProfile = async (profileId: number) => {
           isVerified: true,
         },
       },
+      status: true,
     },
   });
 
@@ -264,8 +286,12 @@ export const rejectCharityProfile = async (profileId: number) => {
     throw new ApiError(404, "Charity profile not found");
   }
 
-  if (profile.user.isVerified) {
+  if (profile.status === "APPROVED" || profile.user.isVerified) {
     throw new ApiError(409, "Charity profile is already approved");
+  }
+
+  if (profile.status === "REJECTED") {
+    throw new ApiError(409, "Charity profile is already rejected");
   }
 
   await prisma.$transaction(async (tx) => {
@@ -283,8 +309,17 @@ export const rejectCharityProfile = async (profileId: number) => {
       tx,
     );
 
-    await tx.charityProfile.delete({
+    await tx.charityProfile.update({
       where: { id: profileId },
+      data: {
+        status: "REJECTED",
+        verifiedAt: null,
+      },
+    });
+
+    await tx.user.update({
+      where: { id: profile.userId },
+      data: { isVerified: false },
     });
   });
 

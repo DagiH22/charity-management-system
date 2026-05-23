@@ -19,6 +19,7 @@ export type CharityProfile = {
   organizationName: string;
   description: string;
   documentUrl: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
   logo?: string | null;
   phone: string | null;
   address: string | null;

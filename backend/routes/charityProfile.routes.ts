@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authorize, protect } from "../middlewares/auth.middleware";
+import { authorize, isAdmin, protect } from "../middlewares/auth.middleware";
 import {
   approveProfile,
   createMyCharityProfile,
@@ -15,19 +15,19 @@ const charityProfileRouter = Router();
 charityProfileRouter.get(
   "/pending",
   protect,
-  authorize("ADMIN"),
+  isAdmin,
   getPendingProfiles,
 );
 charityProfileRouter.put(
   "/:profileId/approve",
   protect,
-  authorize("ADMIN"),
+  isAdmin,
   approveProfile,
 );
 charityProfileRouter.put(
   "/:profileId/reject",
   protect,
-  authorize("ADMIN"),
+  isAdmin,
   rejectProfile,
 );
 

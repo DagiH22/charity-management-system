@@ -1,42 +1,38 @@
 import { Link, useLocation } from "react-router-dom";
-import { cn } from "../utils/cn";
 import {
+  BanknotesIcon,
+  ChartBarIcon,
   HomeIcon,
-  PlusCircleIcon,
-  RectangleGroupIcon,
-  CurrencyDollarIcon,
+  RectangleStackIcon,
+  ShieldCheckIcon,
+  UsersIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { cn } from "../utils/cn";
 
-type CharitySidebarProps = {
+type AdminSidebarProps = {
   isOpen: boolean;
-  user?: unknown;
   onClose: () => void;
 };
 
 const navigationItems = [
   { label: "Dashboard", href: "/dashboard", icon: HomeIcon },
+  { label: "User Management", href: "/admin/users", icon: UsersIcon },
   {
-    label: "Create Campaign",
-    href: "/dashboard/create-campaign",
-    icon: PlusCircleIcon,
+    label: "Charity Verification",
+    href: "/admin/charity-verification",
+    icon: ShieldCheckIcon,
   },
   {
-    label: "All Campaigns",
-    href: "/charity/campaigns",
-    icon: RectangleGroupIcon,
+    label: "Campaign Oversight",
+    href: "/admin/campaigns",
+    icon: RectangleStackIcon,
   },
-  {
-    label: "Contributions",
-    href: "/charity/contributions",
-    icon: CurrencyDollarIcon,
-  },
+  { label: "Donation Logs", href: "/admin/donations", icon: BanknotesIcon },
+  { label: "Reports", href: "/admin/reports", icon: ChartBarIcon },
 ];
 
-export default function CharitySidebar({
-  isOpen,
-  onClose,
-}: CharitySidebarProps) {
+export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const location = useLocation();
 
   const closeOnMobile = () => {
@@ -47,7 +43,6 @@ export default function CharitySidebar({
 
   return (
     <>
-      {/* Mobile backdrop */}
       {isOpen && (
         <div
           className="fixed inset-0 z-40 bg-slate-900/80 backdrop-blur-sm transition-opacity lg:hidden"
@@ -56,7 +51,6 @@ export default function CharitySidebar({
         />
       )}
 
-      {/* Sidebar component */}
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 w-72 flex-col bg-white border-r border-slate-200 transition-transform duration-300 ease-in-out lg:static lg:z-auto lg:flex lg:w-72 lg:translate-x-0 shadow-xl lg:shadow-none",
@@ -66,10 +60,10 @@ export default function CharitySidebar({
         <div className="flex shrink-0 items-center justify-between px-6 h-16 border-b border-slate-100 lg:hidden">
           <div className="flex items-center gap-2">
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#0b2b53] text-sm font-bold text-white shadow-sm">
-              C
+              A
             </span>
             <span className="text-xl font-bold tracking-tight text-[#0b2b53]">
-              Charity<span className="text-emerald-500">Hub</span>
+              Admin<span className="text-emerald-500">Panel</span>
             </span>
           </div>
           <button
@@ -84,7 +78,7 @@ export default function CharitySidebar({
 
         <nav
           className="flex flex-1 flex-col overflow-y-auto pt-6 pb-4"
-          aria-label="Sidebar"
+          aria-label="Admin Sidebar"
         >
           <div className="px-4 space-y-1">
             {navigationItems.map((item) => {

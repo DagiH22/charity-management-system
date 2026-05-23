@@ -14,6 +14,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import CharityProfileSetupRoute from "./routes/CharityProfileSetupRoute";
 import DonorRoute from "./routes/DonorRoute";
 import CharityRoute from "./routes/CharityRoute";
+import AdminRoute from "./routes/AdminRoute";
 import MyCampaigns from "./pages/MyCampaigns";
 import EditCampaign from "./pages/EditCampaignPage";
 import CampaignsPage from "./pages/CampaignsPage";
@@ -27,6 +28,11 @@ import NotFoundPage from "./pages/NotFoundPage";
 import DonorDonationsPage from "./pages/DonorDonationsPage";
 import DonorAnonymousPage from "./pages/DonorAnonymousPage";
 import DonorFollowingPage from "./pages/DonorFollowingPage";
+import AdminUserManagementPage from "./pages/admin/AdminUserManagementPage";
+import AdminCharityVerificationPage from "./pages/admin/AdminCharityVerificationPage";
+import AdminCampaignOversightPage from "./pages/admin/AdminCampaignOversightPage";
+import AdminDonationLogsPage from "./pages/admin/AdminDonationLogsPage";
+import AdminReportsPage from "./pages/admin/AdminReportsPage";
 
 export default function App() {
   return (
@@ -75,6 +81,20 @@ export default function App() {
               path="/dashboard/following-campaigns"
               element={<DonorFollowingPage />}
             />
+          </Route>
+
+          <Route element={<AdminRoute />}>
+            <Route path="/admin/users" element={<AdminUserManagementPage />} />
+            <Route
+              path="/admin/charity-verification"
+              element={<AdminCharityVerificationPage />}
+            />
+            <Route
+              path="/admin/campaigns"
+              element={<AdminCampaignOversightPage />}
+            />
+            <Route path="/admin/donations" element={<AdminDonationLogsPage />} />
+            <Route path="/admin/reports" element={<AdminReportsPage />} />
           </Route>
         </Route>
       </Route>
