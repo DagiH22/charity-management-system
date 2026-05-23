@@ -111,6 +111,37 @@ export default function CampaignDetailsPage() {
     loadData();
   }, [loadData]);
 
+  // If Chapa redirected back with tx_ref, fetch donation status and show receipt
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const txRef =
+      params.get("tx_ref") || params.get("txref") || params.get("ref_id") || params.get("transactionId");
+
+    if (!txRef) return;
+
+    const fetchDonation = async () => {
+      try {
+        const res = await (await import("../services/campaign.api")).getDonationByTxRef(txRef);
+        const donation = res.data.donation;
+        setReceiptData({
+          id: donation.transactionId,
+          name: donation.isAnonymous ? "Anonymous Donor" : donation.donor?.name || donorName,
+          campaign: campaign?.title || "",
+          amount: Number(donation.amount),
+          method: "Chapa Payment",
+          date: new Date(donation.donatedAt).toLocaleDateString(),
+          status: donation.status,
+        });
+        setShowReceipt(true);
+        await loadData();
+      } catch (err) {
+        // ignore
+      }
+    };
+
+    void fetchDonation();
+  }, [location.search, campaign, donorName, loadData]);
+
   useEffect(() => {
     if (!isLoggedIn || !campaign) return;
     const fetchFollowStatus = async () => {
@@ -226,9 +257,15 @@ export default function CampaignDetailsPage() {
 
   const handleDonate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLoggedIn)
-      return alert("You must be logged in as a donor to donate.");
-    if (currentDonationValue < 10) return alert("Minimum donation is 10 ETB.");
+    if (!isLoggedIn) {
+      setDonationError("You must be logged in as a donor to donate.");
+      return;
+    }
+
+    if (currentDonationValue < 10) {
+      setDonationError("Minimum donation is 10 ETB.");
+      return;
+    }
 
     setDonationError("");
     setIsSubmitting(true);
@@ -238,27 +275,36 @@ export default function CampaignDetailsPage() {
         amount: currentDonationValue,
         isAnonymous,
         message: undefined,
+        returnUrl: window.location.href,
       };
 
       const res = await donateToCampaignRequest(id, payload);
 
-      const donation = res.data.donation;
+      // If backend provided chapa checkout data, submit a form to Chapa hosted pay
+      const checkout = res.data as unknown as {
+        donation: any;
+        chapa: { actionUrl: string; fields: Record<string, string> };
+      };
 
-      setReceiptData({
-        id: donation.transactionId,
-        name: isAnonymous ? "Anonymous Donor" : donorName,
-        campaign: campaign.title,
-        amount: Number(donation.amount),
-        method: "Chapa Payment",
-        date: new Date(donation.donatedAt).toLocaleDateString(),
-        status: donation.status,
+      // Build and submit a form to Chapa hosted endpoint
+      const form = document.createElement("form");
+      form.action = checkout.chapa.actionUrl;
+      form.method = "POST";
+      form.style.display = "none";
+
+      Object.entries(checkout.chapa.fields).forEach(([k, v]) => {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = k;
+        input.value = String(v ?? "");
+        form.appendChild(input);
       });
-      setShowReceipt(true);
 
-      await loadData();
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
     } catch (err: any) {
       setDonationError(err.response?.data?.message || "Donation failed.");
-    } finally {
       setIsSubmitting(false);
     }
   };

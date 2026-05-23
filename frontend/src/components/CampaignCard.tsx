@@ -4,6 +4,11 @@ import { useState } from "react";
 import { closeCampaign } from "../services/campaign.api";
 import { resolveAssetUrl } from "../utils/media";
 
+type FeedbackState = {
+  type: "success" | "error";
+  message: string;
+} | null;
+
 interface CampaignCardProps {
   campaign: Campaign;
   onCampaignClosed?: (id: number) => void;
@@ -22,6 +27,7 @@ const CampaignCard = ({
   const navigate = useNavigate();
   const [closing, setClosing] = useState(false);
   const [status, setStatus] = useState(campaign.status);
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
 
   async function handleCloseCampaign(id: number): Promise<void> {
     if (
@@ -34,12 +40,19 @@ const CampaignCard = ({
 
     try {
       setClosing(true);
+      setFeedback(null);
       await closeCampaign(id.toString());
       setStatus("Closed");
       onCampaignClosed?.(id);
-      alert("Campaign closed successfully!");
+      setFeedback({
+        type: "success",
+        message: "Campaign closed successfully!",
+      });
     } catch (error: any) {
-      alert(error.response?.data?.message || "Failed to close campaign");
+      setFeedback({
+        type: "error",
+        message: error.response?.data?.message || "Failed to close campaign",
+      });
     } finally {
       setClosing(false);
     }
@@ -86,6 +99,18 @@ const CampaignCard = ({
       <p className="mb-6 line-clamp-4 text-sm leading-relaxed text-gray-600">
         {campaign.description}
       </p>
+
+      {feedback && (
+        <div
+          className={`mb-4 rounded-xl px-4 py-3 text-sm font-medium ${
+            feedback.type === "success"
+              ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+              : "border border-red-200 bg-red-50 text-red-700"
+          }`}
+        >
+          {feedback.message}
+        </div>
+      )}
 
       {/* Donation Progress */}
       <div className="mb-4">

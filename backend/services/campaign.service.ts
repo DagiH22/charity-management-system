@@ -1,8 +1,10 @@
 import { Prisma } from "@prisma/client";
+import { randomUUID } from "node:crypto";
 import { ApiError } from "../utils/ApiError";
 import { prisma } from "../utils/prisma";
 import { createBulkNotifications } from "./notification.service";
 import type { NotificationInput } from "./notification.service";
+import { env } from "../utils/env";
 
 type UpdateCampaignPayload = {
   title?: string;
@@ -212,6 +214,22 @@ export const donateToCampaignService = async (
     return [createdDonation, updated];
   });
   return { donation, campaign: updatedCampaign };
+};
+
+export const getDonationByTxRefService = async (txRef: string) => {
+  const donation = await prisma.donation.findFirst({
+    where: { transactionId: txRef },
+    include: {
+      campaign: { select: { id: true, title: true, charityId: true } },
+      donor: { select: { id: true, name: true, email: true } },
+    },
+  });
+
+  if (!donation) {
+    throw new ApiError(404, "Donation not found");
+  }
+
+  return donation;
 };
 
 export const getMyCampaignsService = async (userId: number) => {
