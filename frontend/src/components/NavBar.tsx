@@ -9,7 +9,7 @@ export default function NavBar() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
-  const isCharity = user?.role === "CHARITY";
+  const userRole = user?.role;
 
   const publicNavLinks = [
     { label: "Home", href: "/" },
@@ -22,7 +22,17 @@ export default function NavBar() {
     { label: "Campaigns", href: "/charity/campaigns" },
   ];
 
-  const navLinks = isCharity ? charityNavLinks : publicNavLinks;
+  const adminNavLinks = [
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Campaigns", href: "/admin/campaigns" },
+  ];
+
+  const navLinks =
+    userRole === "ADMIN"
+      ? adminNavLinks
+      : userRole === "CHARITY"
+        ? charityNavLinks
+        : publicNavLinks;
 
   const handleLogout = async () => {
     await logout();

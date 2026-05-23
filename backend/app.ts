@@ -9,6 +9,7 @@ import donationRouter from "./routes/donation.routes";
 import donorRouter from "./routes/donor.routes";
 import charityDashboardRouter from "./routes/charityDashboard.routes";
 import notificationRouter from "./routes/notification.routes";
+import adminDashboardRouter from "./routes/adminDashboard.routes";
 import { errorHandler, notFound } from "./middlewares/error.middleware";
 import { env } from "./utils/env";
 import { prisma } from "./utils/prisma";
@@ -67,6 +68,7 @@ app.use("/api/donation", donationRouter);
 app.use("/api/donor", donorRouter);
 app.use("/api/charity-dashboard", charityDashboardRouter);
 app.use("/api/notifications", notificationRouter);
+app.use("/api/admin-dashboard", adminDashboardRouter);
 
 app.use(notFound);
 app.use(errorHandler);

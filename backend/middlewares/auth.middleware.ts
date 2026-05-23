@@ -68,6 +68,18 @@ export const authorize = (...roles: AppRole[]) => {
   };
 };
 
+export const isAdmin = (req: Request, _res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return next(new ApiError(401, "Unauthorized"));
+  }
+
+  if (req.user.role !== "ADMIN") {
+    return next(new ApiError(403, "Forbidden: admin access only"));
+  }
+
+  return next();
+};
+
 export const verifiedCharityOnly = (req: Request, res: Response, next: NextFunction) => {
   if (!req.user) {
       return next(new ApiError(401, "Unauthorized"));
