@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import type { User } from "../../types/auth";
 import CharitySidebar from "../../components/CharitySidebar";
+import DashboardErrorState from "../../components/dashboard/DashboardErrorState";
+import DashboardLoadingState from "../../components/dashboard/DashboardLoadingState";
+import DashboardSectionCard from "../../components/dashboard/DashboardSectionCard";
+import DashboardStatCard from "../../components/dashboard/DashboardStatCard";
 import { getCharityDashboard } from "../../services/charityDashboard.api";
 import { getApiErrorMessage } from "../../services/apiErrors";
 import type {
@@ -182,209 +186,150 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
         )}
 
         {isLoading ? (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-5">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <div
-                  key={`stat-skeleton-${index}`}
-                  className="animate-pulse rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-                >
-                  <div className="h-3 w-24 rounded-full bg-slate-200" />
-                  <div className="mt-4 h-8 w-28 rounded-full bg-slate-200" />
-                  <div className="mt-3 h-3 w-20 rounded-full bg-slate-200" />
-                </div>
-              ))}
-            </div>
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              {Array.from({ length: 2 }).map((_, index) => (
-                <div
-                  key={`section-skeleton-${index}`}
-                  className="animate-pulse rounded-2xl border border-slate-200 bg-white p-6"
-                >
-                  <div className="h-4 w-40 rounded-full bg-slate-200" />
-                  <div className="mt-6 space-y-3">
-                    {Array.from({ length: 3 }).map((__, rowIndex) => (
-                      <div
-                        key={`row-${rowIndex}`}
-                        className="h-10 rounded-xl bg-slate-100"
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <DashboardLoadingState />
         ) : error ? (
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-600">
-            <p className="font-semibold">{error}</p>
-            <button
-              className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white"
-              type="button"
-              onClick={() => window.location.reload()}
-            >
-              Retry
-            </button>
-          </div>
+          <DashboardErrorState
+            message={error}
+            onRetry={() => window.location.reload()}
+          />
         ) : (
           <>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-              <div className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-emerald-200 hover:shadow-md">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-emerald-600">
-                    Total Raised
-                  </h3>
-                  <div className="rounded-lg bg-emerald-50 p-2 text-emerald-600">
-                    <svg
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                </div>
-                <p className="mt-4 text-3xl font-extrabold text-slate-900">
-                  {stats.totalRaised.toLocaleString()} ETB
-                </p>
-                <div className="mt-2 flex items-center text-sm">
-                  <span className="text-slate-500">
-                    From {stats.totalContributors} contributors
-                  </span>
-                </div>
-              </div>
+              <DashboardStatCard
+                className="group transition-all hover:border-emerald-200 hover:shadow-md"
+                title="Total Raised"
+                titleClassName="group-hover:text-emerald-600"
+                value={`${stats.totalRaised.toLocaleString()} ETB`}
+                subtitle={`From ${stats.totalContributors} contributors`}
+                icon={
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                }
+                iconWrapClassName="bg-emerald-50 text-emerald-600"
+              />
 
-              <div className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-blue-200 hover:shadow-md">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-blue-600">
-                    Active Campaigns
-                  </h3>
-                  <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
-                    <svg
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"
-                      />
-                    </svg>
-                  </div>
-                </div>
-                <p className="mt-4 text-3xl font-extrabold text-slate-900">
-                  {stats.activeCampaigns}
-                </p>
-                <div className="mt-2 flex items-center text-sm">
-                  <span className="text-slate-500">Currently running</span>
-                </div>
-              </div>
+              <DashboardStatCard
+                className="group transition-all hover:border-blue-200 hover:shadow-md"
+                title="Active Campaigns"
+                titleClassName="group-hover:text-blue-600"
+                value={stats.activeCampaigns}
+                subtitle="Currently running"
+                icon={
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"
+                    />
+                  </svg>
+                }
+                iconWrapClassName="bg-blue-50 text-blue-600"
+              />
 
-              <div className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-violet-200 hover:shadow-md">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-violet-600">
-                    Total Campaigns
-                  </h3>
-                  <div className="rounded-lg bg-violet-50 p-2 text-violet-600">
-                    <svg
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                      />
-                    </svg>
-                  </div>
-                </div>
-                <p className="mt-4 text-3xl font-extrabold text-slate-900">
-                  {stats.totalCampaigns}
-                </p>
-                <div className="mt-2 flex items-center text-sm">
-                  <span className="text-slate-500">
-                    Active + closed + draft
-                  </span>
-                </div>
-              </div>
+              <DashboardStatCard
+                className="group transition-all hover:border-violet-200 hover:shadow-md"
+                title="Total Campaigns"
+                titleClassName="group-hover:text-violet-600"
+                value={stats.totalCampaigns}
+                subtitle="Active + closed + draft"
+                icon={
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                    />
+                  </svg>
+                }
+                iconWrapClassName="bg-violet-50 text-violet-600"
+              />
 
-              <div className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-amber-200 hover:shadow-md">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-amber-600">
-                    Contributors
-                  </h3>
-                  <div className="rounded-lg bg-amber-50 p-2 text-amber-600">
-                    <svg
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                      />
-                    </svg>
-                  </div>
-                </div>
-                <p className="mt-4 text-3xl font-extrabold text-slate-900">
-                  {stats.totalContributors}
-                </p>
-                <div className="mt-2 flex items-center text-sm">
-                  <span className="text-slate-500">Unique donors</span>
-                </div>
-              </div>
+              <DashboardStatCard
+                className="group transition-all hover:border-amber-200 hover:shadow-md"
+                title="Contributors"
+                titleClassName="group-hover:text-amber-600"
+                value={stats.totalContributors}
+                subtitle="Unique donors"
+                icon={
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                }
+                iconWrapClassName="bg-amber-50 text-amber-600"
+              />
 
-              <div className="group sm:col-span-2 lg:col-span-4 xl:col-span-1 border border-emerald-200 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50/50 p-6 shadow-sm transition-all hover:shadow-md">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-800">
-                    {formattedMonthlyLabel}
-                  </h3>
-                  <div className="rounded-lg bg-white p-2 text-emerald-600 shadow-sm">
-                    <svg
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                      />
-                    </svg>
-                  </div>
-                </div>
-                <p className="mt-4 text-3xl font-extrabold text-emerald-900">
-                  {stats.monthlyContributions.toLocaleString()}{" "}
-                  <span className="text-xl font-bold">ETB</span>
-                </p>
-                <div className="mt-2 flex items-center text-sm">
+              <DashboardStatCard
+                className="group border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50/50 transition-all hover:shadow-md sm:col-span-2 lg:col-span-4 xl:col-span-1"
+                title={formattedMonthlyLabel}
+                titleClassName="text-emerald-800"
+                value={
+                  <>
+                    {stats.monthlyContributions.toLocaleString()}{" "}
+                    <span className="text-xl font-bold">ETB</span>
+                  </>
+                }
+                valueClassName="text-emerald-900"
+                subtitle={
                   <div className="inline-flex items-center rounded-full bg-emerald-100/80 px-2 py-0.5 text-xs font-medium text-emerald-800 shadow-sm">
                     Monthly Activity
                   </div>
-                </div>
-              </div>
+                }
+                icon={
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                    />
+                  </svg>
+                }
+                iconWrapClassName="bg-white text-emerald-600 shadow-sm"
+              />
             </div>
 
             <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
@@ -561,18 +506,19 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
               )}
             </section>
 
-            <section className="mt-10 rounded-2xl border border-slate-200 bg-white p-8 shadow-[0_10px_40px_rgba(10,40,80,0.04)]">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-5">
-                <h2 className="text-xl font-bold text-[#0b2b53]">
-                  Recent Contributions
-                </h2>
+            <DashboardSectionCard
+              className="mt-10 p-8 shadow-[0_10px_40px_rgba(10,40,80,0.04)]"
+              title={<span className="text-[#0b2b53]">Recent Contributions</span>}
+              action={
                 <Link
                   className="text-sm font-semibold text-emerald-600 hover:text-emerald-500"
                   to="/charity/contributions"
                 >
                   View All
                 </Link>
-              </div>
+              }
+              headerClassName="border-b border-slate-100 pb-5"
+            >
               {recentContributions.length === 0 ? (
                 <div className="flex h-48 flex-col items-center justify-center gap-3">
                   <div className="rounded-full bg-slate-100 p-4">
@@ -638,7 +584,7 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
                   ))}
                 </div>
               )}
-            </section>
+            </DashboardSectionCard>
           </>
         )}
       </div>
