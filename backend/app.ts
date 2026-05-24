@@ -66,6 +66,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/charity-profile", charityProfileRouter);
 app.use("/api/campaign", campaignRouter);
 app.use("/api/donation", donationRouter);
+app.use("/api/donations", donationRouter);
 app.use("/api/donor", donorRouter);
 app.use("/api/charity-dashboard", charityDashboardRouter);
 app.use("/api/notifications", notificationRouter);

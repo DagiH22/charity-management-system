@@ -84,9 +84,18 @@ model Donation {
   donatedAt     DateTime       @default(now())
   campaign      Campaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   donor         User           @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  receipt       DonationReceipt?
 
   @@index([campaignId], map: "Donation_campaignId_fkey")
   @@index([donorId], map: "Donation_donorId_fkey")
+}
+
+model DonationReceipt {
+  id               Int      @id @default(autoincrement())
+  donationId       Int      @unique
+  receiptReference String   @unique @db.VarChar(191)
+  issuedDate       DateTime @default(now())
+  donation         Donation @relation(fields: [donationId], references: [id], onDelete: Cascade)
 }
 
 model FollowCampaign {

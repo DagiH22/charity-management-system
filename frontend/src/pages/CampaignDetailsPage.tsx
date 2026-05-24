@@ -3,6 +3,7 @@ import { useParams, useLocation } from "react-router-dom";
 import {
   getPublicCampaignById,
   donateToCampaignRequest,
+  getDonationByTxRef,
 } from "../services/campaign.api";
 import { useAuthStore } from "../store/authStore";
 import FullScreenLoader from "../components/FullScreenLoader";
@@ -11,6 +12,11 @@ import {
   toggleFollowCampaign,
 } from "../services/donor.api";
 import { resolveAssetUrl } from "../utils/media";
+import { getDonationReceipt } from "../services/donation.api";
+import {
+  generateReceiptPDF,
+  type ReceiptPDFData,
+} from "../utils/receiptPdf";
 
 const PRESET_AMOUNTS = [100, 250, 500, 1000];
 
@@ -60,6 +66,13 @@ const ClockIcon = () => (
   </svg>
 );
 
+const formatReadableDate = (value: string) =>
+  new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(value));
+
 export default function CampaignDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
@@ -84,7 +97,8 @@ export default function CampaignDetailsPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
-  const [receiptData, setReceiptData] = useState<any>(null);
+  const [showReceiptDetails, setShowReceiptDetails] = useState(false);
+  const [receiptData, setReceiptData] = useState<ReceiptPDFData | null>(null);
   const [donationError, setDonationError] = useState("");
   const [toastMessage, setToastMessage] = useState("");
 
@@ -117,25 +131,82 @@ export default function CampaignDetailsPage() {
     const txRef =
       params.get("tx_ref") || params.get("txref") || params.get("ref_id") || params.get("transactionId");
 
-    if (!txRef) return;
+    console.log("🔍 Checking for Chapa redirect...");
+    console.log("📍 Current URL:", window.location.href);
+    console.log("🔑 Query params:", Object.fromEntries(params));
+    console.log("💳 TX_REF found:", txRef);
+
+    // Check sessionStorage for donation info stored before Chapa redirect
+    let donationFromStorage = null;
+    try {
+      const stored = sessionStorage.getItem("chapaRedirectDonation");
+      if (stored) {
+        donationFromStorage = JSON.parse(stored);
+        console.log("📦 Found donation in sessionStorage:", donationFromStorage);
+      }
+    } catch (err) {
+      console.error("Error reading from sessionStorage:", err);
+    }
+
+    // If neither URL param nor storage, nothing to do
+    if (!txRef && !donationFromStorage) {
+      console.log("⚠️ No transaction reference found, skipping receipt fetch");
+      return;
+    }
 
     const fetchDonation = async () => {
+      const txRefToUse = txRef || donationFromStorage?.tx_ref;
+      
+      if (!txRefToUse) {
+        console.error("❌ No tx_ref available to fetch donation");
+        return;
+      }
+
       try {
-        const res = await (await import("../services/campaign.api")).getDonationByTxRef(txRef);
+        console.log("🚀 Fetching donation details for tx_ref:", txRefToUse);
+        const res = await getDonationByTxRef(txRefToUse);
+        console.log("✅ Donation fetched successfully:", res);
         const donation = res.data.donation;
+        
+        // CHECK PAYMENT STATUS - Only show receipt if COMPLETED
+        if (donation.status !== "COMPLETED") {
+          console.warn("⚠️ Payment not completed. Status:", donation.status);
+          if (donation.status === "FAILED") {
+            setDonationError("❌ Payment failed. Please try again.");
+          } else if (donation.status === "PENDING") {
+            setDonationError("⏳ Payment is still pending. Please wait...");
+          } else {
+            setDonationError("❌ Payment was not successful.");
+          }
+          // Clean up storage
+          sessionStorage.removeItem("chapaRedirectDonation");
+          await loadData();
+          return;
+        }
+
+        // Payment successful - show receipt
+        const receiptResponse = res.data.receipt
+          ? { data: res.data.receipt }
+          : await getDonationReceipt(Number(donation.id));
+
         setReceiptData({
-          id: donation.transactionId,
-          name: donation.isAnonymous ? "Anonymous Donor" : donation.donor?.name || donorName,
-          campaign: campaign?.title || "",
-          amount: Number(donation.amount),
-          method: "Chapa Payment",
-          date: new Date(donation.donatedAt).toLocaleDateString(),
-          status: donation.status,
+          ...receiptResponse.data,
+          paymentMethod: receiptResponse.data.paymentMethod || "Chapa Payment",
         });
+        setShowReceiptDetails(false);
+        console.log("🎫 Receipt data set from API, showing modal");
         setShowReceipt(true);
+        
+        // Clean up storage
+        sessionStorage.removeItem("chapaRedirectDonation");
         await loadData();
-      } catch (err) {
-        // ignore
+      } catch (err: any) {
+        console.error("❌ Error fetching donation details:", err);
+        console.error("Error response:", err.response);
+        console.error("Error message:", err.message);
+        
+        setDonationError("❌ Could not verify payment status. Please contact support.");
+        sessionStorage.removeItem("chapaRedirectDonation");
       }
     };
 
@@ -286,6 +357,18 @@ export default function CampaignDetailsPage() {
         chapa: { actionUrl: string; fields: Record<string, string> };
       };
 
+      // Store donation info in sessionStorage before redirecting to Chapa
+      const donationInfo = {
+        tx_ref: checkout.chapa.fields.tx_ref,
+        amount: checkout.chapa.fields.amount,
+        donorName: isAnonymous ? "Anonymous Donor" : donorName,
+        campaign: campaign?.title || "",
+        method: "Chapa Payment",
+        timestamp: new Date().toISOString(),
+      };
+      sessionStorage.setItem("chapaRedirectDonation", JSON.stringify(donationInfo));
+      console.log("💾 Stored donation info in sessionStorage:", donationInfo);
+
       // Build and submit a form to Chapa hosted endpoint
       const form = document.createElement("form");
       form.action = checkout.chapa.actionUrl;
@@ -307,6 +390,14 @@ export default function CampaignDetailsPage() {
       setDonationError(err.response?.data?.message || "Donation failed.");
       setIsSubmitting(false);
     }
+  };
+
+  const handleDownloadReceipt = () => {
+    if (!receiptData) {
+      return;
+    }
+
+    generateReceiptPDF(receiptData);
   };
 
   return (
@@ -657,7 +748,10 @@ export default function CampaignDetailsPage() {
           <div className="w-full max-w-md scale-100 transform overflow-hidden rounded-3xl bg-white shadow-2xl transition-all">
             <div className="bg-emerald-500 p-6 text-center text-white relative">
               <button
-                onClick={() => setShowReceipt(false)}
+                onClick={() => {
+                  setShowReceipt(false);
+                  setShowReceiptDetails(false);
+                }}
                 className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors focus:outline-none"
                 aria-label="Close receipt"
               >
@@ -673,25 +767,25 @@ export default function CampaignDetailsPage() {
                 <div className="flex justify-between border-b border-slate-100 pb-3">
                   <span className="text-slate-500">Receipt ID</span>
                   <span className="font-bold text-[#0b2b53]">
-                    {receiptData.id}
+                    {receiptData.receiptReference}
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-slate-100 pb-3">
                   <span className="text-slate-500">Donor Name</span>
                   <span className="font-bold text-[#0b2b53]">
-                    {receiptData.name}
+                    {receiptData.isAnonymous ? "Anonymous" : receiptData.donorName}
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-slate-100 pb-3">
                   <span className="text-slate-500">Campaign</span>
                   <span className="font-bold text-[#0b2b53] max-w-[200px] truncate">
-                    {receiptData.campaign}
+                    {receiptData.campaignTitle}
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-slate-100 pb-3">
                   <span className="text-slate-500">Payment Method</span>
                   <span className="font-bold text-[#0b2b53]">
-                    {receiptData.method}
+                    {receiptData.paymentMethod || "Chapa Payment"}
                   </span>
                 </div>
                 <div className="flex justify-between pt-1">
@@ -699,18 +793,110 @@ export default function CampaignDetailsPage() {
                     Total Donated
                   </span>
                   <span className="text-xl font-extrabold text-emerald-500">
-                    {receiptData.amount.toLocaleString()} ETB
+                    {receiptData.donationAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETB
                   </span>
                 </div>
               </div>
               <div className="mt-8 flex gap-3">
-                <button className="flex-1 rounded-xl bg-slate-100 py-3 font-bold text-slate-700 transition hover:bg-slate-200">
-                  Print
+                <button 
+                  onClick={() => {
+                    setShowReceiptDetails(true);
+                  }}
+                  className="flex-1 rounded-xl bg-slate-100 py-3 font-bold text-slate-700 transition hover:bg-slate-200"
+                >
+                  View Full Receipt
                 </button>
-                <button className="flex-1 rounded-xl bg-[#0b2b53] py-3 font-bold text-white transition hover:bg-slate-800">
-                  Download PDF
+                <button 
+                  onClick={handleDownloadReceipt}
+                  className="flex-1 rounded-xl bg-[#0b2b53] py-3 font-bold text-white transition hover:bg-slate-800"
+                >
+                  Download
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showReceiptDetails && receiptData && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/75 p-4 backdrop-blur-sm overflow-hidden">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl flex flex-col">
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5 flex-shrink-0">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-500">
+                  Full Receipt Data
+                </p>
+                <h3 className="mt-1 text-2xl font-extrabold text-[#0b2b53]">
+                  Donation Receipt Details
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowReceiptDetails(false)}
+                className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                aria-label="Close receipt details"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="overflow-y-auto flex-1 grid gap-4 px-6 py-6 md:grid-cols-2">
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Receipt ID</p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.receiptReference}</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Issued Date</p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{formatReadableDate(receiptData.issuedDate)}</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Donor Name</p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.isAnonymous ? "Anonymous" : receiptData.donorName}</p>
+              </div>
+              {!receiptData.isAnonymous && receiptData.donorEmail && (
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Donor Email</p>
+                  <p className="mt-1 text-sm font-bold text-[#0b2b53] break-all">{receiptData.donorEmail}</p>
+                </div>
+              )}
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Campaign</p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.campaignTitle}</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Charity</p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.charityName}</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Donation Date</p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{formatReadableDate(receiptData.donationDate)}</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Payment Status</p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.paymentStatus}</p>
+              </div>
+              <div className="rounded-2xl bg-emerald-50 p-4 md:col-span-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Total Amount</p>
+                <p className="mt-1 text-2xl font-extrabold text-emerald-600">
+                  ETB {receiptData.donationAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 border-t border-slate-100 px-6 py-5 sm:flex-row sm:justify-end flex-shrink-0">
+              <button
+                onClick={() => setShowReceiptDetails(false)}
+                className="rounded-xl border border-slate-200 px-5 py-3 font-bold text-slate-600 transition hover:bg-slate-50"
+              >
+                Close
+              </button>
+              <button
+                onClick={handleDownloadReceipt}
+                className="rounded-xl bg-[#0b2b53] px-5 py-3 font-bold text-white transition hover:bg-slate-800"
+              >
+                Download PDF
+              </button>
             </div>
           </div>
         </div>

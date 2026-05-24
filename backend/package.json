@@ -4,6 +4,7 @@
   "description": "Charity management backend",
   "main": "dist/app.js",
   "scripts": {
+    "predev": "prisma generate && prisma migrate deploy",
     "dev": "tsx watch app.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/app.js",
