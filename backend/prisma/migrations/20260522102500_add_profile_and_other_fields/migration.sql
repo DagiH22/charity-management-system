@@ -30,5 +30,5 @@ CREATE TABLE `BankAccount` (
 -- Add foreign key for BankAccount
 ALTER TABLE `BankAccount` ADD CONSTRAINT `BankAccount_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
--- Add Campaign index if missing
-CREATE INDEX IF NOT EXISTS `Campaign_charityId_fkey` ON `Campaign`(`charityId`);
+-- Ensure Campaign has index on charityId
+ALTER TABLE `Campaign` ADD INDEX `Campaign_charityId_fkey` (`charityId`);

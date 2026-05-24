@@ -37,6 +37,12 @@ model CharityProfile {
   phone            String?
   address          String?
   website          String?
+  socialFacebook   String?
+  socialTelegram   String?
+  socialInstagram  String?
+  socialTwitter    String?
+  socialYoutube    String?
+  socialTiktok     String?
   createdAt        DateTime   @default(now())
   logo             String?
   updatedAt        DateTime   @default(now()) @updatedAt

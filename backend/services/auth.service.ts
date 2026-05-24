@@ -55,6 +55,9 @@ const toSafeUserSelect = {
   email: true,
   role: true,
   isVerified: true,
+  bio: true,
+  phone: true,
+  profileImage: true,
   createdAt: true,
   updatedAt: true,
   charityProfile: {
@@ -64,15 +67,59 @@ const toSafeUserSelect = {
   },
 } as const;
 
+const bankAccountSelect = {
+  id: true,
+  bankName: true,
+  accountNumber: true,
+  accountHolder: true,
+  type: true,
+  isPrimary: true,
+  createdAt: true,
+} as const;
+
 type SafeUserWithProfile = {
   id: number;
   name: string;
   email: string;
   role: AppRole;
   isVerified: boolean;
+  bio: string | null;
+  phone: string | null;
+  profileImage: string | null;
   createdAt: Date;
   updatedAt: Date;
   charityProfile: { id: number } | null;
+};
+
+type ProfileBankAccount = {
+  id: number;
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+  type: "PERSONAL" | "BUSINESS";
+  isPrimary: boolean;
+  createdAt: Date;
+};
+
+type UserProfileWithDetails = SafeUserWithProfile & {
+  bankAccounts: ProfileBankAccount[];
+  charityProfile: {
+    id: number;
+    organizationName: string;
+    status: "PENDING" | "APPROVED" | "REJECTED";
+    createdAt: Date;
+    verifiedAt: Date | null;
+    updatedAt: Date;
+    phone: string | null;
+    address: string | null;
+    website: string | null;
+    socialFacebook: string | null;
+    socialTelegram: string | null;
+    socialInstagram: string | null;
+    socialTwitter: string | null;
+    socialYoutube: string | null;
+    socialTiktok: string | null;
+  } | null;
 };
 
 const toAuthUser = (user: SafeUserWithProfile) => {
@@ -84,10 +131,109 @@ const toAuthUser = (user: SafeUserWithProfile) => {
     email: user.email,
     role: user.role,
     isVerified,
+    bio: user.bio,
+    phone: user.phone,
+    profileImage: user.profileImage,
     hasCharityProfile: Boolean(user.charityProfile),
     charityId: user.charityProfile?.id,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+  };
+};
+
+export const getUserProfile = async (userId: number) => {
+  const profile = (await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      ...toSafeUserSelect,
+      bankAccounts: {
+        select: bankAccountSelect as any,
+      },
+      charityProfile: {
+        select: {
+          id: true,
+          organizationName: true,
+          status: true,
+          createdAt: true,
+          verifiedAt: true,
+          updatedAt: true,
+          phone: true,
+          address: true,
+          website: true,
+          socialFacebook: true,
+          socialTelegram: true,
+          socialInstagram: true,
+          socialTwitter: true,
+          socialYoutube: true,
+          socialTiktok: true,
+        } as any,
+      },
+    } as any,
+  })) as UserProfileWithDetails | null;
+
+  if (!profile) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return {
+    user: toAuthUser(profile),
+    charityProfile: profile.charityProfile,
+    bankAccounts: profile.bankAccounts,
+  };
+};
+
+export const updateUserProfile = async (
+  userId: number,
+  payload: {
+    name?: string;
+    bio?: string;
+    phone?: string;
+    profileImage?: string | null;
+  },
+) => {
+  const updated = (await prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...(payload.name !== undefined ? { name: payload.name.trim() } : {}),
+      ...(payload.bio !== undefined ? { bio: payload.bio.trim() || null } : {}),
+      ...(payload.phone !== undefined
+        ? { phone: payload.phone.trim() || null }
+        : {}),
+      ...(payload.profileImage !== undefined
+        ? { profileImage: payload.profileImage?.trim() || null }
+        : {}),
+    },
+    select: {
+      ...toSafeUserSelect,
+      bankAccounts: {
+        select: bankAccountSelect as any,
+      },
+      charityProfile: {
+        select: {
+          id: true,
+          organizationName: true,
+          status: true,
+          createdAt: true,
+          verifiedAt: true,
+          updatedAt: true,
+          phone: true,
+          address: true,
+          website: true,
+          socialFacebook: true,
+          socialTelegram: true,
+          socialInstagram: true,
+          socialTwitter: true,
+          socialYoutube: true,
+          socialTiktok: true,
+        } as any,
+      },
+    } as any,
+  })) as unknown as UserProfileWithDetails;
+
+  return {
+    user: toAuthUser(updated),
+    charityProfile: updated.charityProfile,
+    bankAccounts: updated.bankAccounts,
   };
 };
 
