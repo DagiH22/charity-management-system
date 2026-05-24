@@ -22,6 +22,12 @@ export const updateMyCharityProfileRequest = async (
     phone?: string;
     address?: string;
     website?: string;
+    socialFacebook?: string;
+    socialTelegram?: string;
+    socialInstagram?: string;
+    socialTwitter?: string;
+    socialYoutube?: string;
+    socialTiktok?: string;
     logo?: File | null;
     removeLogo?: boolean;
   },
@@ -47,6 +53,30 @@ export const updateMyCharityProfileRequest = async (
 
   if (payload.website !== undefined) {
     formData.append("website", payload.website);
+  }
+  
+  if (payload.socialFacebook !== undefined) {
+    formData.append("socialFacebook", payload.socialFacebook);
+  }
+  
+  if (payload.socialTelegram !== undefined) {
+    formData.append("socialTelegram", payload.socialTelegram);
+  }
+  
+  if (payload.socialInstagram !== undefined) {
+    formData.append("socialInstagram", payload.socialInstagram);
+  }
+  
+  if (payload.socialTwitter !== undefined) {
+    formData.append("socialTwitter", payload.socialTwitter);
+  }
+  
+  if (payload.socialYoutube !== undefined) {
+    formData.append("socialYoutube", payload.socialYoutube);
+  }
+  
+  if (payload.socialTiktok !== undefined) {
+    formData.append("socialTiktok", payload.socialTiktok);
   }
 
   if (payload.logo) {
@@ -84,6 +114,12 @@ export const createMyCharityProfileRequest = async (
     document: File;
     logo?: File | null;
     phone?: string;
+    socialFacebook?: string;
+    socialTelegram?: string;
+    socialInstagram?: string;
+    socialTwitter?: string;
+    socialYoutube?: string;
+    socialTiktok?: string;
     address?: string;
     website?: string;
   },
@@ -108,6 +144,30 @@ export const createMyCharityProfileRequest = async (
 
   if (payload.website?.trim()) {
     formData.append("website", payload.website.trim());
+  }
+  
+  if (payload.socialFacebook?.trim()) {
+    formData.append("socialFacebook", payload.socialFacebook.trim());
+  }
+  
+  if (payload.socialTelegram?.trim()) {
+    formData.append("socialTelegram", payload.socialTelegram.trim());
+  }
+  
+  if (payload.socialInstagram?.trim()) {
+    formData.append("socialInstagram", payload.socialInstagram.trim());
+  }
+  
+  if (payload.socialTwitter?.trim()) {
+    formData.append("socialTwitter", payload.socialTwitter.trim());
+  }
+  
+  if (payload.socialYoutube?.trim()) {
+    formData.append("socialYoutube", payload.socialYoutube.trim());
+  }
+  
+  if (payload.socialTiktok?.trim()) {
+    formData.append("socialTiktok", payload.socialTiktok.trim());
   }
 
   const { data } = await http.post<CreateCharityProfileResponse>(

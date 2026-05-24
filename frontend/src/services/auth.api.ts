@@ -3,6 +3,8 @@ import type {
   AuthRole,
   GenericSuccessResponse,
   MeResponse,
+  UpdateUserProfileResponse,
+  UserProfileDetailsResponse,
   VerifyResetOtpResponse,
 } from "../types/auth";
 import { http } from "./httpClient";
@@ -24,6 +26,63 @@ export const loginRequest = async (payload: { email: string; password: string })
 
 export const meRequest = async () => {
   const { data } = await http.get<MeResponse>("/auth/me");
+  return data;
+};
+
+export const getMyProfileRequest = async () => {
+  const { data } = await http.get<UserProfileDetailsResponse>("/auth/profile");
+  return data;
+};
+
+export const updateMyProfileRequest = async (
+  payload: {
+    name?: string;
+    bio?: string;
+    phone?: string;
+    profileImage?: File | null;
+    removeProfileImage?: boolean;
+  },
+  onUploadProgress?: (progress: number) => void,
+) => {
+  const formData = new FormData();
+
+  if (payload.name !== undefined) {
+    formData.append("name", payload.name);
+  }
+
+  if (payload.bio !== undefined) {
+    formData.append("bio", payload.bio);
+  }
+
+  if (payload.phone !== undefined) {
+    formData.append("phone", payload.phone);
+  }
+
+  if (payload.profileImage) {
+    formData.append("profileImage", payload.profileImage);
+  }
+
+  if (payload.removeProfileImage) {
+    formData.append("removeProfileImage", "true");
+  }
+
+  const { data } = await http.put<UpdateUserProfileResponse>(
+    "/auth/profile",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      onUploadProgress: (event) => {
+        if (!event.total) {
+          return;
+        }
+        const progress = Math.round((event.loaded / event.total) * 100);
+        onUploadProgress?.(progress);
+      },
+    },
+  );
+
   return data;
 };
 
@@ -59,5 +118,17 @@ export const resetForgottenPasswordRequest = async (payload: {
     "/auth/reset-password",
     payload,
   );
+  return data;
+};
+
+export const resetPasswordRequest = async (payload: {
+  oldPassword: string;
+  newPassword: string;
+}) => {
+  const { data } = await http.patch<AuthSuccessResponse>(
+    "/auth/reset-password",
+    payload,
+  );
+
   return data;
 };

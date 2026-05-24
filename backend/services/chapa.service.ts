@@ -5,6 +5,7 @@ import { prisma } from "../utils/prisma";
 import { createBulkNotifications } from "./notification.service";
 import type { NotificationInput } from "./notification.service";
 import { env } from "../utils/env";
+import { ensureDonationReceipt } from "./donationReceipt.service";
 
 type DonationCheckoutPayload = {
   campaignId: number;
@@ -284,10 +285,13 @@ export const finalizeDonationFromChapaWebhook = async (
   });
 
   if (existingDonation?.status === "COMPLETED") {
+    const receipt = await ensureDonationReceipt(existingDonation.id, prisma);
+
     return {
       handled: true,
       alreadyCompleted: true,
       donation: toDonationSummary(existingDonation),
+      receipt,
     };
   }
 
@@ -435,11 +439,14 @@ export const finalizeDonationFromChapaWebhook = async (
       tx,
     );
 
+    const receipt = await ensureDonationReceipt(donation.id, tx);
+
     return {
       handled: true,
       alreadyCompleted: false,
       donation,
       campaign: updatedCampaign,
+      receipt,
     };
   });
 };

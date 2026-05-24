@@ -23,6 +23,7 @@ import CharityCampaignsPage from "./pages/CharityCampaignsPage";
 import CharityContributionsPage from "./pages/CharityContributionsPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import ProfilePage from "./pages/ProfilePage";
 
 // Donor Pages
 import DonorDonationsPage from "./pages/DonorDonationsPage";
@@ -47,6 +48,8 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<ProfilePage />} />
 
           <Route element={<CharityRoute />}>
             <Route

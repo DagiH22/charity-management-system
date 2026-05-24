@@ -27,6 +27,12 @@ export default function CharityProfileSetupPage() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [website, setWebsite] = useState("");
+  const [socialFacebook, setSocialFacebook] = useState("");
+  const [socialTelegram, setSocialTelegram] = useState("");
+  const [socialInstagram, setSocialInstagram] = useState("");
+  const [socialTwitter, setSocialTwitter] = useState("");
+  const [socialYoutube, setSocialYoutube] = useState("");
+  const [socialTiktok, setSocialTiktok] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -42,6 +48,12 @@ export default function CharityProfileSetupPage() {
           setPhone(response.profile.phone || "");
           setAddress(response.profile.address || "");
           setWebsite(response.profile.website || "");
+          setSocialFacebook(response.profile.socialFacebook || "");
+          setSocialTelegram(response.profile.socialTelegram || "");
+          setSocialInstagram(response.profile.socialInstagram || "");
+          setSocialTwitter(response.profile.socialTwitter || "");
+          setSocialYoutube(response.profile.socialYoutube || "");
+          setSocialTiktok(response.profile.socialTiktok || "");
           setExistingLogoUrl(response.profile.logo || null);
           setIsEditingProfile(true);
         }
@@ -125,6 +137,12 @@ export default function CharityProfileSetupPage() {
             phone,
             address,
             website,
+            socialFacebook,
+            socialTelegram,
+            socialInstagram,
+            socialTwitter,
+            socialYoutube,
+            socialTiktok,
             logo: logoFile,
             removeLogo: existingLogoUrl === null && !logoFile,
           },
@@ -140,6 +158,12 @@ export default function CharityProfileSetupPage() {
             phone,
             address,
             website,
+            socialFacebook,
+            socialTelegram,
+            socialInstagram,
+            socialTwitter,
+            socialYoutube,
+            socialTiktok,
           },
           (progress) => setUploadProgress(progress),
         );
@@ -278,6 +302,57 @@ export default function CharityProfileSetupPage() {
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
               placeholder="https://your-charity.org"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            <InputField
+              id="socialFacebook"
+              type="url"
+              label="Facebook (optional)"
+              value={socialFacebook}
+              onChange={(e) => setSocialFacebook(e.target.value)}
+              placeholder="https://facebook.com/your-charity"
+            />
+            <InputField
+              id="socialTelegram"
+              type="url"
+              label="Telegram (optional)"
+              value={socialTelegram}
+              onChange={(e) => setSocialTelegram(e.target.value)}
+              placeholder="https://t.me/your-channel"
+            />
+            <InputField
+              id="socialInstagram"
+              type="url"
+              label="Instagram (optional)"
+              value={socialInstagram}
+              onChange={(e) => setSocialInstagram(e.target.value)}
+              placeholder="https://instagram.com/your-charity"
+            />
+            <InputField
+              id="socialTwitter"
+              type="url"
+              label="Twitter / X (optional)"
+              value={socialTwitter}
+              onChange={(e) => setSocialTwitter(e.target.value)}
+              placeholder="https://x.com/your-charity"
+            />
+            <InputField
+              id="socialYoutube"
+              type="url"
+              label="YouTube (optional)"
+              value={socialYoutube}
+              onChange={(e) => setSocialYoutube(e.target.value)}
+              placeholder="https://youtube.com/@your-charity"
+            />
+            <InputField
+              id="socialTiktok"
+              type="url"
+              label="TikTok (optional)"
+              value={socialTiktok}
+              onChange={(e) => setSocialTiktok(e.target.value)}
+              placeholder="https://tiktok.com/@your-charity"
             />
           </div>
 

@@ -6,9 +6,11 @@ export type User = {
   email: string;
   role: AuthRole;
   isVerified: boolean;
+  bio?: string | null;
+  phone?: string | null;
   hasCharityProfile: boolean;
   charityId?: number;
-  profileImage?: string;
+  profileImage?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -24,6 +26,12 @@ export type CharityProfile = {
   phone: string | null;
   address: string | null;
   website: string | null;
+  socialFacebook?: string | null;
+  socialTelegram?: string | null;
+  socialInstagram?: string | null;
+  socialTwitter?: string | null;
+  socialYoutube?: string | null;
+  socialTiktok?: string | null;
   createdAt: string;
 };
 
@@ -94,4 +102,43 @@ export type VerifyResetOtpResponse = {
     resetToken: string;
     expiresIn: string;
   };
+};
+
+export type UserProfileDetailsResponse = {
+  success: true;
+  data: {
+    user: User;
+    charityProfile: {
+      id: number;
+      organizationName: string;
+      status: "PENDING" | "APPROVED" | "REJECTED";
+      createdAt: string;
+      verifiedAt?: string | null;
+      updatedAt: string;
+      phone: string | null;
+      address: string | null;
+      website: string | null;
+      socialFacebook: string | null;
+      socialTelegram: string | null;
+      socialInstagram: string | null;
+      socialTwitter: string | null;
+      socialYoutube: string | null;
+      socialTiktok: string | null;
+    } | null;
+    bankAccounts: {
+      id: number;
+      bankName: string;
+      accountNumber: string;
+      accountHolder: string;
+      type: "PERSONAL" | "BUSINESS";
+      isPrimary: boolean;
+      createdAt: string;
+    }[];
+  };
+};
+
+export type UpdateUserProfileResponse = {
+  success: true;
+  message: string;
+  data: UserProfileDetailsResponse["data"];
 };

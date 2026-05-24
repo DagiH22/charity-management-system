@@ -7,6 +7,10 @@ import {
   finalizeDonationFromChapaWebhook,
 } from "../services/chapa.service";
 import { env } from "../utils/env";
+import {
+  ensureDonationReceipt,
+  getDonationReceiptForDonor,
+} from "../services/donationReceipt.service";
 
 const safeCompare = (expected: string, actual?: string) => {
   if (!actual) {
@@ -106,6 +110,11 @@ export const getDonationByTxRef = asyncHandler(
 
     const donation = await (await import("../services/campaign.service")).getDonationByTxRefService(txRef);
 
+    const receipt =
+      donation.status === "COMPLETED"
+        ? await ensureDonationReceipt(donation.id)
+        : null;
+
     // Mask donor email if anonymous
     const donor = {
       id: donation.donor.id,
@@ -113,6 +122,22 @@ export const getDonationByTxRef = asyncHandler(
       email: donation.isAnonymous ? null : donation.donor.email,
     };
 
-    res.status(200).json({ success: true, data: { donation: { ...donation, donor } } });
+    res.status(200).json({ success: true, data: { donation: { ...donation, donor }, receipt } });
   },
 );
+
+export const getDonationReceipt = asyncHandler(async (req: Request, res: Response) => {
+  const donationId = Number(req.params.donationId);
+
+  if (Number.isNaN(donationId)) {
+    throw new ApiError(400, "Invalid donation id");
+  }
+
+  if (!req.user) {
+    throw new ApiError(401, "Authentication required");
+  }
+
+  const receipt = await getDonationReceiptForDonor(donationId, req.user.id);
+
+  res.status(200).json({ success: true, data: receipt });
+});

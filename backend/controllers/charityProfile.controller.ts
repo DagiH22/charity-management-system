@@ -36,9 +36,27 @@ export const createMyCharityProfile = asyncHandler(
       phone?: string;
       address?: string;
       website?: string;
+      socialFacebook?: string;
+      socialTelegram?: string;
+      socialInstagram?: string;
+      socialTwitter?: string;
+      socialYoutube?: string;
+      socialTiktok?: string;
     };
 
-    const { organizationName, description, phone, address, website } = body;
+    const {
+      organizationName,
+      description,
+      phone,
+      address,
+      website,
+      socialFacebook,
+      socialTelegram,
+      socialInstagram,
+      socialTwitter,
+      socialYoutube,
+      socialTiktok,
+    } = body;
 
     if (!organizationName || !description) {
       throw new ApiError(400, "organizationName and description are required");
@@ -64,6 +82,12 @@ export const createMyCharityProfile = asyncHandler(
       phone,
       address,
       website,
+      socialFacebook,
+      socialTelegram,
+      socialInstagram,
+      socialTwitter,
+      socialYoutube,
+      socialTiktok,
     });
 
     res.status(201).json({
@@ -103,6 +127,12 @@ export const updateMyProfile = asyncHandler(
       phone?: string;
       address?: string;
       website?: string;
+      socialFacebook?: string;
+      socialTelegram?: string;
+      socialInstagram?: string;
+      socialTwitter?: string;
+      socialYoutube?: string;
+      socialTiktok?: string;
       removeLogo?: string;
     };
     const removeLogo = body.removeLogo === "true";
@@ -119,6 +149,12 @@ export const updateMyProfile = asyncHandler(
       phone: body.phone,
       address: body.address,
       website: body.website,
+      socialFacebook: body.socialFacebook,
+      socialTelegram: body.socialTelegram,
+      socialInstagram: body.socialInstagram,
+      socialTwitter: body.socialTwitter,
+      socialYoutube: body.socialYoutube,
+      socialTiktok: body.socialTiktok,
       logoUrl,
     });
 

@@ -4,13 +4,16 @@ import { ApiError } from "../utils/ApiError";
 import {
   forgotPassword,
   getCurrentUser,
+  getUserProfile,
   loginUser,
   registerUser,
   resetPassword,
   resetPasswordWithToken,
+  updateUserProfile,
   verifyPasswordResetOtp,
 } from "../services/auth.service";
 import { env } from "../utils/env";
+import { uploadFile } from "../services/file.service";
 
 type AppRole = "DONOR" | "CHARITY" | "ADMIN";
 
@@ -126,6 +129,56 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     user,
+  });
+});
+
+type UploadedFile = {
+  filename: string;
+};
+
+export const getMyProfile = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw new ApiError(401, "Unauthorized");
+  }
+
+  const data = await getUserProfile(req.user.id);
+
+  res.status(200).json({
+    success: true,
+    data,
+  });
+});
+
+export const updateMyProfile = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw new ApiError(401, "Unauthorized");
+  }
+
+  const requestWithFile = req as Request & { file?: UploadedFile };
+  const body = (req.body ?? {}) as {
+    name?: string;
+    bio?: string;
+    phone?: string;
+    removeProfileImage?: string;
+  };
+
+  const profileImage = requestWithFile.file
+    ? uploadFile(requestWithFile.file, "Profile image is required")
+    : body.removeProfileImage === "true"
+      ? null
+      : undefined;
+
+  const data = await updateUserProfile(req.user.id, {
+    name: body.name,
+    bio: body.bio,
+    phone: body.phone,
+    profileImage,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Profile updated successfully",
+    data,
   });
 });
 

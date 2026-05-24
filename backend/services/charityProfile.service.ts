@@ -11,6 +11,12 @@ type CreateCharityProfileInput = {
   phone?: string;
   address?: string;
   website?: string;
+  socialFacebook?: string;
+  socialTelegram?: string;
+  socialInstagram?: string;
+  socialTwitter?: string;
+  socialYoutube?: string;
+  socialTiktok?: string;
 };
 
 type PendingCharityProfileSelectResult = {
@@ -24,6 +30,12 @@ type PendingCharityProfileSelectResult = {
   phone: string | null;
   address: string | null;
   website: string | null;
+  socialFacebook: string | null;
+  socialTelegram: string | null;
+  socialInstagram: string | null;
+  socialTwitter: string | null;
+  socialYoutube: string | null;
+  socialTiktok: string | null;
   createdAt: Date;
   user: {
     id: number;
@@ -41,9 +53,15 @@ type UpdateCharityProfileInput = {
   address?: string;
   website?: string;
   logoUrl?: string | null;
+  socialFacebook?: string;
+  socialTelegram?: string;
+  socialInstagram?: string;
+  socialTwitter?: string;
+  socialYoutube?: string;
+  socialTiktok?: string;
 };
 
-const charityProfileSelect = {
+const charityProfileSelect: any = {
   id: true,
   userId: true,
   organizationName: true,
@@ -54,6 +72,12 @@ const charityProfileSelect = {
   phone: true,
   address: true,
   website: true,
+  socialFacebook: true,
+  socialTelegram: true,
+  socialInstagram: true,
+  socialTwitter: true,
+  socialYoutube: true,
+  socialTiktok: true,
   createdAt: true,
 } as const;
 
@@ -66,6 +90,12 @@ export const createCharityProfile = async ({
   phone,
   address,
   website,
+  socialFacebook,
+  socialTelegram,
+  socialInstagram,
+  socialTwitter,
+  socialYoutube,
+  socialTiktok,
 }: CreateCharityProfileInput) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -99,7 +129,13 @@ export const createCharityProfile = async ({
       phone: phone?.trim() || null,
       address: address?.trim() || null,
       website: website?.trim() || null,
-    },
+      socialFacebook: socialFacebook?.trim() || null,
+      socialTelegram: socialTelegram?.trim() || null,
+      socialInstagram: socialInstagram?.trim() || null,
+      socialTwitter: socialTwitter?.trim() || null,
+      socialYoutube: socialYoutube?.trim() || null,
+      socialTiktok: socialTiktok?.trim() || null,
+    } as any,
     select: charityProfileSelect,
   });
 
@@ -123,6 +159,12 @@ export const updateMyCharityProfile = async ({
   address,
   website,
   logoUrl,
+  socialFacebook,
+  socialTelegram,
+  socialInstagram,
+  socialTwitter,
+  socialYoutube,
+  socialTiktok,
 }: UpdateCharityProfileInput) => {
   const profile = await prisma.charityProfile.findUnique({
     where: { userId },
@@ -142,13 +184,31 @@ export const updateMyCharityProfile = async ({
       ...(address !== undefined && { address: address?.trim() || null }),
       ...(website !== undefined && { website: website?.trim() || null }),
       ...(logoUrl !== undefined && { logo: logoUrl?.trim() || null }),
+      ...(socialFacebook !== undefined && {
+        socialFacebook: socialFacebook?.trim() || null,
+      }),
+      ...(socialTelegram !== undefined && {
+        socialTelegram: socialTelegram?.trim() || null,
+      }),
+      ...(socialInstagram !== undefined && {
+        socialInstagram: socialInstagram?.trim() || null,
+      }),
+      ...(socialTwitter !== undefined && {
+        socialTwitter: socialTwitter?.trim() || null,
+      }),
+      ...(socialYoutube !== undefined && {
+        socialYoutube: socialYoutube?.trim() || null,
+      }),
+      ...(socialTiktok !== undefined && {
+        socialTiktok: socialTiktok?.trim() || null,
+      }),
       ...(profile.status === "REJECTED"
         ? {
             status: "PENDING",
             verifiedAt: null,
           }
         : {}),
-    },
+    } as any,
     select: charityProfileSelect,
   });
 
@@ -179,7 +239,7 @@ export const getPendingCharityProfiles = async () => {
     },
   });
 
-  return profiles as PendingCharityProfileSelectResult[];
+  return profiles as unknown as PendingCharityProfileSelectResult[];
 };
 
 export const approveCharityProfile = async (profileId: number) => {
