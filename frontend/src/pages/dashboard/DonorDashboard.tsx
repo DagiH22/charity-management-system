@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getDonorDashboard } from "../../services/donor.api";
 import { resolveAssetUrl } from "../../utils/media";
+import Avatar from "../../components/Avatar";
 import DonorSidebar from "../../components/DonorSidebar";
 import {
   CreditCard,
@@ -49,14 +50,6 @@ export default function DonorDashboard({ user }: DonorDashboardProps) {
     fetchDashboard();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="py-20 text-center text-slate-500">
-        Loading your profile...
-      </div>
-    );
-  }
-
   const { stats, recentDonations, followingPreview } = data || {
     stats: {
       totalDonated: 0,
@@ -94,27 +87,38 @@ export default function DonorDashboard({ user }: DonorDashboardProps) {
               <span className="h-0.5 w-5 rounded-full bg-slate-600 transition-all" />
               <span className="h-0.5 w-5 rounded-full bg-slate-600 transition-all" />
             </button>
-            {user.profileImage ? (
-              <img
+            {/* Avatar */}
+            <div>
+              {/* use shared Avatar component for consistent fallback */}
+              <Avatar
                 src={resolveAssetUrl(user.profileImage) ?? undefined}
-                alt="Profile"
-                className="h-24 w-24 rounded-2xl object-cover shadow-sm bg-slate-100 border border-slate-200"
+                name={user.name}
+                alt={`${user.name} profile`}
+                size="xl"
+                withBorder
+                className={`${loading ? "bg-slate-100 animate-pulse" : ""} shadow-sm`}
               />
-            ) : (
-              <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0b2b53] to-[#0b2b53]/80 text-3xl font-bold text-white shadow-sm border border-[#0b2b53]/10">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
-            )}
+            </div>
             <div>
               <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900">
-                Welcome back, {user.name}!
+                {loading ? (
+                  <span className="inline-block h-8 w-56 rounded bg-slate-100 animate-pulse" />
+                ) : (
+                  `Welcome back, ${user.name}!`
+                )}
               </h1>
               <p className="mt-2 text-lg text-slate-500 max-w-2xl">
-                You've contributed to{" "}
-                <span className="font-semibold text-slate-700">
-                  {stats.campaignsSupported} campaigns
-                </span>{" "}
-                and helped make a difference.
+                {loading ? (
+                  <span className="inline-block h-4 w-96 rounded bg-slate-100 animate-pulse" />
+                ) : (
+                  <>
+                    You've contributed to{" "}
+                    <span className="font-semibold text-slate-700">
+                      {stats.campaignsSupported} campaigns
+                    </span>{" "}
+                    and helped make a difference.
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -144,19 +148,31 @@ export default function DonorDashboard({ user }: DonorDashboardProps) {
                 Total Donated
               </h3>
               <div className="mt-2 flex items-baseline gap-2">
-                <p className="text-3xl font-extrabold text-slate-900">
-                  {stats.totalDonated.toLocaleString()}
-                </p>
-                <span className="text-sm font-semibold text-slate-500">
-                  ETB
-                </span>
+                {loading ? (
+                  <div className="h-8 w-40 rounded bg-slate-100 animate-pulse" />
+                ) : (
+                  <>
+                    <p className="text-3xl font-extrabold text-slate-900">
+                      {stats.totalDonated.toLocaleString()}
+                    </p>
+                    <span className="text-sm font-semibold text-slate-500">
+                      ETB
+                    </span>
+                  </>
+                )}
               </div>
               <p className="mt-2 text-sm font-medium text-slate-500">
-                Across{" "}
-                <span className="text-slate-700 font-semibold">
-                  {stats.campaignsSupported}
-                </span>{" "}
-                campaigns
+                {loading ? (
+                  <span className="inline-block h-4 w-48 rounded bg-slate-100 animate-pulse" />
+                ) : (
+                  <>
+                    Across{" "}
+                    <span className="text-slate-700 font-semibold">
+                      {stats.campaignsSupported}
+                    </span>{" "}
+                    campaigns
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -255,7 +271,23 @@ export default function DonorDashboard({ user }: DonorDashboardProps) {
             </div>
 
             <div className="flex-1 overflow-y-auto p-2 sm:p-4">
-              {recentDonations.length === 0 ? (
+              {loading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-4 rounded-xl p-4 bg-white border border-slate-100 shadow-sm"
+                    >
+                      <div className="h-10 w-10 rounded-full bg-slate-100 animate-pulse" />
+                      <div className="flex-1">
+                        <div className="h-4 w-3/5 rounded bg-slate-100 animate-pulse mb-2" />
+                        <div className="h-3 w-1/3 rounded bg-slate-100 animate-pulse" />
+                      </div>
+                      <div className="w-24 h-6 rounded bg-slate-100 animate-pulse" />
+                    </div>
+                  ))}
+                </div>
+              ) : recentDonations.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center gap-4 text-center px-6">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">
                     <CreditCard size={32} />
@@ -286,11 +318,7 @@ export default function DonorDashboard({ user }: DonorDashboardProps) {
                     >
                       <div className="flex items-start gap-4">
                         <div
-                          className={`mt-1 flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-full ${
-                            donation.status === "COMPLETED"
-                              ? "bg-emerald-100 text-emerald-600"
-                              : "bg-amber-100 text-amber-600"
-                          }`}
+                          className={`mt-1 flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-full ${donation.status === "COMPLETED" ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600"}`}
                         >
                           <CreditCard size={18} />
                         </div>
@@ -311,11 +339,7 @@ export default function DonorDashboard({ user }: DonorDashboardProps) {
                             </span>
                             <span className="w-1 h-1 rounded-full bg-slate-300"></span>
                             <span
-                              className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
-                                donation.status === "COMPLETED"
-                                  ? "bg-emerald-100 text-emerald-700"
-                                  : "bg-amber-100 text-amber-700"
-                              }`}
+                              className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${donation.status === "COMPLETED" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
                             >
                               {donation.status}
                             </span>

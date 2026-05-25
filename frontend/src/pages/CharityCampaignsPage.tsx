@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import CharitySidebar from "../components/CharitySidebar";
 import { getCharityCampaigns } from "../services/charityDashboard.api";
+import CampaignCard from "../components/CampaignCard";
 import { getApiErrorMessage } from "../services/apiErrors";
 import { useAuthStore } from "../store/authStore";
 import type { CharityCampaignsResponse } from "../types/charityDashboard";
-import { resolveAssetUrl } from "../utils/media";
+// resolveAssetUrl not needed here because CampaignCard handles images
 
 const statusOptions = [
   { label: "Active", value: "ACTIVE" },
@@ -15,7 +16,6 @@ const statusOptions = [
 
 export default function CharityCampaignsPage() {
   const { user } = useAuthStore();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     if (typeof window === "undefined") {
@@ -250,78 +250,46 @@ export default function CharityCampaignsPage() {
         ) : (
           <>
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {campaigns?.items.map((campaign) => {
-                const progress = Math.min(
-                  100,
-                  (Number(campaign.currentAmount) /
-                    Number(campaign.targetAmount || 1)) *
-                    100,
-                );
-                const daysRemaining = campaign.endDate
-                  ? Math.max(
-                      0,
-                      Math.ceil(
-                        (new Date(campaign.endDate).getTime() - Date.now()) /
-                          (1000 * 60 * 60 * 24),
-                      ),
-                    )
-                  : null;
+              {campaigns?.items.map((c) => {
+                // Convert CharityCampaignSummary -> Campaign expected by CampaignCard
+                const campaignForCard = {
+                  id: c.id,
+                  title: c.title,
+                  description: c.title || "",
+                  targetAmount: c.targetAmount,
+                  currentAmount: c.currentAmount,
+                  status:
+                    c.status === "ACTIVE"
+                      ? "Active"
+                      : c.status === "CLOSED"
+                        ? "Closed"
+                        : "Pending",
+                  startDate: new Date().toISOString(),
+                  endDate: c.endDate || new Date().toISOString(),
+                  charityId: 0,
+                  imageUrl: c.imageUrl,
+                  charity: undefined,
+                } as unknown as import("../types/campaign").Campaign;
 
                 return (
-                  <button
-                    key={campaign.id}
-                    type="button"
-                    onClick={() => navigate(`/campaigns/${campaign.id}`)}
-                    className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-sm transition hover:shadow-md"
-                  >
-                    {campaign.imageUrl ? (
-                      <img
-                        src={resolveAssetUrl(campaign.imageUrl) || undefined}
-                        alt={campaign.title}
-                        className="h-40 w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-40 w-full items-center justify-center bg-emerald-50 text-3xl font-bold text-emerald-600">
-                        {campaign.title.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <div className="flex flex-1 flex-col p-5">
-                      <div className="flex items-start justify-between gap-3">
-                        <h3 className="text-lg font-bold text-[#0b2b53]">
-                          {campaign.title}
-                        </h3>
-                        <span
-                          className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase ${
-                            campaign.status === "ACTIVE"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : campaign.status === "CLOSED"
-                                ? "bg-slate-200 text-slate-700"
-                                : "bg-amber-100 text-amber-700"
-                          }`}
-                        >
-                          {campaign.status}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-sm text-slate-500">
-                        {Number(campaign.currentAmount).toLocaleString()} /{" "}
-                        {Number(campaign.targetAmount).toLocaleString()} ETB
-                      </p>
-                      <div className="mt-4 h-2 rounded-full bg-slate-100">
-                        <div
-                          className="h-2 rounded-full bg-emerald-500"
-                          style={{ width: `${progress}%` }}
-                        />
-                      </div>
-                      <div className="mt-4 flex items-center justify-between text-xs font-semibold text-slate-500">
-                        <span>{campaign.donorCount} donors</span>
-                        <span>
-                          {daysRemaining !== null
-                            ? `${daysRemaining} days left`
-                            : "No deadline"}
-                        </span>
-                      </div>
-                    </div>
-                  </button>
+                  <CampaignCard
+                    key={c.id}
+                    campaign={campaignForCard}
+                    isOwner={true}
+                    onCampaignClosed={(id) => {
+                      setCampaigns((prev) => {
+                        if (!prev) return prev;
+                        return {
+                          ...prev,
+                          items: prev.items.map((item) =>
+                            item.id === id
+                              ? { ...item, status: "CLOSED" }
+                              : item,
+                          ),
+                        };
+                      });
+                    }}
+                  />
                 );
               })}
             </div>

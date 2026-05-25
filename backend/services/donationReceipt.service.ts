@@ -69,12 +69,12 @@ const formatReceiptResponse = (
 ): DonationReceiptResponse => ({
   receiptReference: receipt.receiptReference,
   issuedDate: receipt.issuedDate.toISOString(),
-  donorName: receipt.donation.isAnonymous 
-    ? "Anonymous" 
-    : (receipt.donation.donor?.name || receipt.donation.guestName || "Guest"),
-  donorEmail: receipt.donation.isAnonymous 
-    ? null 
-    : (receipt.donation.donor?.email || receipt.donation.guestEmail || null),
+  donorName: receipt.donation.isAnonymous
+    ? "Anonymous"
+    : receipt.donation.donor?.name || receipt.donation.guestName || "Guest",
+  donorEmail: receipt.donation.isAnonymous
+    ? null
+    : receipt.donation.donor?.email || receipt.donation.guestEmail || null,
   donationAmount: Number(receipt.donation.amount.toString()),
   donationDate: receipt.donation.donatedAt.toISOString(),
   campaignTitle: receipt.donation.campaign.title,
@@ -122,7 +122,8 @@ const getCompletedDonation = async (client: DbClient, donationId: number) =>
     },
   });
 
-const buildReceiptReference = () => `REC-${String(randomInt(0, 100000)).padStart(5, "0")}`;
+const buildReceiptReference = () =>
+  `REC-${String(randomInt(0, 100000)).padStart(5, "0")}`;
 
 const isUniqueConstraintError = (error: unknown) =>
   typeof error === "object" &&
@@ -147,7 +148,10 @@ export const ensureDonationReceipt = async (
   }
 
   if (donation.status !== "COMPLETED") {
-    throw new ApiError(400, "Receipt is only available for completed donations");
+    throw new ApiError(
+      400,
+      "Receipt is only available for completed donations",
+    );
   }
 
   for (let attempt = 0; attempt < 10; attempt += 1) {

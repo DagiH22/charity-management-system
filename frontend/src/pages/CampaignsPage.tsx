@@ -28,7 +28,8 @@ export default function CampaignsPage() {
   const [error, setError] = useState("");
 
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<"Active" | "Closed" | "ALL">("Active");
+  // Use backend status values (uppercase) to match returned data: 'ACTIVE' | 'CLOSED'
+  const [status, setStatus] = useState<"ALL" | "ACTIVE" | "CLOSED">("ALL");
   const [sortBy, setSortBy] = useState<
     "createdAt" | "currentAmount" | "targetAmount" | "donorCount" | "endDate"
   >("createdAt");
@@ -54,8 +55,9 @@ export default function CampaignsPage() {
 
         // Quick local filter mapped dynamically
         if (status !== "ALL") {
+          // Normalize campaign.status to uppercase string to avoid mismatches
           fetchedData = fetchedData.filter(
-            (c: Campaign) => c.status === status,
+            (c: Campaign) => String(c.status).toUpperCase() === status,
           );
         }
 

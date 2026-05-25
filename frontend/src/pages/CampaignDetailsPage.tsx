@@ -13,10 +13,7 @@ import {
 } from "../services/donor.api";
 import { resolveAssetUrl } from "../utils/media";
 import { getDonationReceipt } from "../services/donation.api";
-import {
-  generateReceiptPDF,
-  type ReceiptPDFData,
-} from "../utils/receiptPdf";
+import { generateReceiptPDF, type ReceiptPDFData } from "../utils/receiptPdf";
 
 const PRESET_AMOUNTS = [100, 250, 500, 1000];
 
@@ -129,7 +126,10 @@ export default function CampaignDetailsPage() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const txRef =
-      params.get("tx_ref") || params.get("txref") || params.get("ref_id") || params.get("transactionId");
+      params.get("tx_ref") ||
+      params.get("txref") ||
+      params.get("ref_id") ||
+      params.get("transactionId");
 
     console.log("🔍 Checking for Chapa redirect...");
     console.log("📍 Current URL:", window.location.href);
@@ -142,7 +142,10 @@ export default function CampaignDetailsPage() {
       const stored = sessionStorage.getItem("chapaRedirectDonation");
       if (stored) {
         donationFromStorage = JSON.parse(stored);
-        console.log("📦 Found donation in sessionStorage:", donationFromStorage);
+        console.log(
+          "📦 Found donation in sessionStorage:",
+          donationFromStorage,
+        );
       }
     } catch (err) {
       console.error("Error reading from sessionStorage:", err);
@@ -156,7 +159,7 @@ export default function CampaignDetailsPage() {
 
     const fetchDonation = async () => {
       const txRefToUse = txRef || donationFromStorage?.tx_ref;
-      
+
       if (!txRefToUse) {
         console.error("❌ No tx_ref available to fetch donation");
         return;
@@ -167,7 +170,7 @@ export default function CampaignDetailsPage() {
         const res = await getDonationByTxRef(txRefToUse);
         console.log("✅ Donation fetched successfully:", res);
         const donation = res.data.donation;
-        
+
         // CHECK PAYMENT STATUS - Only show receipt if COMPLETED
         if (donation.status !== "COMPLETED") {
           console.warn("⚠️ Payment not completed. Status:", donation.status);
@@ -196,7 +199,7 @@ export default function CampaignDetailsPage() {
         setShowReceiptDetails(false);
         console.log("🎫 Receipt data set from API, showing modal");
         setShowReceipt(true);
-        
+
         // Clean up storage
         sessionStorage.removeItem("chapaRedirectDonation");
         await loadData();
@@ -204,8 +207,10 @@ export default function CampaignDetailsPage() {
         console.error("❌ Error fetching donation details:", err);
         console.error("Error response:", err.response);
         console.error("Error message:", err.message);
-        
-        setDonationError("❌ Could not verify payment status. Please contact support.");
+
+        setDonationError(
+          "❌ Could not verify payment status. Please contact support.",
+        );
         sessionStorage.removeItem("chapaRedirectDonation");
       }
     };
@@ -340,7 +345,9 @@ export default function CampaignDetailsPage() {
 
     if (!isLoggedIn) {
       if (!donorName.trim() || !donorEmail.trim()) {
-        setDonationError("Full Name and Email Address are required for guest donations.");
+        setDonationError(
+          "Full Name and Email Address are required for guest donations.",
+        );
         return;
       }
       if (!/\S+@\S+\.\S+/.test(donorEmail)) {
@@ -379,7 +386,10 @@ export default function CampaignDetailsPage() {
         method: "Chapa Payment",
         timestamp: new Date().toISOString(),
       };
-      sessionStorage.setItem("chapaRedirectDonation", JSON.stringify(donationInfo));
+      sessionStorage.setItem(
+        "chapaRedirectDonation",
+        JSON.stringify(donationInfo),
+      );
       console.log("💾 Stored donation info in sessionStorage:", donationInfo);
 
       // Build and submit a form to Chapa hosted endpoint
@@ -444,7 +454,7 @@ export default function CampaignDetailsPage() {
 
       <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-8">
-          <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-6">
             <div className="flex items-center justify-between border-b border-slate-100 pb-5">
               <div className="flex items-center gap-4">
                 <img
@@ -478,7 +488,7 @@ export default function CampaignDetailsPage() {
               </button>
             </div>
 
-            <div className="pt-5">
+            <div className="p-6 pl-0 pr-0">
               <div className="flex items-end justify-between mb-2">
                 <div>
                   <span className="text-3xl font-extrabold text-[#0b2b53]">
@@ -562,13 +572,23 @@ export default function CampaignDetailsPage() {
               {donationError && (
                 <div className="mb-4 flex items-center justify-between rounded-lg bg-red-50 p-3 text-sm text-red-500">
                   <span>{donationError}</span>
-                  <button 
+                  <button
                     onClick={() => setDonationError("")}
                     className="text-red-400 hover:text-red-600 focus:outline-none"
                     aria-label="Close error message"
                   >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -769,8 +789,18 @@ export default function CampaignDetailsPage() {
                 className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors focus:outline-none"
                 aria-label="Close receipt"
               >
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
               <h3 className="text-2xl font-extrabold">Donation Successful!</h3>
@@ -787,7 +817,9 @@ export default function CampaignDetailsPage() {
                 <div className="flex justify-between border-b border-slate-100 pb-3">
                   <span className="text-slate-500">Donor Name</span>
                   <span className="font-bold text-[#0b2b53]">
-                    {receiptData.isAnonymous ? "Anonymous" : receiptData.donorName}
+                    {receiptData.isAnonymous
+                      ? "Anonymous"
+                      : receiptData.donorName}
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-slate-100 pb-3">
@@ -807,12 +839,16 @@ export default function CampaignDetailsPage() {
                     Total Donated
                   </span>
                   <span className="text-xl font-extrabold text-emerald-500">
-                    {receiptData.donationAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETB
+                    {receiptData.donationAmount.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}{" "}
+                    ETB
                   </span>
                 </div>
               </div>
               <div className="mt-8 flex gap-3">
-                <button 
+                <button
                   onClick={() => {
                     setShowReceiptDetails(true);
                   }}
@@ -820,7 +856,7 @@ export default function CampaignDetailsPage() {
                 >
                   View Full Receipt
                 </button>
-                <button 
+                <button
                   onClick={handleDownloadReceipt}
                   className="flex-1 rounded-xl bg-[#0b2b53] py-3 font-bold text-white transition hover:bg-slate-800"
                 >
@@ -849,51 +885,101 @@ export default function CampaignDetailsPage() {
                 className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
                 aria-label="Close receipt details"
               >
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
 
             <div className="overflow-y-auto flex-1 grid gap-4 px-6 py-6 md:grid-cols-2">
               <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Receipt ID</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.receiptReference}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Receipt ID
+                </p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">
+                  {receiptData.receiptReference}
+                </p>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Issued Date</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{formatReadableDate(receiptData.issuedDate)}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Issued Date
+                </p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">
+                  {formatReadableDate(receiptData.issuedDate)}
+                </p>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Donor Name</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.isAnonymous ? "Anonymous" : receiptData.donorName}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Donor Name
+                </p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">
+                  {receiptData.isAnonymous
+                    ? "Anonymous"
+                    : receiptData.donorName}
+                </p>
               </div>
               {!receiptData.isAnonymous && receiptData.donorEmail && (
                 <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Donor Email</p>
-                  <p className="mt-1 text-sm font-bold text-[#0b2b53] break-all">{receiptData.donorEmail}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Donor Email
+                  </p>
+                  <p className="mt-1 text-sm font-bold text-[#0b2b53] break-all">
+                    {receiptData.donorEmail}
+                  </p>
                 </div>
               )}
               <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Campaign</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.campaignTitle}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Campaign
+                </p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">
+                  {receiptData.campaignTitle}
+                </p>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Charity</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.charityName}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Charity
+                </p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">
+                  {receiptData.charityName}
+                </p>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Donation Date</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{formatReadableDate(receiptData.donationDate)}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Donation Date
+                </p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">
+                  {formatReadableDate(receiptData.donationDate)}
+                </p>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Payment Status</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.paymentStatus}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Payment Status
+                </p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">
+                  {receiptData.paymentStatus}
+                </p>
               </div>
               <div className="rounded-2xl bg-emerald-50 p-4 md:col-span-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Total Amount</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                  Total Amount
+                </p>
                 <p className="mt-1 text-2xl font-extrabold text-emerald-600">
-                  ETB {receiptData.donationAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ETB{" "}
+                  {receiptData.donationAmount.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </div>
             </div>

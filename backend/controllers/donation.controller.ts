@@ -35,21 +35,25 @@ export const donateToCampaign = asyncHandler(
       throw new ApiError(400, "Invalid campaign id");
     }
 
-    const { amount, isAnonymous, message, returnUrl, guestName, guestEmail } = req.body as {
-      amount?: number | string;
-      isAnonymous?: boolean;
-      message?: string;
-      returnUrl?: string;
-      guestName?: string;
-      guestEmail?: string;
-    };
+    const { amount, isAnonymous, message, returnUrl, guestName, guestEmail } =
+      req.body as {
+        amount?: number | string;
+        isAnonymous?: boolean;
+        message?: string;
+        returnUrl?: string;
+        guestName?: string;
+        guestEmail?: string;
+      };
 
     if (!amount || Number(amount) <= 0) {
       throw new ApiError(400, "Invalid donation amount");
     }
 
     if (!req.user && (!guestName || !guestEmail)) {
-      throw new ApiError(400, "Guest name and email are required for unauthenticated donations");
+      throw new ApiError(
+        400,
+        "Guest name and email are required for unauthenticated donations",
+      );
     }
 
     const donorInfo = req.user
@@ -120,7 +124,9 @@ export const getDonationByTxRef = asyncHandler(
       throw new ApiError(400, "Missing txRef parameter");
     }
 
-    const donation = await (await import("../services/campaign.service")).getDonationByTxRefService(txRef);
+    const donation = await (
+      await import("../services/campaign.service")
+    ).getDonationByTxRefService(txRef);
 
     const receipt =
       donation.status === "COMPLETED"
@@ -130,32 +136,42 @@ export const getDonationByTxRef = asyncHandler(
     // Mask donor email if anonymous
     const donor = {
       id: donation.donor?.id || null,
-      name: donation.isAnonymous 
-        ? "Anonymous" 
-        : (donation.donor?.name || donation.guestName || "Guest"),
-      email: donation.isAnonymous 
-        ? null 
-        : (donation.donor?.email || donation.guestEmail || null),
+      name: donation.isAnonymous
+        ? "Anonymous"
+        : donation.donor?.name || donation.guestName || "Guest",
+      email: donation.isAnonymous
+        ? null
+        : donation.donor?.email || donation.guestEmail || null,
     };
 
-    res.status(200).json({ success: true, data: { donation: { ...donation, donor }, receipt } });
+    res
+      .status(200)
+      .json({
+        success: true,
+        data: { donation: { ...donation, donor }, receipt },
+      });
   },
 );
 
-export const getDonationReceipt = asyncHandler(async (req: Request, res: Response) => {
-  const donationId = Number(req.params.donationId);
+export const getDonationReceipt = asyncHandler(
+  async (req: Request, res: Response) => {
+    const donationId = Number(req.params.donationId);
 
-  if (Number.isNaN(donationId)) {
-    throw new ApiError(400, "Invalid donation id");
-  }
+    if (Number.isNaN(donationId)) {
+      throw new ApiError(400, "Invalid donation id");
+    }
 
-  // If there's no auth, we can't show a protected receipt here
-  // But a guest should be getting it via the webhook/txRef flow.
-  if (!req.user) {
-    throw new ApiError(401, "Authentication required to view historical receipts");
-  }
+    // If there's no auth, we can't show a protected receipt here
+    // But a guest should be getting it via the webhook/txRef flow.
+    if (!req.user) {
+      throw new ApiError(
+        401,
+        "Authentication required to view historical receipts",
+      );
+    }
 
-  const receipt = await getDonationReceiptForDonor(donationId, req.user.id);
+    const receipt = await getDonationReceiptForDonor(donationId, req.user.id);
 
-  res.status(200).json({ success: true, data: receipt });
-});
+    res.status(200).json({ success: true, data: receipt });
+  },
+);

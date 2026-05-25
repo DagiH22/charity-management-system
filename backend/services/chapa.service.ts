@@ -72,9 +72,10 @@ type ChapaDonationMeta = {
 };
 
 const CHAPA_HOSTED_PAY_URL = "https://api.chapa.co/v1/hosted/pay";
-const DEFAULT_RETURN_ORIGIN = env.FRONTEND_URLS.split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean)[0] ?? "http://localhost:5173";
+const DEFAULT_RETURN_ORIGIN =
+  env.FRONTEND_URLS.split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)[0] ?? "http://localhost:5173";
 
 const donationSelect = {
   id: true,
@@ -91,9 +92,7 @@ const donationSelect = {
 } as const;
 
 const toDonationSummary = (
-  donation: Awaited<
-    ReturnType<typeof prisma.donation.create>
-  >,
+  donation: Awaited<ReturnType<typeof prisma.donation.create>>,
 ): DonationSummary => ({
   id: donation.id,
   donorId: donation.donorId,
@@ -162,13 +161,16 @@ const parseWebhookMeta = (meta: unknown): ChapaDonationMeta => {
     return {};
   }
 
-  const rawMeta = typeof meta === "string" ? (() => {
-    try {
-      return JSON.parse(meta) as Record<string, unknown>;
-    } catch {
-      return {};
-    }
-  })() : meta;
+  const rawMeta =
+    typeof meta === "string"
+      ? (() => {
+          try {
+            return JSON.parse(meta) as Record<string, unknown>;
+          } catch {
+            return {};
+          }
+        })()
+      : meta;
 
   if (typeof rawMeta !== "object" || Array.isArray(rawMeta)) {
     return {};
@@ -189,9 +191,7 @@ const parseWebhookMeta = (meta: unknown): ChapaDonationMeta => {
         ? typedMeta.message.trim()
         : null,
     returnUrl:
-      typeof typedMeta.returnUrl === "string"
-        ? typedMeta.returnUrl
-        : undefined,
+      typeof typedMeta.returnUrl === "string" ? typedMeta.returnUrl : undefined,
   };
 };
 
@@ -224,7 +224,9 @@ export const createDonationCheckoutService = async (
   });
 
   if (!campaign) {
-    console.warn("[CHAPA] Campaign not found", { campaignId: payload.campaignId });
+    console.warn("[CHAPA] Campaign not found", {
+      campaignId: payload.campaignId,
+    });
     throw new ApiError(404, "Campaign not found");
   }
 
@@ -275,9 +277,7 @@ export const createDonationCheckoutService = async (
   };
 };
 
-export const finalizeDonationFromChapaWebhook = async (
-  payload: unknown,
-) => {
+export const finalizeDonationFromChapaWebhook = async (payload: unknown) => {
   const normalized = normalizeChapaWebhookPayload(payload);
 
   if (normalized.status !== "success") {
@@ -446,10 +446,7 @@ export const finalizeDonationFromChapaWebhook = async (
       },
     });
 
-    await createBulkNotifications(
-      notificationsToCreate,
-      tx,
-    );
+    await createBulkNotifications(notificationsToCreate, tx);
 
     const receipt = await ensureDonationReceipt(donation.id, tx);
 
@@ -467,7 +464,9 @@ const normalizeChapaWebhookPayload = (
   payload: unknown,
 ): ParsedChapaWebhookPayload => {
   const normalizedPayload =
-    typeof payload === "object" && payload !== null && "data" in payload &&
+    typeof payload === "object" &&
+    payload !== null &&
+    "data" in payload &&
     (payload as { data?: unknown }).data
       ? ((payload as { data: Record<string, unknown> }).data as Record<
           string,
@@ -488,7 +487,7 @@ const normalizeChapaWebhookPayload = (
           normalizedPayload.customer !== null &&
           typeof (normalizedPayload.customer as { email?: unknown }).email ===
             "string"
-        ? ((normalizedPayload.customer as { email: string }).email)
+        ? (normalizedPayload.customer as { email: string }).email
         : undefined;
 
   if (!txRef) {

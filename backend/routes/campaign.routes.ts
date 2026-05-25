@@ -74,10 +74,6 @@ campaignRouter.put(
   closeCampaign,
 );
 // Donation endpoint (allows both authenticated donors and guests)
-campaignRouter.post(
-  "/:id/donate",
-  optionalAuth,
-  donateToCampaign,
-);
+campaignRouter.post("/:id/donate", optionalAuth, donateToCampaign);
 
 export default campaignRouter;

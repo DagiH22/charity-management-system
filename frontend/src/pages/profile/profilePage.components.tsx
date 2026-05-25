@@ -1,7 +1,22 @@
-import { BanknotesIcon, CheckIcon, ClipboardDocumentIcon, GlobeAltIcon, LinkIcon, MapPinIcon, PhoneIcon } from "@heroicons/react/24/outline";
+import {
+  BanknotesIcon,
+  CheckIcon,
+  ClipboardDocumentIcon,
+  GlobeAltIcon,
+  LinkIcon,
+  MapPinIcon,
+  PhoneIcon,
+} from "@heroicons/react/24/outline";
 import type { Dispatch, SetStateAction } from "react";
 import ImageUploadField from "../../components/ImageUploadField";
-import type { ActiveSocialLink, EditingBankAccount, ProfileData, SocialKey, SocialLinks } from "./profilePage.types";
+import Avatar from "../../components/Avatar";
+import type {
+  ActiveSocialLink,
+  EditingBankAccount,
+  ProfileData,
+  SocialKey,
+  SocialLinks,
+} from "./profilePage.types";
 import { SOCIAL_ENTRIES, SOCIAL_PLACEHOLDERS } from "./profilePage.constants";
 
 export function ProfileLoadingState() {
@@ -26,7 +41,9 @@ export function ProfilePageHeader({ role }: { role: string }) {
     <header className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-white to-emerald-50 p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">My Profile</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+            My Profile
+          </h1>
           <p className="mt-1.5 text-sm text-slate-500">
             View your profile details, then switch to edit mode when needed.
           </p>
@@ -95,7 +112,9 @@ function BankAccountCard({
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-base font-bold text-slate-900">{account.bankName}</p>
+          <p className="text-base font-bold text-slate-900">
+            {account.bankName}
+          </p>
           <p className="mt-1 text-sm text-slate-500">{account.accountHolder}</p>
         </div>
         <div className="flex flex-col items-end gap-2">
@@ -196,11 +215,24 @@ function EditingBankAccountRow({
   );
 }
 
-function ProfileAvatar({ src, fallback, alt }: { src: string | null; fallback: string; alt: string }) {
+function ProfileAvatar({
+  src,
+  fallback,
+  alt,
+}: {
+  src: string | null;
+  fallback: string;
+  alt: string;
+}) {
   return (
-    <div className="inline-flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-[#0b2b53] text-xl font-black text-white shadow-sm">
-      {src ? <img src={src} alt={alt} className="h-full w-full object-cover" /> : fallback}
-    </div>
+    <Avatar
+      src={src ?? undefined}
+      name={fallback}
+      alt={alt}
+      size="lg"
+      withBorder
+      className="shadow-sm"
+    />
   );
 }
 
@@ -250,7 +282,10 @@ function ProfileEditMode({
   setSocialLinks: Dispatch<SetStateAction<SocialLinks>>;
   editingBankAccounts: EditingBankAccount[];
   onAddBankAccount: () => void;
-  onChangeBankAccount: (idx: number, patch: Partial<EditingBankAccount>) => void;
+  onChangeBankAccount: (
+    idx: number,
+    patch: Partial<EditingBankAccount>,
+  ) => void;
   onRemoveBankAccount: (idx: number) => void;
   onCancelEditing: () => void;
   onSaveProfile: () => void;
@@ -276,7 +311,9 @@ function ProfileEditMode({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Name</label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Name
+          </label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -285,7 +322,9 @@ function ProfileEditMode({
           />
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Email</label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Email
+          </label>
           <input
             value={profile.user.email}
             disabled
@@ -293,7 +332,9 @@ function ProfileEditMode({
           />
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Role</label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Role
+          </label>
           <input
             value={profile.user.role}
             disabled
@@ -303,7 +344,9 @@ function ProfileEditMode({
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-slate-700">Bio</label>
+        <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          Bio
+        </label>
         <textarea
           value={bio}
           onChange={(e) => setBio(e.target.value)}
@@ -319,12 +362,16 @@ function ProfileEditMode({
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
               Charity Information
             </p>
-            <h3 className="mt-1 text-lg font-extrabold text-slate-900">Edit Your Charity Profile</h3>
+            <h3 className="mt-1 text-lg font-extrabold text-slate-900">
+              Edit Your Charity Profile
+            </h3>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">Phone</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                Phone
+              </label>
               <input
                 value={charityPhone}
                 onChange={(e) => setCharityPhone(e.target.value)}
@@ -333,7 +380,9 @@ function ProfileEditMode({
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">Website</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                Website
+              </label>
               <input
                 value={charityWebsite}
                 onChange={(e) => setCharityWebsite(e.target.value)}
@@ -344,7 +393,9 @@ function ProfileEditMode({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Address</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              Address
+            </label>
             <input
               value={charityAddress}
               onChange={(e) => setCharityAddress(e.target.value)}
@@ -360,10 +411,17 @@ function ProfileEditMode({
             <div className="grid gap-3 sm:grid-cols-2">
               {SOCIAL_ENTRIES.map(({ key, label }) => (
                 <div key={key}>
-                  <label className="mb-1.5 block text-xs font-medium text-slate-700">{label}</label>
+                  <label className="mb-1.5 block text-xs font-medium text-slate-700">
+                    {label}
+                  </label>
                   <input
                     value={socialLinks[key]}
-                    onChange={(e) => setSocialLinks((prev) => ({ ...prev, [key]: e.target.value }))}
+                    onChange={(e) =>
+                      setSocialLinks((prev) => ({
+                        ...prev,
+                        [key]: e.target.value,
+                      }))
+                    }
                     className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900"
                     placeholder={SOCIAL_PLACEHOLDERS[key]}
                   />
@@ -445,16 +503,25 @@ function ProfileViewMode({
             ["Role", profile.user.role],
           ] as [string, string][]
         ).map(([label, value]) => (
-          <div key={label} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</p>
+          <div
+            key={label}
+            className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+          >
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              {label}
+            </p>
             <p className="mt-2 text-lg font-bold text-slate-900">{value}</p>
           </div>
         ))}
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Bio</p>
-        <p className="mt-2 text-lg font-bold text-slate-900">{profile.user.bio ?? "No bio added yet."}</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+          Bio
+        </p>
+        <p className="mt-2 text-lg font-bold text-slate-900">
+          {profile.user.bio ?? "No bio added yet."}
+        </p>
       </div>
 
       {isCharity && profile.charityProfile && (
@@ -495,7 +562,9 @@ function ProfileViewMode({
             </div>
 
             <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm md:col-span-2 xl:col-span-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Website</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Website
+              </p>
               {profile.charityProfile.website ? (
                 <a
                   href={profile.charityProfile.website}
@@ -507,7 +576,9 @@ function ProfileViewMode({
                   {profile.charityProfile.website}
                 </a>
               ) : (
-                <p className="mt-2 text-base font-semibold text-slate-900">Not added</p>
+                <p className="mt-2 text-base font-semibold text-slate-900">
+                  Not added
+                </p>
               )}
             </div>
           </div>
@@ -515,7 +586,9 @@ function ProfileViewMode({
           <div>
             <div className="mb-3 flex items-center gap-2">
               <LinkIcon className="h-4 w-4 text-emerald-600" />
-              <h4 className="text-sm font-bold uppercase tracking-wider text-slate-700">Social links</h4>
+              <h4 className="text-sm font-bold uppercase tracking-wider text-slate-700">
+                Social links
+              </h4>
             </div>
             {activeSocialLinks.length > 0 ? (
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -527,12 +600,18 @@ function ProfileViewMode({
                     rel="noreferrer"
                     className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                   >
-                    <span className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${entry.color}`}>
+                    <span
+                      className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${entry.color}`}
+                    >
                       <SocialIcon platform={entry.key} />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-slate-900">{entry.label}</p>
-                      <p className="truncate text-xs text-slate-500">{entry.href}</p>
+                      <p className="text-sm font-bold text-slate-900">
+                        {entry.label}
+                      </p>
+                      <p className="truncate text-xs text-slate-500">
+                        {entry.href}
+                      </p>
                     </div>
                   </a>
                 ))}
@@ -547,7 +626,9 @@ function ProfileViewMode({
           <div>
             <div className="mb-3 flex items-center gap-2">
               <BanknotesIcon className="h-4 w-4 text-emerald-600" />
-              <h4 className="text-sm font-bold uppercase tracking-wider text-slate-700">Bank accounts</h4>
+              <h4 className="text-sm font-bold uppercase tracking-wider text-slate-700">
+                Bank accounts
+              </h4>
             </div>
             {profile.bankAccounts.length > 0 ? (
               <div className="grid gap-4 xl:grid-cols-2">
@@ -587,7 +668,10 @@ export type ProfileMainCardProps = {
     profile: ProfileData;
     currentImageUrl: string | null;
   };
-  viewModeProps: Omit<Parameters<typeof ProfileViewMode>[0], "profile" | "isCharity"> & {
+  viewModeProps: Omit<
+    Parameters<typeof ProfileViewMode>[0],
+    "profile" | "isCharity"
+  > & {
     profile: ProfileData;
   };
 };
@@ -606,7 +690,11 @@ export function ProfileMainCard({
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-5">
         <div className="flex items-center gap-4">
-          <ProfileAvatar src={currentImageUrl} fallback={userInitial} alt={profile.user.name} />
+          <ProfileAvatar
+            src={currentImageUrl}
+            fallback={userInitial}
+            alt={profile.user.name}
+          />
           <div>
             <h2 className="text-xl font-bold text-slate-900">
               {isEditingProfile
@@ -635,7 +723,11 @@ export function ProfileMainCard({
         )}
       </div>
 
-      {isEditingProfile ? <ProfileEditMode {...editModeProps} /> : <ProfileViewMode {...viewModeProps} isCharity={isCharity} />}
+      {isEditingProfile ? (
+        <ProfileEditMode {...editModeProps} />
+      ) : (
+        <ProfileViewMode {...viewModeProps} isCharity={isCharity} />
+      )}
     </section>
   );
 }
@@ -666,7 +758,9 @@ export function ProfileSettingsSidebar({
   return (
     <aside className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <h2 className="text-lg font-bold text-slate-900">Settings</h2>
-      <p className="mt-1 text-sm text-slate-500">Change your password to keep your account secure.</p>
+      <p className="mt-1 text-sm text-slate-500">
+        Change your password to keep your account secure.
+      </p>
 
       <div className="mt-5 space-y-4">
         {(
@@ -677,7 +771,9 @@ export function ProfileSettingsSidebar({
           ] as [string, string, Dispatch<SetStateAction<string>>][]
         ).map(([label, value, setter]) => (
           <div key={label}>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">{label}</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              {label}
+            </label>
             <input
               type="password"
               value={value}

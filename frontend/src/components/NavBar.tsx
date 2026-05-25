@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import NotificationBell from "./NotificationBell";
+import Avatar from "./Avatar";
 
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -26,8 +27,9 @@ export default function NavBar() {
   ];
 
   const donorNavLinks = [
-    { label: "Dashboard", href: "/dashboard" },
+    { label: "Home", href: "/" },
     { label: "Campaigns", href: "/campaigns" },
+    { label: "Dashboard", href: "/dashboard" },
   ];
 
   const navLinks =
@@ -45,7 +47,7 @@ export default function NavBar() {
     navigate("/login");
   };
 
-  const userInitial = (user?.name || "U").trim().charAt(0).toUpperCase();
+  // userInitial no longer needed — Avatar component handles initials
 
   return (
     <header className="sticky top-0 z-20 border-b border-[#e5ecf4] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,255,255,0.88))] backdrop-blur">
@@ -94,9 +96,14 @@ export default function NavBar() {
                 type="button"
                 className="flex items-center focus:outline-none"
               >
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#0b2b53] text-sm font-extrabold text-white shadow-sm cursor-pointer transition hover:opacity-90">
-                  {userInitial}
-                </span>
+                <Avatar
+                  src={user?.profileImage ?? undefined}
+                  name={user?.name}
+                  alt={user?.name}
+                  size="md"
+                  withBorder
+                  className="mr-2"
+                />
               </button>
               <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-2xl bg-white py-2 shadow-lg ring-1 ring-black/5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div className="px-4 py-3 border-b border-slate-100 mb-1">
@@ -184,9 +191,12 @@ export default function NavBar() {
             ) : (
               <div className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-5">
                 <div className="flex items-center gap-3 px-2 mb-3">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#0b2b53] text-base font-extrabold text-white shadow-sm">
-                    {userInitial}
-                  </span>
+                  <Avatar
+                    src={user?.profileImage ?? undefined}
+                    name={user?.name}
+                    alt={user?.name}
+                    size="md"
+                  />
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-slate-900 truncate">
                       {user.name}
