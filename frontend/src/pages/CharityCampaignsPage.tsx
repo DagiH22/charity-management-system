@@ -6,6 +6,8 @@ import CampaignCard from "../components/CampaignCard";
 import { getApiErrorMessage } from "../services/apiErrors";
 import { useAuthStore } from "../store/authStore";
 import type { CharityCampaignsResponse } from "../types/charityDashboard";
+import { SearchInput } from "../components/ui/SearchInput";
+import { FilterSelect } from "../components/ui/FilterSelect";
 // resolveAssetUrl not needed here because CampaignCard handles images
 
 const statusOptions = [
@@ -187,36 +189,36 @@ export default function CharityCampaignsPage() {
         </div>
 
         <div className="mb-6 flex flex-wrap gap-3">
-          <input
+          <SearchInput
             value={search}
             onChange={(event) => {
               setPage(1);
               setSearch(event.target.value);
             }}
             placeholder="Search campaigns"
-            className="w-full md:w-64 rounded-xl border border-slate-200 px-4 py-2 text-sm"
+            containerClassName="w-full md:w-64"
           />
-          <select
+          <FilterSelect
             value={sortBy}
             onChange={(event) => setSortBy(event.target.value as typeof sortBy)}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-          >
-            <option value="createdAt">Newest</option>
-            <option value="currentAmount">Amount Raised</option>
-            <option value="targetAmount">Target Amount</option>
-            <option value="donorCount">Donors</option>
-            <option value="endDate">Ending Soon</option>
-          </select>
-          <select
+            options={[
+              { value: "createdAt", label: "Newest" },
+              { value: "currentAmount", label: "Amount Raised" },
+              { value: "targetAmount", label: "Target Amount" },
+              { value: "donorCount", label: "Donors" },
+              { value: "endDate", label: "Ending Soon" },
+            ]}
+          />
+          <FilterSelect
             value={sortOrder}
             onChange={(event) =>
               setSortOrder(event.target.value as "asc" | "desc")
             }
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-          >
-            <option value="desc">Descending</option>
-            <option value="asc">Ascending</option>
-          </select>
+            options={[
+              { value: "desc", label: "Descending" },
+              { value: "asc", label: "Ascending" },
+            ]}
+          />
         </div>
 
         {isLoading ? (

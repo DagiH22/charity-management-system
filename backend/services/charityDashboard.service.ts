@@ -236,6 +236,8 @@ export const getCharityContributionsService = async (
         OR: [
           { transactionId: { contains: search } },
           { donor: { name: { contains: search } } },
+          { guestName: { contains: search } },
+          { guestEmail: { contains: search } },
         ],
       },
       select: { campaignId: true },
@@ -290,6 +292,8 @@ export const getCharityContributionsService = async (
               OR: [
                 { transactionId: { contains: search } },
                 { donor: { name: { contains: search } } },
+                { guestName: { contains: search } },
+                { guestEmail: { contains: search } },
               ],
             }
           : {}),
@@ -387,6 +391,8 @@ export const getCharityCampaignContributionsService = async (
           OR: [
             { transactionId: { contains: search } },
             { donor: { name: { contains: search } } },
+            { guestName: { contains: search } },
+            { guestEmail: { contains: search } },
           ],
         }
       : {}),

@@ -151,6 +151,54 @@ export const getMyCharityProfile = async (userId: number) => {
   return profile;
 };
 
+export const getPublicCharityProfileById = async (charityId: number) => {
+  const profile = await prisma.charityProfile.findUnique({
+    where: { id: charityId },
+    select: {
+      id: true,
+      organizationName: true,
+      description: true,
+      logo: true,
+      status: true,
+      verifiedAt: true,
+      phone: true,
+      address: true,
+      website: true,
+      socialFacebook: true,
+      socialTelegram: true,
+      socialInstagram: true,
+      socialTwitter: true,
+      socialYoutube: true,
+      socialTiktok: true,
+      createdAt: true,
+      user: {
+        select: {
+          bankAccounts: {
+            select: {
+              id: true,
+              bankName: true,
+              accountNumber: true,
+              accountHolder: true,
+              type: true,
+              isPrimary: true,
+            },
+            orderBy: [{ isPrimary: "desc" }, { id: "desc" }],
+          },
+        },
+      },
+    },
+  });
+
+  if (!profile) {
+    throw new ApiError(404, "Charity profile not found");
+  }
+
+  return {
+    ...profile,
+    bankAccounts: profile.user.bankAccounts,
+  };
+};
+
 export const updateMyCharityProfile = async ({
   userId,
   organizationName,

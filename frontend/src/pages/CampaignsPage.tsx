@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import DonorSidebar from "../components/DonorSidebar";
 import { getApiErrorMessage } from "../services/apiErrors";
+import { SearchInput } from "../components/ui/SearchInput";
+import { FilterSelect } from "../components/ui/FilterSelect";
 
 const statusOptions = [
   { label: "Active", value: "ACTIVE" },
@@ -139,53 +141,32 @@ export default function CampaignsPage() {
       <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-1 gap-4">
-            <div className="relative max-w-md flex-1">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <svg
-                  className="h-5 w-5 text-slate-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <input
-                type="text"
-                placeholder="Search campaigns..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="block w-full rounded-xl border-slate-200 pl-10 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-              />
-            </div>
-            <select
+            <SearchInput
+              placeholder="Search campaigns..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              containerClassName="max-w-md flex-1"
+            />
+            <FilterSelect
               value={status}
               onChange={(e) => setStatus(e.target.value as any)}
-              className="block rounded-xl border-slate-200 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-            >
-              <option value="ALL">All Status</option>
-              {statusOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              defaultOption={{ value: "ALL", label: "All Status" }}
+              options={statusOptions}
+            />
           </div>
           <div className="flex items-center gap-3">
-            <select
+            <FilterSelect
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="block w-full rounded-xl border-slate-200 text-sm focus:border-emerald-500 focus:ring-emerald-500 sm:w-auto"
-            >
-              <option value="createdAt">Date Created</option>
-              <option value="endDate">End Date</option>
-              <option value="currentAmount">Amount Raised</option>
-              <option value="targetAmount">Target Amount</option>
-              <option value="donorCount">Donors</option>
-            </select>
+              options={[
+                { value: "createdAt", label: "Date Created" },
+                { value: "endDate", label: "End Date" },
+                { value: "currentAmount", label: "Amount Raised" },
+                { value: "targetAmount", label: "Target Amount" },
+                { value: "donorCount", label: "Donors" },
+              ]}
+              containerClassName="w-full sm:w-auto"
+            />
             <button
               type="button"
               onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}

@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler";
 import {
   approveCharityProfile,
   createCharityProfile,
+  getPublicCharityProfileById,
   getMyCharityProfile,
   getPendingCharityProfiles,
   rejectCharityProfile,
@@ -105,6 +106,23 @@ export const getMyProfile = asyncHandler(
     }
 
     const profile = await getMyCharityProfile(req.user.id);
+
+    res.status(200).json({
+      success: true,
+      profile,
+    });
+  },
+);
+
+export const getPublicProfile = asyncHandler(
+  async (req: Request, res: Response) => {
+    const charityId = Number(req.params.charityId);
+
+    if (!Number.isInteger(charityId) || charityId <= 0) {
+      throw new ApiError(400, "Invalid charity id");
+    }
+
+    const profile = await getPublicCharityProfileById(charityId);
 
     res.status(200).json({
       success: true,

@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import path from "node:path";
 import authRouter from "./routes/auth.routes";
+import bankAccountRouter from "./routes/bankAccount.routes";
 import charityProfileRouter from "./routes/charityProfile.routes";
 import campaignRouter from "./routes/campaign.routes";
 import donationRouter from "./routes/donation.routes";
@@ -63,6 +64,7 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/bank-accounts", bankAccountRouter);
 app.use("/api/charity-profile", charityProfileRouter);
 app.use("/api/campaign", campaignRouter);
 app.use("/api/donation", donationRouter);

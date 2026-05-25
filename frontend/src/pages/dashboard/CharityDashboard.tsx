@@ -88,7 +88,7 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
       return "Anonymous Donor";
     }
 
-    return donation.donor?.name || "Unknown Donor";
+    return donation.donor?.name || donation.guestName || "Unknown Donor";
   };
 
   return (

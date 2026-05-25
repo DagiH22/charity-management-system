@@ -171,10 +171,12 @@ export default function AdminDashboard() {
                   >
                     <div>
                       <p className="font-semibold text-[#0b2b53]">
-                        {donation.campaign.title} · {donation.campaign.charity.organizationName}
+                        {donation.campaign.title} · {donation.campaign.charity?.organizationName || "Unknown charity"}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">
-                        {donation.isAnonymous ? "Anonymous donor" : donation.donor.name} ·{" "}
+                        {donation.isAnonymous
+                          ? "Anonymous donor"
+                          : donation.donor?.name || donation.guestName || "Guest donor"} ·{" "}
                         {new Date(donation.donatedAt).toLocaleString()}
                         {donation.transactionId ? ` · ${donation.transactionId}` : ""}
                       </p>
@@ -211,7 +213,7 @@ export default function AdminDashboard() {
                   <div>
                     <p className="font-semibold text-[#0b2b53]">{campaign.title}</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      {campaign.charity.organizationName} · {campaign.donorCount} donors
+                      {campaign.charity?.organizationName || "Unknown charity"} · {campaign.donorCount} donors
                     </p>
                   </div>
                   <div className="text-right text-sm">

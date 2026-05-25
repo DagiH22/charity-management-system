@@ -3,6 +3,8 @@ import AdminShell from "../../components/AdminShell";
 import { getApiErrorMessage } from "../../services/apiErrors";
 import { getAdminUsers } from "../../services/adminDashboard.api";
 import type { AdminUsersResponse } from "../../types/adminDashboard";
+import { SearchInput } from "../../components/ui/SearchInput";
+import { FilterSelect } from "../../components/ui/FilterSelect";
 
 const roleTabs = ["ALL", "DONOR", "CHARITY", "ADMIN"] as const;
 
@@ -81,33 +83,32 @@ export default function AdminUserManagementPage() {
       </div>
 
       <div className="mb-6 grid gap-3 md:grid-cols-[1.3fr_0.7fr_0.6fr_auto]">
-        <input
+        <SearchInput
           value={search}
           onChange={(event) => {
             setPage(1);
             setSearch(event.target.value);
           }}
           placeholder="Search name, email, or organization"
-          className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm"
         />
-        <select
+        <FilterSelect
           value={sortBy}
           onChange={(event) => setSortBy(event.target.value as typeof sortBy)}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-        >
-          <option value="createdAt">Newest</option>
-          <option value="name">Name</option>
-          <option value="email">Email</option>
-        </select>
-        <select
+          options={[
+            { value: "createdAt", label: "Newest" },
+            { value: "name", label: "Name" },
+            { value: "email", label: "Email" },
+          ]}
+        />
+        <FilterSelect
           value={sortOrder}
           onChange={(event) => setSortOrder(event.target.value as "asc" | "desc")}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-        >
-          <option value="desc">Descending</option>
-          <option value="asc">Ascending</option>
-        </select>
-        <div className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600">
+          options={[
+            { value: "desc", label: "Descending" },
+            { value: "asc", label: "Ascending" },
+          ]}
+        />
+        <div className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 flex items-center justify-center">
           {totalCountLabel} users
         </div>
       </div>

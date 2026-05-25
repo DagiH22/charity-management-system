@@ -35,6 +35,7 @@ import AdminCharityVerificationPage from "./pages/admin/AdminCharityVerification
 import AdminCampaignOversightPage from "./pages/admin/AdminCampaignOversightPage";
 import AdminDonationLogsPage from "./pages/admin/AdminDonationLogsPage";
 import AdminReportsPage from "./pages/admin/AdminReportsPage";
+import CharityPublicProfilePage from "./pages/CharityPublicProfilePage";
 
 export default function App() {
   return (
@@ -44,6 +45,7 @@ export default function App() {
 
         <Route path="/campaigns" element={<CampaignsPage />} />
         <Route path="/campaigns/:id" element={<CampaignDetailsPage />} />
+        <Route path="/charity-profile/:charityId" element={<CharityPublicProfilePage />} />
         <Route path="*" element={<NotFoundPage />} />
 
         <Route element={<ProtectedRoute />}>

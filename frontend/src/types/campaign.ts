@@ -13,6 +13,15 @@ export type Campaign = {
     id: number;
     organizationName: string;
     address?: string;
+    logo?: string;
+    description?: string;
+    verifiedAt?: string;
+    socialFacebook?: string | null;
+    socialTwitter?: string | null;
+    socialInstagram?: string | null;
+    socialTelegram?: string | null;
+    socialYoutube?: string | null;
+    socialTiktok?: string | null;
   };
 };
 

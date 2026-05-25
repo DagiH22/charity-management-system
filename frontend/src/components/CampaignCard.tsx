@@ -29,6 +29,7 @@ const CampaignCard = ({
   const [status, setStatus] = useState(campaign.status);
   const [feedback, setFeedback] = useState<FeedbackState>(null);
 
+
   async function handleCloseCampaign(id: number): Promise<void> {
     if (
       !window.confirm(
