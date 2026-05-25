@@ -3,10 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import {
   Bars3Icon,
-  UserCircleIcon,
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
+import Avatar from "./Avatar";
 import NotificationBell from "./NotificationBell";
 
 interface CharityHeaderProps {
@@ -75,18 +75,14 @@ export default function CharityHeader({ onMenuClick }: CharityHeaderProps) {
               onClick={() => setProfileOpen((prev) => !prev)}
             >
               <span className="sr-only">Open user menu</span>
-              {user?.profileImage ? (
-                <img
-                  className="h-8 w-8 rounded-full bg-slate-50 object-cover ring-1 ring-slate-200"
-                  src={user.profileImage}
-                  alt=""
-                />
-              ) : (
-                <UserCircleIcon
-                  className="h-8 w-8 text-slate-400"
-                  aria-hidden="true"
-                />
-              )}
+              <Avatar
+                src={user?.profileImage ?? undefined}
+                name={user?.name ?? "User"}
+                alt={user?.name ?? "User"}
+                size="sm"
+                withBorder
+                className="ring-1 ring-slate-200"
+              />
               <span className="hidden lg:flex lg:items-center">
                 <span
                   className="ml-4 text-sm font-semibold leading-6 text-slate-900"

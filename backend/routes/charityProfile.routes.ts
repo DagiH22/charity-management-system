@@ -3,6 +3,7 @@ import { authorize, isAdmin, protect } from "../middlewares/auth.middleware";
 import {
   approveProfile,
   createMyCharityProfile,
+  getPublicProfile,
   getMyProfile,
   getPendingProfiles,
   rejectProfile,
@@ -18,6 +19,7 @@ charityProfileRouter.get(
   isAdmin,
   getPendingProfiles,
 );
+charityProfileRouter.get("/public/:charityId", getPublicProfile);
 charityProfileRouter.put(
   "/:profileId/approve",
   protect,

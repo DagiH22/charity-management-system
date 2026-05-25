@@ -1,7 +1,9 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDonorFollowingCampaigns } from "../services/donor.api";
 import { resolveAssetUrl } from "../utils/media";
+import { SearchInput } from "../components/ui/SearchInput";
+import { FilterSelect } from "../components/ui/FilterSelect";
 
 type FollowedCampaign = {
   id: number;
@@ -62,7 +64,7 @@ export default function DonorFollowingPage() {
   const totalPages = following?.totalPages || 1;
 
   return (
-    <div className="mx-auto max-w-[1100px] py-8 space-y-8">
+    <div className="space-y-8">
       <header className="space-y-2">
         <h1 className="text-3xl font-extrabold text-[#0b2b53]">
           Followed Campaigns
@@ -73,38 +75,38 @@ export default function DonorFollowingPage() {
       </header>
 
       <div className="flex flex-wrap gap-3">
-        <input
+        <SearchInput
           value={search}
           onChange={(event) => {
             setPage(1);
             setSearch(event.target.value);
           }}
           placeholder="Search by campaign"
-          className="w-full md:w-64 rounded-xl border border-slate-200 px-4 py-2 text-sm"
+          containerClassName="w-full md:w-64"
         />
-        <select
+        <FilterSelect
           value={status}
           onChange={(event) => {
             setPage(1);
             setStatus(event.target.value as "" | "ACTIVE" | "CLOSED" | "DRAFT");
           }}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-        >
-          <option value="">All status</option>
-          <option value="ACTIVE">Active</option>
-          <option value="CLOSED">Closed</option>
-          <option value="DRAFT">Draft</option>
-        </select>
-        <select
+          options={[
+            { value: "", label: "All status" },
+            { value: "ACTIVE", label: "Active" },
+            { value: "CLOSED", label: "Closed" },
+            { value: "DRAFT", label: "Draft" },
+          ]}
+        />
+        <FilterSelect
           value={sortOrder}
           onChange={(event) =>
             setSortOrder(event.target.value as "asc" | "desc")
           }
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-        >
-          <option value="desc">Newest</option>
-          <option value="asc">Oldest</option>
-        </select>
+          options={[
+            { value: "desc", label: "Newest" },
+            { value: "asc", label: "Oldest" },
+          ]}
+        />
       </div>
 
       {loading ? (

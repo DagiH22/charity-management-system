@@ -82,16 +82,22 @@ export default function CreateCampaignForm() {
         imageUrl = uploadResponse.imageUrl;
       }
 
-      await createCampaign({
+      const response = await createCampaign({
         ...result.data,
         imageUrl,
       });
 
-      setSubmitMessage("Campaign created successfully");
-
       setFormValues(initialCampaignFormValues);
       setImageFile(null);
       setUploadProgress(0);
+
+      const createdCampaignId = response?.data?.id;
+      if (createdCampaignId) {
+        navigate(`/campaigns/${createdCampaignId}`, { replace: true });
+        return;
+      }
+
+      navigate("/campaigns", { replace: true });
     } catch (error: any) {
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);

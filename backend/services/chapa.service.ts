@@ -9,7 +9,7 @@ import { ensureDonationReceipt } from "./donationReceipt.service";
 
 type DonationCheckoutPayload = {
   campaignId: number;
-  donorId: number;
+  donorId?: number; // Optional for guests
   donorName: string;
   donorEmail: string;
   amount: number;
@@ -36,7 +36,9 @@ type ChapaHostedCheckoutFields = {
 
 type DonationSummary = {
   id: number;
-  donorId: number;
+  donorId: number | null;
+  guestName: string | null;
+  guestEmail: string | null;
   campaignId: number;
   amount: string;
   isAnonymous: boolean;
@@ -70,13 +72,16 @@ type ChapaDonationMeta = {
 };
 
 const CHAPA_HOSTED_PAY_URL = "https://api.chapa.co/v1/hosted/pay";
-const DEFAULT_RETURN_ORIGIN = env.FRONTEND_URLS.split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean)[0] ?? "http://localhost:5173";
+const DEFAULT_RETURN_ORIGIN =
+  env.FRONTEND_URLS.split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)[0] ?? "http://localhost:5173";
 
 const donationSelect = {
   id: true,
   donorId: true,
+  guestName: true,
+  guestEmail: true,
   campaignId: true,
   amount: true,
   isAnonymous: true,
@@ -87,12 +92,12 @@ const donationSelect = {
 } as const;
 
 const toDonationSummary = (
-  donation: Awaited<
-    ReturnType<typeof prisma.donation.create>
-  >,
+  donation: Awaited<ReturnType<typeof prisma.donation.create>>,
 ): DonationSummary => ({
   id: donation.id,
   donorId: donation.donorId,
+  guestName: donation.guestName,
+  guestEmail: donation.guestEmail,
   campaignId: donation.campaignId,
   amount: donation.amount.toString(),
   isAnonymous: donation.isAnonymous,
@@ -156,13 +161,16 @@ const parseWebhookMeta = (meta: unknown): ChapaDonationMeta => {
     return {};
   }
 
-  const rawMeta = typeof meta === "string" ? (() => {
-    try {
-      return JSON.parse(meta) as Record<string, unknown>;
-    } catch {
-      return {};
-    }
-  })() : meta;
+  const rawMeta =
+    typeof meta === "string"
+      ? (() => {
+          try {
+            return JSON.parse(meta) as Record<string, unknown>;
+          } catch {
+            return {};
+          }
+        })()
+      : meta;
 
   if (typeof rawMeta !== "object" || Array.isArray(rawMeta)) {
     return {};
@@ -183,9 +191,7 @@ const parseWebhookMeta = (meta: unknown): ChapaDonationMeta => {
         ? typedMeta.message.trim()
         : null,
     returnUrl:
-      typeof typedMeta.returnUrl === "string"
-        ? typedMeta.returnUrl
-        : undefined,
+      typeof typedMeta.returnUrl === "string" ? typedMeta.returnUrl : undefined,
   };
 };
 
@@ -218,7 +224,9 @@ export const createDonationCheckoutService = async (
   });
 
   if (!campaign) {
-    console.warn("[CHAPA] Campaign not found", { campaignId: payload.campaignId });
+    console.warn("[CHAPA] Campaign not found", {
+      campaignId: payload.campaignId,
+    });
     throw new ApiError(404, "Campaign not found");
   }
 
@@ -236,6 +244,8 @@ export const createDonationCheckoutService = async (
   const donation = await prisma.donation.create({
     data: {
       donorId: payload.donorId,
+      guestName: !payload.donorId ? payload.donorName : null,
+      guestEmail: !payload.donorId ? payload.donorEmail : null,
       campaignId: campaign.id,
       amount,
       isAnonymous: payload.isAnonymous,
@@ -267,9 +277,7 @@ export const createDonationCheckoutService = async (
   };
 };
 
-export const finalizeDonationFromChapaWebhook = async (
-  payload: unknown,
-) => {
+export const finalizeDonationFromChapaWebhook = async (payload: unknown) => {
   const normalized = normalizeChapaWebhookPayload(payload);
 
   if (normalized.status !== "success") {
@@ -317,10 +325,9 @@ export const finalizeDonationFromChapaWebhook = async (
   const donorId = existingDonation?.donorId;
   const campaignId = existingDonation?.campaignId ?? normalized.meta.campaignId;
 
-  if (!donorId || !campaignId) {
+  if (!campaignId) {
     console.error("[CHAPA-WEBHOOK] Unable to resolve donation context", {
       txRef: normalized.txRef,
-      hasDonorId: !!donorId,
       hasCampaignId: !!campaignId,
     });
     throw new ApiError(
@@ -404,40 +411,42 @@ export const finalizeDonationFromChapaWebhook = async (
       },
     });
 
-    await createBulkNotifications(
-      [
-        {
-          userId: donorId,
-          title: "Donation successful",
-          message: `Your donation of ${normalized.amount.toLocaleString()} ETB to ${campaign.title} was successful.`,
-          type: "DONATION",
-          metadata: {
-            campaignId,
-            donationId: donation.id,
-            amount: normalized.amount,
-            isAnonymous: normalized.meta.isAnonymous ?? false,
-          },
+    const notificationsToCreate: NotificationInput[] = [];
+
+    if (donorId) {
+      notificationsToCreate.push({
+        userId: donorId,
+        title: "Donation successful",
+        message: `Your donation of ${normalized.amount.toLocaleString()} ETB to ${campaign.title} was successful.`,
+        type: "DONATION",
+        metadata: {
+          campaignId,
+          donationId: donation.id,
+          amount: normalized.amount,
+          isAnonymous: normalized.meta.isAnonymous ?? false,
         },
-        {
-          userId: campaign.charity.userId,
-          title: "New donation received",
-          message: `${
-            (normalized.meta.isAnonymous ?? false)
-              ? "An anonymous donor"
-              : "A donor"
-          } contributed ${normalized.amount.toLocaleString()} ETB to ${campaign.title}.`,
-          type: "DONATION",
-          metadata: {
-            campaignId,
-            donationId: donation.id,
-            amount: normalized.amount,
-            isAnonymous: normalized.meta.isAnonymous ?? false,
-            donorId,
-          },
-        },
-      ] as NotificationInput[],
-      tx,
-    );
+      });
+    }
+
+    notificationsToCreate.push({
+      userId: campaign.charity.userId,
+      title: "New donation received",
+      message: `${
+        (normalized.meta.isAnonymous ?? false)
+          ? "An anonymous donor"
+          : "A donor"
+      } contributed ${normalized.amount.toLocaleString()} ETB to ${campaign.title}.`,
+      type: "DONATION",
+      metadata: {
+        campaignId,
+        donationId: donation.id,
+        amount: normalized.amount,
+        isAnonymous: normalized.meta.isAnonymous ?? false,
+        donorId: donorId || null,
+      },
+    });
+
+    await createBulkNotifications(notificationsToCreate, tx);
 
     const receipt = await ensureDonationReceipt(donation.id, tx);
 
@@ -455,7 +464,9 @@ const normalizeChapaWebhookPayload = (
   payload: unknown,
 ): ParsedChapaWebhookPayload => {
   const normalizedPayload =
-    typeof payload === "object" && payload !== null && "data" in payload &&
+    typeof payload === "object" &&
+    payload !== null &&
+    "data" in payload &&
     (payload as { data?: unknown }).data
       ? ((payload as { data: Record<string, unknown> }).data as Record<
           string,
@@ -476,7 +487,7 @@ const normalizeChapaWebhookPayload = (
           normalizedPayload.customer !== null &&
           typeof (normalizedPayload.customer as { email?: unknown }).email ===
             "string"
-        ? ((normalizedPayload.customer as { email: string }).email)
+        ? (normalizedPayload.customer as { email: string }).email
         : undefined;
 
   if (!txRef) {

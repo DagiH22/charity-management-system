@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import path from "node:path";
 import authRouter from "./routes/auth.routes";
+import bankAccountRouter from "./routes/bankAccount.routes";
 import charityProfileRouter from "./routes/charityProfile.routes";
 import campaignRouter from "./routes/campaign.routes";
 import donationRouter from "./routes/donation.routes";
@@ -10,7 +11,7 @@ import donorRouter from "./routes/donor.routes";
 import charityDashboardRouter from "./routes/charityDashboard.routes";
 import notificationRouter from "./routes/notification.routes";
 import adminDashboardRouter from "./routes/adminDashboard.routes";
-import bankAccountRouter from "./routes/bankAccount.routes";
+import statsRouter from "./routes/stats.routes";
 import { errorHandler, notFound } from "./middlewares/error.middleware";
 import { env } from "./utils/env";
 import { prisma } from "./utils/prisma";
@@ -63,6 +64,7 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/bank-accounts", bankAccountRouter);
 app.use("/api/charity-profile", charityProfileRouter);
 app.use("/api/campaign", campaignRouter);
 app.use("/api/donation", donationRouter);
@@ -71,7 +73,7 @@ app.use("/api/donor", donorRouter);
 app.use("/api/charity-dashboard", charityDashboardRouter);
 app.use("/api/notifications", notificationRouter);
 app.use("/api/admin-dashboard", adminDashboardRouter);
-app.use("/api/bank-accounts", bankAccountRouter);
+app.use("/api/stats", statsRouter);
 
 app.use(notFound);
 app.use(errorHandler);

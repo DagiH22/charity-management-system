@@ -7,9 +7,47 @@ import type {
 } from "../types/auth";
 import { apiBaseUrl, http } from "./httpClient";
 
+type PublicCharityProfileResponse = {
+  success: true;
+  profile: {
+    id: number;
+    organizationName: string;
+    description: string;
+    logo?: string | null;
+    status: "PENDING" | "APPROVED" | "REJECTED";
+    verifiedAt?: string | null;
+    phone?: string | null;
+    address?: string | null;
+    website?: string | null;
+    socialFacebook?: string | null;
+    socialTelegram?: string | null;
+    socialInstagram?: string | null;
+    socialTwitter?: string | null;
+    socialYoutube?: string | null;
+    socialTiktok?: string | null;
+    createdAt: string;
+    bankAccounts: Array<{
+      id: number;
+      bankName: string;
+      accountNumber: string;
+      accountHolder: string;
+      type: "PERSONAL" | "BUSINESS";
+      isPrimary: boolean;
+    }>;
+  };
+};
+
 export const getMyCharityProfileRequest = async () => {
   const { data } = await http.get<CharityProfileResponse>(
     "/charity-profile/me",
+  );
+
+  return data;
+};
+
+export const getPublicCharityProfileRequest = async (charityId: number) => {
+  const { data } = await http.get<PublicCharityProfileResponse>(
+    `/charity-profile/public/${charityId}`,
   );
 
   return data;

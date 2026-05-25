@@ -138,3 +138,17 @@ export const getDonationByTxRef = async (txRef: string) => {
   const { data } = await http.get(`/donation/${encodeURIComponent(txRef)}`);
   return data;
 };
+
+export type PlatformStats = {
+  totalDonations: number;
+  activeCampaigns: number;
+  peopleHelped: number;
+  totalDonors: number;
+};
+
+export const getPlatformStats = async () => {
+  const { data } = await http.get<{ success: boolean; data: PlatformStats }>(
+    "/stats/platform",
+  );
+  return data;
+};

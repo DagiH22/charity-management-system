@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   authorize,
   protect,
+  optionalAuth,
   verifiedCharityOnly,
 } from "../middlewares/auth.middleware";
 import {
@@ -72,12 +73,7 @@ campaignRouter.put(
   verifiedCharityOnly,
   closeCampaign,
 );
-// Donation endpoint (requires donor auth)
-campaignRouter.post(
-  "/:id/donate",
-  protect,
-  authorize("DONOR"),
-  donateToCampaign,
-);
+// Donation endpoint (allows both authenticated donors and guests)
+campaignRouter.post("/:id/donate", optionalAuth, donateToCampaign);
 
 export default campaignRouter;

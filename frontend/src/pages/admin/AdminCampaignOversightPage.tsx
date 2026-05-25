@@ -5,8 +5,10 @@ import { getApiErrorMessage } from "../../services/apiErrors";
 import { getAdminCampaigns } from "../../services/adminDashboard.api";
 import type { AdminCampaignsResponse } from "../../types/adminDashboard";
 import { resolveAssetUrl } from "../../utils/media";
+import { SearchInput } from "../../components/ui/SearchInput";
+import { FilterSelect } from "../../components/ui/FilterSelect";
 
-const statusTabs = ["ACTIVE", "CLOSED", "DRAFT", "ALL"] as const;
+const statusTabs = ["ACTIVE", "CLOSED", "ALL"] as const;
 
 export default function AdminCampaignOversightPage() {
   const navigate = useNavigate();
@@ -49,11 +51,9 @@ export default function AdminCampaignOversightPage() {
     () => ({
       ACTIVE: campaigns?.statusCounts.ACTIVE || 0,
       CLOSED: campaigns?.statusCounts.CLOSED || 0,
-      DRAFT: campaigns?.statusCounts.DRAFT || 0,
       ALL:
         (campaigns?.statusCounts.ACTIVE || 0) +
-        (campaigns?.statusCounts.CLOSED || 0) +
-        (campaigns?.statusCounts.DRAFT || 0),
+        (campaigns?.statusCounts.CLOSED || 0),
     }),
     [campaigns],
   );
@@ -61,7 +61,7 @@ export default function AdminCampaignOversightPage() {
   return (
     <AdminShell
       title="Campaign Oversight"
-      description="Review all campaigns across organizations, including active, pending draft, and closed." 
+      description="Review all campaigns across organizations, including active and closed." 
     >
       <div className="mb-6 flex flex-wrap gap-3">
         {statusTabs.map((tab) => (
@@ -84,33 +84,32 @@ export default function AdminCampaignOversightPage() {
       </div>
 
       <div className="mb-6 grid gap-3 md:grid-cols-[1.2fr_0.8fr_0.6fr]">
-        <input
+        <SearchInput
           value={search}
           onChange={(event) => {
             setPage(1);
             setSearch(event.target.value);
           }}
           placeholder="Search campaign or charity"
-          className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm"
         />
-        <select
+        <FilterSelect
           value={sortBy}
           onChange={(event) => setSortBy(event.target.value as typeof sortBy)}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-        >
-          <option value="createdAt">Newest</option>
-          <option value="currentAmount">Raised Amount</option>
-          <option value="targetAmount">Target Amount</option>
-          <option value="donorCount">Donor Count</option>
-        </select>
-        <select
+          options={[
+            { value: "createdAt", label: "Newest" },
+            { value: "currentAmount", label: "Raised Amount" },
+            { value: "targetAmount", label: "Target Amount" },
+            { value: "donorCount", label: "Donor Count" },
+          ]}
+        />
+        <FilterSelect
           value={sortOrder}
           onChange={(event) => setSortOrder(event.target.value as "asc" | "desc")}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-        >
-          <option value="desc">Descending</option>
-          <option value="asc">Ascending</option>
-        </select>
+          options={[
+            { value: "desc", label: "Descending" },
+            { value: "asc", label: "Ascending" },
+          ]}
+        />
       </div>
 
       {isLoading ? (

@@ -14,6 +14,8 @@ import type {
   CharityDonation,
 } from "../types/charityDashboard";
 import { resolveAssetUrl } from "../utils/media";
+import { SearchInput } from "../components/ui/SearchInput";
+import { FilterSelect } from "../components/ui/FilterSelect";
 
 const sortOptions = [
   { label: "Newest", value: "donatedAt" },
@@ -185,7 +187,7 @@ export default function CharityContributionsPage() {
     if (donation.isAnonymous) {
       return "Anonymous Donor";
     }
-    return donation.donor?.name || "Unknown Donor";
+    return donation.donor?.name || donation.guestName || "Unknown Donor";
   };
 
   const renderStatusBadge = (status: CharityDonation["status"]) => {
@@ -236,30 +238,26 @@ export default function CharityContributionsPage() {
         </header>
 
         <div className="mb-6 grid gap-4 lg:grid-cols-[1.2fr_0.8fr_0.6fr_0.6fr_auto_auto]">
-          <input
+          <SearchInput
             value={search}
             onChange={(event) => {
               setPage(1);
               setSearch(event.target.value);
             }}
             placeholder="Search donor, campaign, or transaction"
-            className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm"
           />
-          <select
+          <FilterSelect
             value={selectedCampaign}
             onChange={(event) => {
               setPage(1);
               setSelectedCampaign(event.target.value);
             }}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-          >
-            <option value="">All campaigns ({campaignTotal})</option>
-            {campaignOptions.map((campaign) => (
-              <option key={campaign.id} value={campaign.id}>
-                {campaign.title}
-              </option>
-            ))}
-          </select>
+            defaultOption={{ value: "", label: `All campaigns (${campaignTotal})` }}
+            options={campaignOptions.map((campaign) => ({
+              value: campaign.id,
+              label: campaign.title,
+            }))}
+          />
           <input
             type="date"
             value={dateFrom}
@@ -267,7 +265,7 @@ export default function CharityContributionsPage() {
               setPage(1);
               setDateFrom(event.target.value);
             }}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+            className="rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
           />
           <input
             type="date"
@@ -276,29 +274,23 @@ export default function CharityContributionsPage() {
               setPage(1);
               setDateTo(event.target.value);
             }}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+            className="rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
           />
-          <select
+          <FilterSelect
             value={sortBy}
             onChange={(event) => setSortBy(event.target.value as typeof sortBy)}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-          >
-            {sortOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <select
+            options={sortOptions}
+          />
+          <FilterSelect
             value={sortOrder}
             onChange={(event) =>
               setSortOrder(event.target.value as "asc" | "desc")
             }
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-          >
-            <option value="desc">Newest</option>
-            <option value="asc">Oldest</option>
-          </select>
+            options={[
+              { value: "desc", label: "Newest" },
+              { value: "asc", label: "Oldest" },
+            ]}
+          />
         </div>
 
         {isLoading ? (
@@ -403,6 +395,11 @@ export default function CharityContributionsPage() {
                               {renderDonorName(donation)}
                             </p>
                             <p className="mt-1 text-xs text-slate-500">
+                              {!donation.isAnonymous &&
+                              !donation.donor?.name &&
+                              donation.guestEmail
+                                ? `${donation.guestEmail} · `
+                                : ""}
                               {new Date(donation.donatedAt).toLocaleString()}
                               {donation.transactionId
                                 ? ` · ${donation.transactionId}`

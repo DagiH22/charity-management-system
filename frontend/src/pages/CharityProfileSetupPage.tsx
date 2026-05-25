@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  createBankAccountRequest,
+  deleteBankAccountRequest,
+  getMyBankAccountsRequest,
+  updateBankAccountRequest,
+} from "../services/bankAccount.api";
+import {
   createMyCharityProfileRequest,
   getMyCharityProfileRequest,
   updateMyCharityProfileRequest,
@@ -12,6 +18,16 @@ import { useAuthStore } from "../store/authStore";
 import ImageUploadField from "../components/ImageUploadField";
 import { validateImageFile } from "../utils/fileValidation";
 import { resolveAssetUrl } from "../utils/media";
+
+type EditingBankAccount = {
+  id?: number;
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+  type: "PERSONAL" | "BUSINESS";
+  isPrimary: boolean;
+  toDelete?: boolean;
+};
 
 export default function CharityProfileSetupPage() {
   const navigate = useNavigate();
@@ -33,6 +49,15 @@ export default function CharityProfileSetupPage() {
   const [socialTwitter, setSocialTwitter] = useState("");
   const [socialYoutube, setSocialYoutube] = useState("");
   const [socialTiktok, setSocialTiktok] = useState("");
+  const [bankAccounts, setBankAccounts] = useState<EditingBankAccount[]>([
+    {
+      bankName: "",
+      accountNumber: "",
+      accountHolder: "",
+      type: "PERSONAL",
+      isPrimary: false,
+    },
+  ]);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -56,6 +81,42 @@ export default function CharityProfileSetupPage() {
           setSocialTiktok(response.profile.socialTiktok || "");
           setExistingLogoUrl(response.profile.logo || null);
           setIsEditingProfile(true);
+
+          try {
+            const bankResponse = await getMyBankAccountsRequest();
+            const mappedAccounts = (bankResponse.accounts || []).map((account) => ({
+              id: account.id,
+              bankName: account.bankName || "",
+              accountNumber: account.accountNumber || "",
+              accountHolder: account.accountHolder || "",
+              type: account.type || "PERSONAL",
+              isPrimary: !!account.isPrimary,
+            }));
+
+            setBankAccounts(
+              mappedAccounts.length > 0
+                ? mappedAccounts
+                : [
+                    {
+                      bankName: "",
+                      accountNumber: "",
+                      accountHolder: "",
+                      type: "PERSONAL",
+                      isPrimary: false,
+                    },
+                  ],
+            );
+          } catch {
+            setBankAccounts([
+              {
+                bankName: "",
+                accountNumber: "",
+                accountHolder: "",
+                type: "PERSONAL",
+                isPrimary: false,
+              },
+            ]);
+          }
         }
       } catch {
         // Ignore profile load errors and allow user to proceed with creation.
@@ -78,6 +139,70 @@ export default function CharityProfileSetupPage() {
       URL.revokeObjectURL(previewUrl);
     };
   }, [logoFile]);
+
+  const patchBankAccount = (index: number, patch: Partial<EditingBankAccount>) => {
+    setBankAccounts((prev) =>
+      prev.map((account, idx) => {
+        if (patch.isPrimary) {
+          return idx === index
+            ? { ...account, ...patch, isPrimary: true }
+            : { ...account, isPrimary: false };
+        }
+
+        return idx === index ? { ...account, ...patch } : account;
+      }),
+    );
+  };
+
+  const addBankAccount = () => {
+    setBankAccounts((prev) => [
+      ...prev,
+      {
+        bankName: "",
+        accountNumber: "",
+        accountHolder: "",
+        type: "PERSONAL",
+        isPrimary: prev.length === 0,
+      },
+    ]);
+  };
+
+  const removeBankAccount = (index: number) => {
+    setBankAccounts((prev) => {
+      const clone = [...prev];
+      const selected = clone[index];
+
+      if (!selected) return prev;
+
+      if (selected.id) {
+        clone[index] = { ...selected, toDelete: true };
+      } else {
+        clone.splice(index, 1);
+      }
+
+      const active = clone.filter((item) => !item.toDelete);
+      if (active.length === 0) {
+        return [
+          {
+            bankName: "",
+            accountNumber: "",
+            accountHolder: "",
+            type: "PERSONAL",
+            isPrimary: false,
+          },
+        ];
+      }
+
+      if (!active.some((item) => item.isPrimary)) {
+        const firstActiveIndex = clone.findIndex((item) => !item.toDelete);
+        if (firstActiveIndex >= 0) {
+          clone[firstActiveIndex] = { ...clone[firstActiveIndex], isPrimary: true };
+        }
+      }
+
+      return clone;
+    });
+  };
 
   const handleLogoSelection = (file: File | null) => {
     if (!file) {
@@ -129,6 +254,29 @@ export default function CharityProfileSetupPage() {
       setIsSubmitting(true);
       setUploadProgress(0);
 
+      const activeAccounts = bankAccounts.filter((account) => !account.toDelete);
+      const filledAccounts = activeAccounts.filter(
+        (account) =>
+          account.bankName.trim() ||
+          account.accountNumber.trim() ||
+          account.accountHolder.trim(),
+      );
+
+      const hasInvalidAccount = filledAccounts.some(
+        (account) =>
+          !account.bankName.trim() ||
+          !account.accountNumber.trim() ||
+          !account.accountHolder.trim(),
+      );
+
+      if (hasInvalidAccount) {
+        setSubmitError(
+          "Please complete bank name, account number, and account holder for each bank account row.",
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
       if (isEditingProfile) {
         await updateMyCharityProfileRequest(
           {
@@ -148,6 +296,27 @@ export default function CharityProfileSetupPage() {
           },
           (progress) => setUploadProgress(progress),
         );
+
+        await Promise.allSettled(
+          bankAccounts
+            .filter((account) => account.toDelete && account.id)
+            .map((account) => deleteBankAccountRequest(account.id!)),
+        );
+
+        await Promise.allSettled(
+          filledAccounts.map((account) => {
+            const payload = {
+              bankName: account.bankName.trim(),
+              accountNumber: account.accountNumber.trim(),
+              accountHolder: account.accountHolder.trim(),
+              isPrimary: account.isPrimary,
+            };
+
+            return account.id
+              ? updateBankAccountRequest(account.id, payload)
+              : createBankAccountRequest(payload);
+          }),
+        );
       } else {
         await createMyCharityProfileRequest(
           {
@@ -166,6 +335,17 @@ export default function CharityProfileSetupPage() {
             socialTiktok,
           },
           (progress) => setUploadProgress(progress),
+        );
+
+        await Promise.allSettled(
+          filledAccounts.map((account) =>
+            createBankAccountRequest({
+              bankName: account.bankName.trim(),
+              accountNumber: account.accountNumber.trim(),
+              accountHolder: account.accountHolder.trim(),
+              isPrimary: account.isPrimary,
+            }),
+          ),
         );
 
         completeCharityProfile();
@@ -305,65 +485,159 @@ export default function CharityProfileSetupPage() {
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-            <InputField
-              id="socialFacebook"
-              type="url"
-              label="Facebook (optional)"
-              value={socialFacebook}
-              onChange={(e) => setSocialFacebook(e.target.value)}
-              placeholder="https://facebook.com/your-charity"
-            />
-            <InputField
-              id="socialTelegram"
-              type="url"
-              label="Telegram (optional)"
-              value={socialTelegram}
-              onChange={(e) => setSocialTelegram(e.target.value)}
-              placeholder="https://t.me/your-channel"
-            />
-            <InputField
-              id="socialInstagram"
-              type="url"
-              label="Instagram (optional)"
-              value={socialInstagram}
-              onChange={(e) => setSocialInstagram(e.target.value)}
-              placeholder="https://instagram.com/your-charity"
-            />
-            <InputField
-              id="socialTwitter"
-              type="url"
-              label="Twitter / X (optional)"
-              value={socialTwitter}
-              onChange={(e) => setSocialTwitter(e.target.value)}
-              placeholder="https://x.com/your-charity"
-            />
-            <InputField
-              id="socialYoutube"
-              type="url"
-              label="YouTube (optional)"
-              value={socialYoutube}
-              onChange={(e) => setSocialYoutube(e.target.value)}
-              placeholder="https://youtube.com/@your-charity"
-            />
-            <InputField
-              id="socialTiktok"
-              type="url"
-              label="TikTok (optional)"
-              value={socialTiktok}
-              onChange={(e) => setSocialTiktok(e.target.value)}
-              placeholder="https://tiktok.com/@your-charity"
-            />
-          </div>
+          <section className="rounded-2xl border border-slate-200 bg-slate-50/40 p-5">
+            <div className="mb-4">
+              <h3 className="text-base font-bold text-slate-900">Contact & Socials</h3>
+              <p className="mt-1 text-xs text-slate-500">
+                Add public links so donors can verify and trust your organization.
+              </p>
+            </div>
 
-          <InputField
-            id="address"
-            type="text"
-            label="Address (optional)"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            placeholder="123 Main St, City, Country"
-          />
+            <InputField
+              id="address"
+              type="text"
+              label="Address (optional)"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="123 Main St, City, Country"
+            />
+
+            <div className="mt-4 grid grid-cols-1 gap-5 md:grid-cols-2">
+              <InputField
+                id="socialFacebook"
+                type="url"
+                label="Facebook (optional)"
+                value={socialFacebook}
+                onChange={(e) => setSocialFacebook(e.target.value)}
+                placeholder="https://facebook.com/your-charity"
+              />
+              <InputField
+                id="socialTelegram"
+                type="url"
+                label="Telegram (optional)"
+                value={socialTelegram}
+                onChange={(e) => setSocialTelegram(e.target.value)}
+                placeholder="https://t.me/your-channel"
+              />
+              <InputField
+                id="socialInstagram"
+                type="url"
+                label="Instagram (optional)"
+                value={socialInstagram}
+                onChange={(e) => setSocialInstagram(e.target.value)}
+                placeholder="https://instagram.com/your-charity"
+              />
+              <InputField
+                id="socialTwitter"
+                type="url"
+                label="Twitter / X (optional)"
+                value={socialTwitter}
+                onChange={(e) => setSocialTwitter(e.target.value)}
+                placeholder="https://x.com/your-charity"
+              />
+              <InputField
+                id="socialYoutube"
+                type="url"
+                label="YouTube (optional)"
+                value={socialYoutube}
+                onChange={(e) => setSocialYoutube(e.target.value)}
+                placeholder="https://youtube.com/@your-charity"
+              />
+              <InputField
+                id="socialTiktok"
+                type="url"
+                label="TikTok (optional)"
+                value={socialTiktok}
+                onChange={(e) => setSocialTiktok(e.target.value)}
+                placeholder="https://tiktok.com/@your-charity"
+              />
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-slate-200 bg-slate-50/40 p-5">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Bank Accounts</h3>
+                <p className="mt-1 text-xs text-slate-500">
+                  Add where donors can transfer funds. You can manage these later in profile.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={addBankAccount}
+                className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
+              >
+                + Add account
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {bankAccounts
+                .map((account, index) => ({ account, index }))
+                .filter(({ account }) => !account.toDelete)
+                .map(({ account, index }) => (
+                  <div
+                    key={account.id ?? `new-${index}`}
+                    className="rounded-xl border border-slate-200 bg-white p-4"
+                  >
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <InputField
+                        id={`bankName-${index}`}
+                        type="text"
+                        label="Bank Name"
+                        value={account.bankName}
+                        onChange={(e) =>
+                          patchBankAccount(index, { bankName: e.target.value })
+                        }
+                        placeholder="Commercial Bank of Ethiopia"
+                      />
+                      <InputField
+                        id={`accountHolder-${index}`}
+                        type="text"
+                        label="Account Holder"
+                        value={account.accountHolder}
+                        onChange={(e) =>
+                          patchBankAccount(index, { accountHolder: e.target.value })
+                        }
+                        placeholder={organizationName || "Account holder name"}
+                      />
+                      <InputField
+                        id={`accountNumber-${index}`}
+                        type="text"
+                        label="Account Number"
+                        value={account.accountNumber}
+                        onChange={(e) =>
+                          patchBankAccount(index, { accountNumber: e.target.value })
+                        }
+                        placeholder="1000 1234 5678"
+                      />
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-between">
+                      <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600">
+                        <input
+                          type="checkbox"
+                          checked={account.isPrimary}
+                          onChange={(e) =>
+                            patchBankAccount(index, { isPrimary: e.target.checked })
+                          }
+                          className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        />
+                        Set as primary
+                      </label>
+
+                      <button
+                        type="button"
+                        onClick={() => removeBankAccount(index)}
+                        className="text-xs font-semibold text-rose-600 hover:text-rose-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </section>
 
           <div className="pt-4">
             <button

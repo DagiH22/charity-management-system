@@ -7,7 +7,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import CreateCampaignPage from "./pages/CreateCampaignPage";
 import CharityProfileSetupPage from "./pages/CharityProfileSetupPage";
-import AboutPage from "./pages/AboutPage";
+
 import { Route, Routes } from "react-router-dom";
 import GuestRoute from "./routes/GuestRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -29,20 +29,23 @@ import ProfilePage from "./pages/ProfilePage";
 import DonorDonationsPage from "./pages/DonorDonationsPage";
 import DonorAnonymousPage from "./pages/DonorAnonymousPage";
 import DonorFollowingPage from "./pages/DonorFollowingPage";
+import DonorLayout from "./layouts/DonorLayout";
 import AdminUserManagementPage from "./pages/admin/AdminUserManagementPage";
 import AdminCharityVerificationPage from "./pages/admin/AdminCharityVerificationPage";
 import AdminCampaignOversightPage from "./pages/admin/AdminCampaignOversightPage";
 import AdminDonationLogsPage from "./pages/admin/AdminDonationLogsPage";
 import AdminReportsPage from "./pages/admin/AdminReportsPage";
+import CharityPublicProfilePage from "./pages/CharityPublicProfilePage";
 
 export default function App() {
   return (
     <Routes>
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<AboutPage />} />
+
         <Route path="/campaigns" element={<CampaignsPage />} />
         <Route path="/campaigns/:id" element={<CampaignDetailsPage />} />
+        <Route path="/charity-profile/:charityId" element={<CharityPublicProfilePage />} />
         <Route path="*" element={<NotFoundPage />} />
 
         <Route element={<ProtectedRoute />}>
@@ -71,7 +74,27 @@ export default function App() {
             />
           </Route>
 
-          <Route element={<DonorRoute />}>
+          <Route element={<AdminRoute />}>
+            <Route path="/admin/users" element={<AdminUserManagementPage />} />
+            <Route
+              path="/admin/charity-verification"
+              element={<AdminCharityVerificationPage />}
+            />
+            <Route
+              path="/admin/campaigns"
+              element={<AdminCampaignOversightPage />}
+            />
+            <Route
+              path="/admin/donations"
+              element={<AdminDonationLogsPage />}
+            />
+            <Route path="/admin/reports" element={<AdminReportsPage />} />
+          </Route>
+        </Route>
+
+        {/* DONOR ROUTE OUTSIDE PROTECTED ROUTE SO GUESTS CAN SEE EMPTY STATES */}
+        <Route element={<DonorRoute />}>
+          <Route element={<DonorLayout />}>
             <Route
               path="/dashboard/donations"
               element={<DonorDonationsPage />}
@@ -84,20 +107,6 @@ export default function App() {
               path="/dashboard/following-campaigns"
               element={<DonorFollowingPage />}
             />
-          </Route>
-
-          <Route element={<AdminRoute />}>
-            <Route path="/admin/users" element={<AdminUserManagementPage />} />
-            <Route
-              path="/admin/charity-verification"
-              element={<AdminCharityVerificationPage />}
-            />
-            <Route
-              path="/admin/campaigns"
-              element={<AdminCampaignOversightPage />}
-            />
-            <Route path="/admin/donations" element={<AdminDonationLogsPage />} />
-            <Route path="/admin/reports" element={<AdminReportsPage />} />
           </Route>
         </Route>
       </Route>

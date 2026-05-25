@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, Link as RouterLink } from "react-router-dom";
 import {
   getPublicCampaignById,
   donateToCampaignRequest,
@@ -13,10 +13,8 @@ import {
 } from "../services/donor.api";
 import { resolveAssetUrl } from "../utils/media";
 import { getDonationReceipt } from "../services/donation.api";
-import {
-  generateReceiptPDF,
-  type ReceiptPDFData,
-} from "../utils/receiptPdf";
+import { generateReceiptPDF, type ReceiptPDFData } from "../utils/receiptPdf";
+import { Link as LinkIcon, CheckCircle2 } from "lucide-react";
 
 const PRESET_AMOUNTS = [100, 250, 500, 1000];
 
@@ -33,6 +31,57 @@ const VerifiedIcon = () => (
     />
   </svg>
 );
+
+type SocialKey =
+  | "socialFacebook"
+  | "socialInstagram"
+  | "socialTwitter"
+  | "socialYoutube"
+  | "socialTelegram"
+  | "socialTiktok";
+
+const SocialIcon = ({ platform }: { platform: SocialKey }) => {
+  switch (platform) {
+    case "socialFacebook":
+      return (
+        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+        </svg>
+      );
+    case "socialInstagram":
+      return (
+        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+        </svg>
+      );
+    case "socialTwitter":
+      return (
+        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.629L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" />
+        </svg>
+      );
+    case "socialYoutube":
+      return (
+        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+        </svg>
+      );
+    case "socialTiktok":
+      return (
+        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
+        </svg>
+      );
+    case "socialTelegram":
+      return (
+        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.984 8.535l-1.977 9.32c-.15.733-.537.915-1.088.569l-3.01-2.22-1.452 1.397c-.16.161-.295.295-.605.295l.217-3.053 5.553-5.019c.242-.22-.053-.34-.373-.12l-6.869 4.332-2.963-.924c-.644-.203-.66-.644.135-.956l11.569-4.461c.54-.203 1.01.132.84.953z" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+};
 
 const UserIcon = () => (
   <svg
@@ -101,6 +150,7 @@ export default function CampaignDetailsPage() {
   const [receiptData, setReceiptData] = useState<ReceiptPDFData | null>(null);
   const [donationError, setDonationError] = useState("");
   const [toastMessage, setToastMessage] = useState("");
+  const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
     if (isLoggedIn && user) {
@@ -114,6 +164,7 @@ export default function CampaignDetailsPage() {
       setLoading(true);
       const data = await getPublicCampaignById(id);
       setCampaign(data.data);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to load campaign.");
     } finally {
@@ -129,7 +180,10 @@ export default function CampaignDetailsPage() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const txRef =
-      params.get("tx_ref") || params.get("txref") || params.get("ref_id") || params.get("transactionId");
+      params.get("tx_ref") ||
+      params.get("txref") ||
+      params.get("ref_id") ||
+      params.get("transactionId");
 
     console.log("🔍 Checking for Chapa redirect...");
     console.log("📍 Current URL:", window.location.href);
@@ -142,7 +196,10 @@ export default function CampaignDetailsPage() {
       const stored = sessionStorage.getItem("chapaRedirectDonation");
       if (stored) {
         donationFromStorage = JSON.parse(stored);
-        console.log("📦 Found donation in sessionStorage:", donationFromStorage);
+        console.log(
+          "📦 Found donation in sessionStorage:",
+          donationFromStorage,
+        );
       }
     } catch (err) {
       console.error("Error reading from sessionStorage:", err);
@@ -156,7 +213,7 @@ export default function CampaignDetailsPage() {
 
     const fetchDonation = async () => {
       const txRefToUse = txRef || donationFromStorage?.tx_ref;
-      
+
       if (!txRefToUse) {
         console.error("❌ No tx_ref available to fetch donation");
         return;
@@ -167,7 +224,7 @@ export default function CampaignDetailsPage() {
         const res = await getDonationByTxRef(txRefToUse);
         console.log("✅ Donation fetched successfully:", res);
         const donation = res.data.donation;
-        
+
         // CHECK PAYMENT STATUS - Only show receipt if COMPLETED
         if (donation.status !== "COMPLETED") {
           console.warn("⚠️ Payment not completed. Status:", donation.status);
@@ -196,16 +253,19 @@ export default function CampaignDetailsPage() {
         setShowReceiptDetails(false);
         console.log("🎫 Receipt data set from API, showing modal");
         setShowReceipt(true);
-        
+
         // Clean up storage
         sessionStorage.removeItem("chapaRedirectDonation");
         await loadData();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         console.error("❌ Error fetching donation details:", err);
         console.error("Error response:", err.response);
         console.error("Error message:", err.message);
-        
-        setDonationError("❌ Could not verify payment status. Please contact support.");
+
+        setDonationError(
+          "❌ Could not verify payment status. Please contact support.",
+        );
         sessionStorage.removeItem("chapaRedirectDonation");
       }
     };
@@ -328,14 +388,27 @@ export default function CampaignDetailsPage() {
 
   const handleDonate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLoggedIn) {
-      setDonationError("You must be logged in as a donor to donate.");
+    if (isLoggedIn && userRole !== "DONOR") {
+      setDonationError("Only Donors can make donations.");
       return;
     }
 
     if (currentDonationValue < 10) {
       setDonationError("Minimum donation is 10 ETB.");
       return;
+    }
+
+    if (!isLoggedIn) {
+      if (!donorName.trim() || !donorEmail.trim()) {
+        setDonationError(
+          "Full Name and Email Address are required for guest donations.",
+        );
+        return;
+      }
+      if (!/\S+@\S+\.\S+/.test(donorEmail)) {
+        setDonationError("Please enter a valid email address.");
+        return;
+      }
     }
 
     setDonationError("");
@@ -347,12 +420,15 @@ export default function CampaignDetailsPage() {
         isAnonymous,
         message: undefined,
         returnUrl: window.location.href,
+        guestName: !isLoggedIn ? donorName : undefined,
+        guestEmail: !isLoggedIn ? donorEmail : undefined,
       };
 
       const res = await donateToCampaignRequest(id, payload);
 
       // If backend provided chapa checkout data, submit a form to Chapa hosted pay
       const checkout = res.data as unknown as {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         donation: any;
         chapa: { actionUrl: string; fields: Record<string, string> };
       };
@@ -366,7 +442,10 @@ export default function CampaignDetailsPage() {
         method: "Chapa Payment",
         timestamp: new Date().toISOString(),
       };
-      sessionStorage.setItem("chapaRedirectDonation", JSON.stringify(donationInfo));
+      sessionStorage.setItem(
+        "chapaRedirectDonation",
+        JSON.stringify(donationInfo),
+      );
       console.log("💾 Stored donation info in sessionStorage:", donationInfo);
 
       // Build and submit a form to Chapa hosted endpoint
@@ -386,6 +465,7 @@ export default function CampaignDetailsPage() {
       document.body.appendChild(form);
       form.submit();
       document.body.removeChild(form);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setDonationError(err.response?.data?.message || "Donation failed.");
       setIsSubmitting(false);
@@ -431,25 +511,113 @@ export default function CampaignDetailsPage() {
 
       <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-8">
-          <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-6">
             <div className="flex items-center justify-between border-b border-slate-100 pb-5">
               <div className="flex items-center gap-4">
-                <img
-                  src={
-                    resolveAssetUrl(campaign.charity.logo) ||
-                    "https://ui-avatars.com/api/?name=C&background=0b2b53&color=fff"
-                  }
-                  alt={campaign.charity.organizationName}
-                  className="h-12 w-12 rounded-full border border-slate-200 shadow-sm"
-                />
+                <RouterLink
+                  to={`/charity-profile/${campaign.charity.id}`}
+                  className="inline-flex rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                  aria-label={`View ${campaign.charity.organizationName} profile`}
+                >
+                  <img
+                    src={
+                      resolveAssetUrl(campaign.charity.logo) ||
+                      "https://ui-avatars.com/api/?name=C&background=0b2b53&color=fff"
+                    }
+                    alt={campaign.charity.organizationName}
+                    className="h-12 w-12 rounded-full border border-slate-200 shadow-sm"
+                  />
+                </RouterLink>
                 <div>
                   <h3 className="flex items-center gap-2 text-lg font-bold text-[#0b2b53]">
-                    {campaign.charity.organizationName}
+                    <RouterLink
+                      to={`/charity-profile/${campaign.charity.id}`}
+                      className="transition hover:text-emerald-700"
+                    >
+                      {campaign.charity.organizationName}
+                    </RouterLink>
                     {campaign.charity.verifiedAt && <VerifiedIcon />}
                   </h3>
                   <p className="text-sm text-slate-500">
                     {campaign.charity.description}
                   </p>
+                  
+                  {/* Social Links */}
+                  {(campaign.charity.socialFacebook ||
+                    campaign.charity.socialInstagram ||
+                    campaign.charity.socialTwitter ||
+                    campaign.charity.socialYoutube ||
+                    campaign.charity.socialTelegram ||
+                    campaign.charity.socialTiktok) && (
+                    <div className="mt-3 flex items-center gap-2">
+                      {campaign.charity.socialFacebook && (
+                        <a
+                          href={campaign.charity.socialFacebook}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                          title="Facebook"
+                        >
+                          <SocialIcon platform="socialFacebook" />
+                        </a>
+                      )}
+                      {campaign.charity.socialInstagram && (
+                        <a
+                          href={campaign.charity.socialInstagram}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-pink-50 hover:text-pink-600 transition-colors"
+                          title="Instagram"
+                        >
+                          <SocialIcon platform="socialInstagram" />
+                        </a>
+                      )}
+                      {campaign.charity.socialTwitter && (
+                        <a
+                          href={campaign.charity.socialTwitter}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-400 transition-colors"
+                          title="Twitter"
+                        >
+                          <SocialIcon platform="socialTwitter" />
+                        </a>
+                      )}
+                      {campaign.charity.socialYoutube && (
+                        <a
+                          href={campaign.charity.socialYoutube}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+                          title="YouTube"
+                        >
+                          <SocialIcon platform="socialYoutube" />
+                        </a>
+                      )}
+                      {campaign.charity.socialTelegram && (
+                        <a
+                          href={campaign.charity.socialTelegram}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-sky-50 hover:text-sky-500 transition-colors"
+                          title="Telegram"
+                        >
+                          <SocialIcon platform="socialTelegram" />
+                        </a>
+                      )}
+                      {campaign.charity.socialTiktok && (
+                        <a
+                          href={campaign.charity.socialTiktok}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-black transition-colors"
+                          title="TikTok"
+                        >
+                          <SocialIcon platform="socialTiktok" />
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
               <button
@@ -465,7 +633,7 @@ export default function CampaignDetailsPage() {
               </button>
             </div>
 
-            <div className="pt-5">
+            <div className="p-6 pl-0 pr-0">
               <div className="flex items-end justify-between mb-2">
                 <div>
                   <span className="text-3xl font-extrabold text-[#0b2b53]">
@@ -527,17 +695,34 @@ export default function CampaignDetailsPage() {
             )}
           </div>
 
-          {/* Mock Share section left as is for styling */}
-          <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-slate-200">
-            <span className="font-bold text-slate-700">Share:</span>
-            <button className="rounded-full bg-slate-200 p-2 text-slate-700 hover:bg-slate-300 transition">
-              Copy Link
+          <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-slate-200 mt-6">
+            <span className="font-bold text-slate-700">Share this campaign:</span>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                setIsCopied(true);
+                setTimeout(() => setIsCopied(false), 2000);
+              }}
+              className="flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200 hover:text-emerald-600 transition-colors shadow-sm"
+              title="Copy campaign link"
+            >
+              {isCopied ? (
+                <>
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                  <span className="text-emerald-500">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <LinkIcon className="h-4 w-4" />
+                  Copy Link
+                </>
+              )}
             </button>
           </div>
         </div>
 
         <div className="lg:col-span-1">
-          {userRole !== "CHARITY" && (
+          {userRole !== "CHARITY" && userRole !== "ADMIN" && (
             <div
               ref={donateSectionRef}
               className="sticky top-24 rounded-2xl bg-white p-6 shadow-[0_10px_40px_rgba(10,40,80,0.08)] transition-all duration-300"
@@ -549,13 +734,23 @@ export default function CampaignDetailsPage() {
               {donationError && (
                 <div className="mb-4 flex items-center justify-between rounded-lg bg-red-50 p-3 text-sm text-red-500">
                   <span>{donationError}</span>
-                  <button 
+                  <button
                     onClick={() => setDonationError("")}
                     className="text-red-400 hover:text-red-600 focus:outline-none"
                     aria-label="Close error message"
                   >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -565,7 +760,7 @@ export default function CampaignDetailsPage() {
                 <div className="p-4 bg-slate-100 rounded-xl text-center text-slate-600 font-bold">
                   This campaign is closed to new donations.
                 </div>
-              ) : isLoggedIn ? (
+              ) : !isLoggedIn || user?.role === "DONOR" ? (
                 <form onSubmit={handleDonate} className="space-y-6">
                   <div>
                     <label className="mb-3 block text-sm font-bold text-slate-700">
@@ -610,7 +805,7 @@ export default function CampaignDetailsPage() {
                       </div>
                     ) : (
                       <div className="mb-2 text-xs font-semibold text-amber-600 flex justify-between">
-                        <span>Please login before donating</span>
+                        <span>Create Account or Login to track your donation history</span>
                       </div>
                     )}
 
@@ -629,19 +824,20 @@ export default function CampaignDetailsPage() {
                       />
                     </div>
 
-                    {isLoggedIn && (
-                      <div>
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-700">
-                          Email Address
-                        </label>
-                        <input
-                          type="email"
-                          value={donorEmail}
-                          disabled
-                          className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm bg-slate-100 text-slate-500 cursor-not-allowed"
-                        />
-                      </div>
-                    )}
+                    <div>
+                      <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={donorEmail}
+                        onChange={(e) => setDonorEmail(e.target.value)}
+                        disabled={isLoggedIn}
+                        placeholder="Email Address"
+                        className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm disabled:bg-slate-100 disabled:text-slate-500 focus:border-emerald-500 focus:outline-none"
+                      />
+                    </div>
 
                     <div>
                       <label className="flex items-center gap-2 cursor-pointer">
@@ -755,8 +951,18 @@ export default function CampaignDetailsPage() {
                 className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors focus:outline-none"
                 aria-label="Close receipt"
               >
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
               <h3 className="text-2xl font-extrabold">Donation Successful!</h3>
@@ -773,7 +979,9 @@ export default function CampaignDetailsPage() {
                 <div className="flex justify-between border-b border-slate-100 pb-3">
                   <span className="text-slate-500">Donor Name</span>
                   <span className="font-bold text-[#0b2b53]">
-                    {receiptData.isAnonymous ? "Anonymous" : receiptData.donorName}
+                    {receiptData.isAnonymous
+                      ? "Anonymous"
+                      : receiptData.donorName}
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-slate-100 pb-3">
@@ -793,12 +1001,16 @@ export default function CampaignDetailsPage() {
                     Total Donated
                   </span>
                   <span className="text-xl font-extrabold text-emerald-500">
-                    {receiptData.donationAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETB
+                    {receiptData.donationAmount.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}{" "}
+                    ETB
                   </span>
                 </div>
               </div>
               <div className="mt-8 flex gap-3">
-                <button 
+                <button
                   onClick={() => {
                     setShowReceiptDetails(true);
                   }}
@@ -806,7 +1018,7 @@ export default function CampaignDetailsPage() {
                 >
                   View Full Receipt
                 </button>
-                <button 
+                <button
                   onClick={handleDownloadReceipt}
                   className="flex-1 rounded-xl bg-[#0b2b53] py-3 font-bold text-white transition hover:bg-slate-800"
                 >
@@ -835,51 +1047,101 @@ export default function CampaignDetailsPage() {
                 className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
                 aria-label="Close receipt details"
               >
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
 
             <div className="overflow-y-auto flex-1 grid gap-4 px-6 py-6 md:grid-cols-2">
               <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Receipt ID</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.receiptReference}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Receipt ID
+                </p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">
+                  {receiptData.receiptReference}
+                </p>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Issued Date</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{formatReadableDate(receiptData.issuedDate)}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Issued Date
+                </p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">
+                  {formatReadableDate(receiptData.issuedDate)}
+                </p>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Donor Name</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.isAnonymous ? "Anonymous" : receiptData.donorName}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Donor Name
+                </p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">
+                  {receiptData.isAnonymous
+                    ? "Anonymous"
+                    : receiptData.donorName}
+                </p>
               </div>
               {!receiptData.isAnonymous && receiptData.donorEmail && (
                 <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Donor Email</p>
-                  <p className="mt-1 text-sm font-bold text-[#0b2b53] break-all">{receiptData.donorEmail}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Donor Email
+                  </p>
+                  <p className="mt-1 text-sm font-bold text-[#0b2b53] break-all">
+                    {receiptData.donorEmail}
+                  </p>
                 </div>
               )}
               <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Campaign</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.campaignTitle}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Campaign
+                </p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">
+                  {receiptData.campaignTitle}
+                </p>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Charity</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.charityName}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Charity
+                </p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">
+                  {receiptData.charityName}
+                </p>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Donation Date</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{formatReadableDate(receiptData.donationDate)}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Donation Date
+                </p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">
+                  {formatReadableDate(receiptData.donationDate)}
+                </p>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Payment Status</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.paymentStatus}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Payment Status
+                </p>
+                <p className="mt-1 text-sm font-bold text-[#0b2b53]">
+                  {receiptData.paymentStatus}
+                </p>
               </div>
               <div className="rounded-2xl bg-emerald-50 p-4 md:col-span-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Total Amount</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                  Total Amount
+                </p>
                 <p className="mt-1 text-2xl font-extrabold text-emerald-600">
-                  ETB {receiptData.donationAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ETB{" "}
+                  {receiptData.donationAmount.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </div>
             </div>

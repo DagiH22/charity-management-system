@@ -29,6 +29,7 @@ const CampaignCard = ({
   const [status, setStatus] = useState(campaign.status);
   const [feedback, setFeedback] = useState<FeedbackState>(null);
 
+
   async function handleCloseCampaign(id: number): Promise<void> {
     if (
       !window.confirm(
@@ -61,15 +62,23 @@ const CampaignCard = ({
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-lg">
       <div className="mb-4 overflow-hidden rounded-xl">
-        <img
-          src={
-            resolveAssetUrl(campaign.imageUrl) ||
-            "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1200&q=80"
-          }
-          alt={campaign.title}
-          className="h-40 w-full object-cover"
-          loading="lazy"
-        />
+        {/* campaign image fallback to Avatar initials if image fails */}
+        {campaign.imageUrl ? (
+          <img
+            src={resolveAssetUrl(campaign.imageUrl) || undefined}
+            alt={campaign.title}
+            className="h-40 w-full object-cover"
+            loading="lazy"
+            onError={(e) => {
+              // hide broken image and rely on initials avatar below
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
+          />
+        ) : (
+          <div className="flex h-40 w-full items-center justify-center bg-emerald-50 text-3xl font-bold text-emerald-600">
+            {campaign.title.charAt(0).toUpperCase()}
+          </div>
+        )}
       </div>
       {/* Header */}
       <div className="mb-5 flex items-start justify-between gap-4">

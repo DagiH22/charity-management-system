@@ -1,7 +1,9 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getDonorAnonymousDonations } from "../services/donor.api";
 import { DonationTable } from "../components/DonationTable";
 import type { DonationItem } from "../components/DonationTable";
+import { SearchInput } from "../components/ui/SearchInput";
+import { FilterSelect } from "../components/ui/FilterSelect";
 
 type DonationsResponse = {
   items: DonationItem[];
@@ -47,7 +49,7 @@ export default function DonorAnonymousPage() {
   const totalPages = donations?.totalPages || 1;
 
   return (
-    <div className="mx-auto max-w-[1100px] py-8 space-y-8">
+    <div className="space-y-8">
       <header className="space-y-2">
         <h1 className="text-3xl font-extrabold text-[#0b2b53]">
           Anonymous Donations
@@ -56,34 +58,34 @@ export default function DonorAnonymousPage() {
       </header>
 
       <div className="flex flex-wrap gap-3">
-        <input
+        <SearchInput
           value={search}
           onChange={(event) => {
             setPage(1);
             setSearch(event.target.value);
           }}
           placeholder="Search by campaign"
-          className="w-full md:w-64 rounded-xl border border-slate-200 px-4 py-2 text-sm"
+          containerClassName="w-full md:w-64"
         />
-        <select
+        <FilterSelect
           value={sortBy}
           onChange={(event) => setSortBy(event.target.value as typeof sortBy)}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-        >
-          <option value="donatedAt">Date</option>
-          <option value="amount">Amount</option>
-          <option value="status">Status</option>
-        </select>
-        <select
+          options={[
+            { value: "donatedAt", label: "Date" },
+            { value: "amount", label: "Amount" },
+            { value: "status", label: "Status" },
+          ]}
+        />
+        <FilterSelect
           value={sortOrder}
           onChange={(event) =>
             setSortOrder(event.target.value as "asc" | "desc")
           }
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-        >
-          <option value="desc">Newest</option>
-          <option value="asc">Oldest</option>
-        </select>
+          options={[
+            { value: "desc", label: "Newest" },
+            { value: "asc", label: "Oldest" },
+          ]}
+        />
       </div>
 
       {loading ? (

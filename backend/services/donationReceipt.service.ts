@@ -47,7 +47,9 @@ const formatReceiptResponse = (
   receipt: Awaited<ReturnType<DbClient["donationReceipt"]["findUnique"]>> & {
     donation: {
       id: number;
-      donorId: number;
+      donorId: number | null;
+      guestName: string | null;
+      guestEmail: string | null;
       amount: Prisma.Decimal;
       isAnonymous: boolean;
       status: "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
@@ -55,7 +57,7 @@ const formatReceiptResponse = (
       donor: {
         name: string;
         email: string;
-      };
+      } | null;
       campaign: {
         title: string;
         charity: {
@@ -67,8 +69,12 @@ const formatReceiptResponse = (
 ): DonationReceiptResponse => ({
   receiptReference: receipt.receiptReference,
   issuedDate: receipt.issuedDate.toISOString(),
-  donorName: receipt.donation.isAnonymous ? "Anonymous" : receipt.donation.donor.name,
-  donorEmail: receipt.donation.isAnonymous ? null : receipt.donation.donor.email,
+  donorName: receipt.donation.isAnonymous
+    ? "Anonymous"
+    : receipt.donation.donor?.name || receipt.donation.guestName || "Guest",
+  donorEmail: receipt.donation.isAnonymous
+    ? null
+    : receipt.donation.donor?.email || receipt.donation.guestEmail || null,
   donationAmount: Number(receipt.donation.amount.toString()),
   donationDate: receipt.donation.donatedAt.toISOString(),
   campaignTitle: receipt.donation.campaign.title,
@@ -91,6 +97,8 @@ const getCompletedDonation = async (client: DbClient, donationId: number) =>
     select: {
       id: true,
       donorId: true,
+      guestName: true,
+      guestEmail: true,
       amount: true,
       isAnonymous: true,
       status: true,
@@ -114,7 +122,8 @@ const getCompletedDonation = async (client: DbClient, donationId: number) =>
     },
   });
 
-const buildReceiptReference = () => `REC-${String(randomInt(0, 100000)).padStart(5, "0")}`;
+const buildReceiptReference = () =>
+  `REC-${String(randomInt(0, 100000)).padStart(5, "0")}`;
 
 const isUniqueConstraintError = (error: unknown) =>
   typeof error === "object" &&
@@ -139,7 +148,10 @@ export const ensureDonationReceipt = async (
   }
 
   if (donation.status !== "COMPLETED") {
-    throw new ApiError(400, "Receipt is only available for completed donations");
+    throw new ApiError(
+      400,
+      "Receipt is only available for completed donations",
+    );
   }
 
   for (let attempt = 0; attempt < 10; attempt += 1) {

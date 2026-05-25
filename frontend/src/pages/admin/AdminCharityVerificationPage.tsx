@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import AdminShell from "../../components/AdminShell";
+import { SearchInput } from "../../components/ui/SearchInput";
 import {
   approveCharityProfileRequest,
   getPublicFileUrl,
@@ -128,14 +129,14 @@ export default function AdminCharityVerificationPage() {
       )}
 
       <div className="mb-6">
-        <input
+        <SearchInput
           value={search}
           onChange={(event) => {
             setSearch(event.target.value);
             setPage(1);
           }}
           placeholder="Search organization, owner name, or email"
-          className="w-full md:w-96 rounded-xl border border-slate-200 px-4 py-2 text-sm"
+          containerClassName="w-full md:w-96"
         />
       </div>
 

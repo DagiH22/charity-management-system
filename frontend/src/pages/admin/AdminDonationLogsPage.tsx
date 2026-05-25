@@ -3,8 +3,10 @@ import AdminShell from "../../components/AdminShell";
 import { getApiErrorMessage } from "../../services/apiErrors";
 import { getAdminCampaigns, getAdminDonations } from "../../services/adminDashboard.api";
 import type { AdminCampaignsResponse, AdminDonationsResponse } from "../../types/adminDashboard";
+import { SearchInput } from "../../components/ui/SearchInput";
+import { FilterSelect } from "../../components/ui/FilterSelect";
 
-const statusTabs = ["ALL", "COMPLETED", "PENDING", "FAILED", "REFUNDED"] as const;
+const statusTabs = ["ALL", "COMPLETED", "PENDING", "FAILED"] as const;
 
 export default function AdminDonationLogsPage() {
   const [donations, setDonations] = useState<AdminDonationsResponse | null>(null);
@@ -71,12 +73,10 @@ export default function AdminDonationLogsPage() {
       ALL:
         (donations?.statusCounts.COMPLETED || 0) +
         (donations?.statusCounts.PENDING || 0) +
-        (donations?.statusCounts.FAILED || 0) +
-        (donations?.statusCounts.REFUNDED || 0),
+        (donations?.statusCounts.FAILED || 0),
       COMPLETED: donations?.statusCounts.COMPLETED || 0,
       PENDING: donations?.statusCounts.PENDING || 0,
       FAILED: donations?.statusCounts.FAILED || 0,
-      REFUNDED: donations?.statusCounts.REFUNDED || 0,
     }),
     [donations],
   );
@@ -107,42 +107,38 @@ export default function AdminDonationLogsPage() {
       </div>
 
       <div className="mb-6 grid gap-3 lg:grid-cols-[1.1fr_0.9fr_0.6fr_0.6fr_0.6fr_0.6fr_auto]">
-        <input
+        <SearchInput
           value={search}
           onChange={(event) => {
             setPage(1);
             setSearch(event.target.value);
           }}
-          placeholder="Search donor, email, campaign, transaction"
-          className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm"
+          placeholder="Search logs"
         />
-        <select
+        <FilterSelect
           value={campaignId}
           onChange={(event) => {
             setPage(1);
             setCampaignId(event.target.value);
           }}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-        >
-          <option value="">All campaigns ({campaigns.length})</option>
-          {campaigns.map((campaign) => (
-            <option key={campaign.id} value={campaign.id}>
-              {campaign.title}
-            </option>
-          ))}
-        </select>
-        <select
+          defaultOption={{ value: "", label: `All campaigns (${campaigns.length})` }}
+          options={campaigns.map((campaign) => ({
+            value: campaign.id,
+            label: campaign.title,
+          }))}
+        />
+        <FilterSelect
           value={anonymous}
           onChange={(event) => {
             setPage(1);
             setAnonymous(event.target.value as typeof anonymous);
           }}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-        >
-          <option value="ALL">All donors</option>
-          <option value="YES">Anonymous</option>
-          <option value="NO">Named</option>
-        </select>
+          options={[
+            { value: "ALL", label: "All donors" },
+            { value: "YES", label: "Anonymous" },
+            { value: "NO", label: "Named" },
+          ]}
+        />
         <input
           type="date"
           value={dateFrom}
@@ -150,7 +146,7 @@ export default function AdminDonationLogsPage() {
             setPage(1);
             setDateFrom(event.target.value);
           }}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+          className="rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
         />
         <input
           type="date"
@@ -159,25 +155,25 @@ export default function AdminDonationLogsPage() {
             setPage(1);
             setDateTo(event.target.value);
           }}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+          className="rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
         />
-        <select
+        <FilterSelect
           value={sortBy}
           onChange={(event) => setSortBy(event.target.value as typeof sortBy)}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-        >
-          <option value="donatedAt">Newest</option>
-          <option value="amount">Amount</option>
-          <option value="status">Status</option>
-        </select>
-        <select
+          options={[
+            { value: "donatedAt", label: "Newest" },
+            { value: "amount", label: "Amount" },
+            { value: "status", label: "Status" },
+          ]}
+        />
+        <FilterSelect
           value={sortOrder}
           onChange={(event) => setSortOrder(event.target.value as "asc" | "desc")}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-        >
-          <option value="desc">Desc</option>
-          <option value="asc">Asc</option>
-        </select>
+          options={[
+            { value: "desc", label: "Desc" },
+            { value: "asc", label: "Asc" },
+          ]}
+        />
       </div>
 
       {isLoading ? (
@@ -220,16 +216,21 @@ export default function AdminDonationLogsPage() {
                   </td>
                   <td className="px-5 py-4">
                     <p className="font-semibold text-[#0b2b53]">
-                      {donation.isAnonymous ? "Anonymous Donor" : donation.donor.name}
+                      {donation.isAnonymous
+                        ? "Anonymous Donor"
+                        : donation.donor?.name || donation.guestName || "Guest Donor"}
                     </p>
-                    {!donation.isAnonymous && (
+                    {!donation.isAnonymous && donation.donor?.email && (
                       <p className="text-xs text-slate-500">{donation.donor.email}</p>
+                    )}
+                    {!donation.isAnonymous && !donation.donor?.email && donation.guestEmail && (
+                      <p className="text-xs text-slate-500">{donation.guestEmail}</p>
                     )}
                   </td>
                   <td className="px-5 py-4">
                     <p className="font-semibold text-slate-700">{donation.campaign.title}</p>
                     <p className="text-xs text-slate-500">
-                      {donation.campaign.charity.organizationName}
+                      {donation.campaign.charity?.organizationName || "Unknown charity"}
                     </p>
                   </td>
                   <td className="px-5 py-4">
