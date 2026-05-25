@@ -18,6 +18,7 @@ import { useAuthStore } from "../store/authStore";
 import ImageUploadField from "../components/ImageUploadField";
 import { validateImageFile } from "../utils/fileValidation";
 import { resolveAssetUrl } from "../utils/media";
+import { meRequest } from "../services/auth.api";
 
 type EditingBankAccount = {
   id?: number;
@@ -31,7 +32,7 @@ type EditingBankAccount = {
 
 export default function CharityProfileSetupPage() {
   const navigate = useNavigate();
-  const { completeCharityProfile } = useAuthStore();
+  const { completeCharityProfile, setAuthSession } = useAuthStore();
 
   const [organizationName, setOrganizationName] = useState("");
   const [description, setDescription] = useState("");
@@ -348,6 +349,13 @@ export default function CharityProfileSetupPage() {
           ),
         );
 
+        completeCharityProfile();
+      }
+
+      try {
+        const me = await meRequest();
+        setAuthSession(me.user);
+      } catch {
         completeCharityProfile();
       }
 

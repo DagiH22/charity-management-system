@@ -139,10 +139,10 @@ export default function CharityCampaignsPage() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight text-[#0b2b53]">
-                Campaigns Overview
+                My Campaigns
               </h1>
               <p className="mt-2 text-lg text-slate-500">
-                Review, filter, and track all of your fundraising campaigns.
+                Review, filter, and track only your created fundraising campaigns.
               </p>
             </div>
             <Link

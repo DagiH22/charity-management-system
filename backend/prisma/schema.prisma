@@ -25,6 +25,7 @@ model User {
   followedCampaigns FollowCampaign[]
   notifications     Notification[]
   passwordReset     PasswordReset?
+  reviewedCampaignRequests CampaignRequest[]
 }
 
 model CharityProfile {
@@ -48,6 +49,7 @@ model CharityProfile {
   socialYoutube    String?
   socialTiktok     String?
   campaigns        Campaign[]
+  campaignRequests CampaignRequest[]
   user             User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -68,6 +70,7 @@ model Campaign {
   charity       CharityProfile   @relation(fields: [charityId], references: [id], onDelete: Cascade)
   donations     Donation[]
   followers     FollowCampaign[]
+  campaignRequestAllowance CampaignRequest? @relation("CampaignRequestConsumedCampaign")
 
   @@index([charityId], map: "Campaign_charityId_fkey")
 }
@@ -98,6 +101,27 @@ model DonationReceipt {
   receiptReference String   @unique
   issuedDate       DateTime @default(now())
   donation         Donation @relation(fields: [donationId], references: [id], onDelete: Cascade)
+}
+
+model CampaignRequest {
+  id                 Int                   @id @default(autoincrement())
+  charityId          Int
+  reason             String                @db.Text
+  status             CampaignRequestStatus @default(PENDING)
+  requestedAt        DateTime              @default(now())
+  reviewedAt         DateTime?
+  reviewedById       Int?
+  consumedAt         DateTime?
+  consumedCampaignId Int?                  @unique
+  monthCampaignCount Int
+  totalCampaignCount Int
+  activeCampaignCount Int
+  charity            CharityProfile        @relation(fields: [charityId], references: [id], onDelete: Cascade)
+  reviewedBy         User?                 @relation(fields: [reviewedById], references: [id], onDelete: SetNull)
+  consumedCampaign   Campaign?             @relation("CampaignRequestConsumedCampaign", fields: [consumedCampaignId], references: [id], onDelete: SetNull)
+
+  @@index([charityId, status, requestedAt])
+  @@index([status, requestedAt])
 }
 
 model FollowCampaign {
@@ -184,6 +208,12 @@ enum NotificationType {
 }
 
 enum CharityVerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CampaignRequestStatus {
   PENDING
   APPROVED
   REJECTED

@@ -23,6 +23,9 @@ export default function CreateCampaignForm() {
   const [imageError, setImageError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const isLimitError =
+    submitMessage.toLowerCase().includes("monthly campaign limit") ||
+    submitMessage.toLowerCase().includes("request admin approval");
 
   useEffect(() => {
     if (!imageFile) {
@@ -308,8 +311,25 @@ export default function CreateCampaignForm() {
         </fieldset>
 
         {submitMessage && (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
-            {submitMessage}
+          <div
+            className={`rounded-xl px-4 py-3 text-sm font-semibold ${
+              isLimitError
+                ? "border border-amber-200 bg-amber-50 text-amber-800"
+                : "border border-emerald-200 bg-emerald-50 text-emerald-700"
+            }`}
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p>{submitMessage}</p>
+              {isLimitError && (
+                <button
+                  type="button"
+                  onClick={() => navigate("/charity/campaign-requests")}
+                  className="inline-flex items-center justify-center rounded-lg bg-amber-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-amber-500"
+                >
+                  Request approval
+                </button>
+              )}
+            </div>
           </div>
         )}
 
