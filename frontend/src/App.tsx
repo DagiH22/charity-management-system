@@ -7,7 +7,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import CreateCampaignPage from "./pages/CreateCampaignPage";
 import CharityProfileSetupPage from "./pages/CharityProfileSetupPage";
-import AboutPage from "./pages/AboutPage";
+
 import { Route, Routes } from "react-router-dom";
 import GuestRoute from "./routes/GuestRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -40,7 +40,7 @@ export default function App() {
     <Routes>
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<AboutPage />} />
+
         <Route path="/campaigns" element={<CampaignsPage />} />
         <Route path="/campaigns/:id" element={<CampaignDetailsPage />} />
         <Route path="*" element={<NotFoundPage />} />

@@ -13,7 +13,6 @@ export default function NavBar() {
   const publicNavLinks = [
     { label: "Home", href: "/" },
     { label: "Campaigns", href: "/campaigns" },
-    { label: "About", href: "/about" },
   ];
 
   const charityNavLinks = [
