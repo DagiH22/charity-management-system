@@ -29,6 +29,7 @@ import ProfilePage from "./pages/ProfilePage";
 import DonorDonationsPage from "./pages/DonorDonationsPage";
 import DonorAnonymousPage from "./pages/DonorAnonymousPage";
 import DonorFollowingPage from "./pages/DonorFollowingPage";
+import DonorLayout from "./layouts/DonorLayout";
 import AdminUserManagementPage from "./pages/admin/AdminUserManagementPage";
 import AdminCharityVerificationPage from "./pages/admin/AdminCharityVerificationPage";
 import AdminCampaignOversightPage from "./pages/admin/AdminCampaignOversightPage";
@@ -71,7 +72,27 @@ export default function App() {
             />
           </Route>
 
-          <Route element={<DonorRoute />}>
+          <Route element={<AdminRoute />}>
+            <Route path="/admin/users" element={<AdminUserManagementPage />} />
+            <Route
+              path="/admin/charity-verification"
+              element={<AdminCharityVerificationPage />}
+            />
+            <Route
+              path="/admin/campaigns"
+              element={<AdminCampaignOversightPage />}
+            />
+            <Route
+              path="/admin/donations"
+              element={<AdminDonationLogsPage />}
+            />
+            <Route path="/admin/reports" element={<AdminReportsPage />} />
+          </Route>
+        </Route>
+
+        {/* DONOR ROUTE OUTSIDE PROTECTED ROUTE SO GUESTS CAN SEE EMPTY STATES */}
+        <Route element={<DonorRoute />}>
+          <Route element={<DonorLayout />}>
             <Route
               path="/dashboard/donations"
               element={<DonorDonationsPage />}
@@ -84,20 +105,6 @@ export default function App() {
               path="/dashboard/following-campaigns"
               element={<DonorFollowingPage />}
             />
-          </Route>
-
-          <Route element={<AdminRoute />}>
-            <Route path="/admin/users" element={<AdminUserManagementPage />} />
-            <Route
-              path="/admin/charity-verification"
-              element={<AdminCharityVerificationPage />}
-            />
-            <Route
-              path="/admin/campaigns"
-              element={<AdminCampaignOversightPage />}
-            />
-            <Route path="/admin/donations" element={<AdminDonationLogsPage />} />
-            <Route path="/admin/reports" element={<AdminReportsPage />} />
           </Route>
         </Route>
       </Route>

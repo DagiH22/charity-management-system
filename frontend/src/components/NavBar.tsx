@@ -25,12 +25,19 @@ export default function NavBar() {
     { label: "Campaigns", href: "/admin/campaigns" },
   ];
 
+  const donorNavLinks = [
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Campaigns", href: "/campaigns" },
+  ];
+
   const navLinks =
     userRole === "ADMIN"
       ? adminNavLinks
       : userRole === "CHARITY"
         ? charityNavLinks
-        : publicNavLinks;
+        : userRole === "DONOR"
+          ? donorNavLinks
+          : publicNavLinks;
 
   const handleLogout = async () => {
     await logout();
@@ -83,17 +90,27 @@ export default function NavBar() {
             </Link>
           ) : (
             <div className="relative hidden lg:block group">
-              <button type="button" className="flex items-center focus:outline-none">
+              <button
+                type="button"
+                className="flex items-center focus:outline-none"
+              >
                 <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#0b2b53] text-sm font-extrabold text-white shadow-sm cursor-pointer transition hover:opacity-90">
                   {userInitial}
                 </span>
               </button>
               <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-2xl bg-white py-2 shadow-lg ring-1 ring-black/5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div className="px-4 py-3 border-b border-slate-100 mb-1">
-                  <p className="text-sm font-bold text-slate-900 truncate">{user.name}</p>
-                  <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                  <p className="text-sm font-bold text-slate-900 truncate">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-slate-500 truncate">
+                    {user.email}
+                  </p>
                 </div>
-                <Link to="/profile" className="block px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors">
+                <Link
+                  to="/profile"
+                  className="block px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors"
+                >
                   My Profile
                 </Link>
                 <div className="h-px bg-slate-100 my-1"></div>
@@ -171,8 +188,12 @@ export default function NavBar() {
                     {userInitial}
                   </span>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-slate-900 truncate">{user.name}</p>
-                    <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                    <p className="text-sm font-bold text-slate-900 truncate">
+                      {user.name}
+                    </p>
+                    <p className="text-xs text-slate-500 truncate">
+                      {user.email}
+                    </p>
                   </div>
                 </div>
                 <Link

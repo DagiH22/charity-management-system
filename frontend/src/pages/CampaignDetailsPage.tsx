@@ -13,58 +13,18 @@ import {
 } from "../services/donor.api";
 import { resolveAssetUrl } from "../utils/media";
 import { getDonationReceipt } from "../services/donation.api";
+import { generateReceiptPDF, type ReceiptPDFData } from "../utils/receiptPdf";
+import DonorSidebar from "../components/DonorSidebar";
 import {
-  generateReceiptPDF,
-  type ReceiptPDFData,
-} from "../utils/receiptPdf";
+  BadgeCheck,
+  Users,
+  Clock,
+  CheckCircle2,
+  ChevronRight,
+  XIcon,
+} from "lucide-react";
 
 const PRESET_AMOUNTS = [100, 250, 500, 1000];
-
-const VerifiedIcon = () => (
-  <svg
-    className="h-4 w-4 text-emerald-500"
-    fill="currentColor"
-    viewBox="0 0 20 20"
-  >
-    <path
-      fillRule="evenodd"
-      d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-      clipRule="evenodd"
-    />
-  </svg>
-);
-
-const UserIcon = () => (
-  <svg
-    className="h-5 w-5 text-slate-400"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-    />
-  </svg>
-);
-
-const ClockIcon = () => (
-  <svg
-    className="h-5 w-5 text-slate-400"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-    />
-  </svg>
-);
 
 const formatReadableDate = (value: string) =>
   new Intl.DateTimeFormat("en-US", {
@@ -102,6 +62,21 @@ export default function CampaignDetailsPage() {
   const [donationError, setDonationError] = useState("");
   const [toastMessage, setToastMessage] = useState("");
 
+  const isDonorOrGuest = !user || user.role === "DONOR";
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.matchMedia("(min-width: 1024px)").matches;
+  });
+
+  useEffect(() => {
+    if (!isDonorOrGuest) return;
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+    const syncSidebar = () => setSidebarOpen(mediaQuery.matches);
+    syncSidebar();
+    mediaQuery.addEventListener("change", syncSidebar);
+    return () => mediaQuery.removeEventListener("change", syncSidebar);
+  }, [isDonorOrGuest]);
+
   useEffect(() => {
     if (isLoggedIn && user) {
       setDonorName(user.name || "");
@@ -129,7 +104,10 @@ export default function CampaignDetailsPage() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const txRef =
-      params.get("tx_ref") || params.get("txref") || params.get("ref_id") || params.get("transactionId");
+      params.get("tx_ref") ||
+      params.get("txref") ||
+      params.get("ref_id") ||
+      params.get("transactionId");
 
     console.log("🔍 Checking for Chapa redirect...");
     console.log("📍 Current URL:", window.location.href);
@@ -142,7 +120,10 @@ export default function CampaignDetailsPage() {
       const stored = sessionStorage.getItem("chapaRedirectDonation");
       if (stored) {
         donationFromStorage = JSON.parse(stored);
-        console.log("📦 Found donation in sessionStorage:", donationFromStorage);
+        console.log(
+          "📦 Found donation in sessionStorage:",
+          donationFromStorage,
+        );
       }
     } catch (err) {
       console.error("Error reading from sessionStorage:", err);
@@ -156,7 +137,7 @@ export default function CampaignDetailsPage() {
 
     const fetchDonation = async () => {
       const txRefToUse = txRef || donationFromStorage?.tx_ref;
-      
+
       if (!txRefToUse) {
         console.error("❌ No tx_ref available to fetch donation");
         return;
@@ -167,7 +148,7 @@ export default function CampaignDetailsPage() {
         const res = await getDonationByTxRef(txRefToUse);
         console.log("✅ Donation fetched successfully:", res);
         const donation = res.data.donation;
-        
+
         // CHECK PAYMENT STATUS - Only show receipt if COMPLETED
         if (donation.status !== "COMPLETED") {
           console.warn("⚠️ Payment not completed. Status:", donation.status);
@@ -196,7 +177,7 @@ export default function CampaignDetailsPage() {
         setShowReceiptDetails(false);
         console.log("🎫 Receipt data set from API, showing modal");
         setShowReceipt(true);
-        
+
         // Clean up storage
         sessionStorage.removeItem("chapaRedirectDonation");
         await loadData();
@@ -204,8 +185,10 @@ export default function CampaignDetailsPage() {
         console.error("❌ Error fetching donation details:", err);
         console.error("Error response:", err.response);
         console.error("Error message:", err.message);
-        
-        setDonationError("❌ Could not verify payment status. Please contact support.");
+
+        setDonationError(
+          "❌ Could not verify payment status. Please contact support.",
+        );
         sessionStorage.removeItem("chapaRedirectDonation");
       }
     };
@@ -328,14 +311,25 @@ export default function CampaignDetailsPage() {
 
   const handleDonate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLoggedIn) {
-      setDonationError("You must be logged in as a donor to donate.");
+    if (isLoggedIn && userRole !== "DONOR") {
+      setDonationError("Only Donors can make donations.");
       return;
     }
 
     if (currentDonationValue < 10) {
       setDonationError("Minimum donation is 10 ETB.");
       return;
+    }
+
+    if (!isLoggedIn) {
+      if (!donorName.trim() || !donorEmail.trim()) {
+        setDonationError("Full Name and Email Address are required for guest donations.");
+        return;
+      }
+      if (!/\S+@\S+\.\S+/.test(donorEmail)) {
+        setDonationError("Please enter a valid email address.");
+        return;
+      }
     }
 
     setDonationError("");
@@ -347,6 +341,8 @@ export default function CampaignDetailsPage() {
         isAnonymous,
         message: undefined,
         returnUrl: window.location.href,
+        guestName: !isLoggedIn ? donorName : undefined,
+        guestEmail: !isLoggedIn ? donorEmail : undefined,
       };
 
       const res = await donateToCampaignRequest(id, payload);
@@ -366,7 +362,10 @@ export default function CampaignDetailsPage() {
         method: "Chapa Payment",
         timestamp: new Date().toISOString(),
       };
-      sessionStorage.setItem("chapaRedirectDonation", JSON.stringify(donationInfo));
+      sessionStorage.setItem(
+        "chapaRedirectDonation",
+        JSON.stringify(donationInfo),
+      );
       console.log("💾 Stored donation info in sessionStorage:", donationInfo);
 
       // Build and submit a form to Chapa hosted endpoint
@@ -400,54 +399,82 @@ export default function CampaignDetailsPage() {
     generateReceiptPDF(receiptData);
   };
 
-  return (
-    <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
+  const renderContent = () => (
+    <div className="mx-auto w-full max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500">
       {toastMessage && (
-        <div className="fixed right-6 top-6 z-50 rounded-xl bg-[#0b2b53] px-5 py-3 text-sm font-semibold text-white shadow-lg">
+        <div className="fixed right-6 top-6 z-50 flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-xl ring-1 ring-white/10">
+          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
           {toastMessage}
         </div>
       )}
-      <div className="relative h-[300px] w-full overflow-hidden rounded-2xl md:h-[400px]">
+
+      {/* Breadcrumb */}
+      {isDonorOrGuest && (
+        <div className="mb-6 flex items-center gap-2 text-sm font-medium text-slate-500">
+          <a
+            href="/campaigns"
+            className="hover:text-slate-900 transition-colors"
+          >
+            Campaigns
+          </a>
+          <ChevronRight className="h-4 w-4 opacity-50" />
+          <span className="text-slate-900 truncate max-w-[200px]">
+            {campaign.title}
+          </span>
+        </div>
+      )}
+
+      <div className="relative h-[300px] w-full overflow-hidden rounded-3xl md:h-[450px] shadow-sm">
         <img
           src={
             resolveAssetUrl(campaign.imageUrl) ||
             "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1200&q=80"
           }
           alt={campaign.title}
-          className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+          className="h-full w-full object-cover transition-transform duration-1000 hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
-        <div className="absolute bottom-6 left-6 right-6">
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent"></div>
+        <div className="absolute bottom-6 left-6 right-6 md:bottom-10 md:left-10 md:right-10">
           <span
-            className={`mb-3 inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm ${campaign.status === "ACTIVE" ? "bg-emerald-500" : "bg-slate-500"}`}
+            className={`mb-4 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm backdrop-blur-md ${campaign.status === "ACTIVE" ? "bg-emerald-500/90" : "bg-slate-500/90"}`}
           >
+            {campaign.status === "ACTIVE" && (
+              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+            )}
             {campaign.status}
           </span>
-          <h1 className="text-2xl font-extrabold text-white md:text-4xl lg:text-5xl">
+          <h1 className="text-3xl font-extrabold text-white md:text-5xl lg:text-6xl drop-shadow-sm leading-tight max-w-4xl">
             {campaign.title}
           </h1>
         </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-8">
-          <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-5">
-              <div className="flex items-center gap-4">
-                <img
-                  src={
-                    resolveAssetUrl(campaign.charity.logo) ||
-                    "https://ui-avatars.com/api/?name=C&background=0b2b53&color=fff"
-                  }
-                  alt={campaign.charity.organizationName}
-                  className="h-12 w-12 rounded-full border border-slate-200 shadow-sm"
-                />
+      <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-12 min-h-0">
+        <div className="lg:col-span-8 flex flex-col gap-8 min-h-0">
+          {/* Charity Profile Header & Progress */}
+          <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/50">
+            <div className="flex items-center justify-between border-b border-slate-100 p-6 md:p-8">
+              <div className="flex items-center gap-5">
+                <div className="relative">
+                  <img
+                    src={
+                      resolveAssetUrl(campaign.charity.logo) ||
+                      "https://ui-avatars.com/api/?name=C&background=0b2b53&color=fff"
+                    }
+                    alt={campaign.charity.organizationName}
+                    className="h-16 w-16 rounded-2xl border bg-white object-cover border-slate-200 shadow-sm"
+                  />
+                  {campaign.charity.verifiedAt && (
+                    <div className="absolute -bottom-1.5 -right-1.5 rounded-full bg-white p-0.5">
+                      <BadgeCheck className="h-5 w-5 text-blue-500" />
+                    </div>
+                  )}
+                </div>
                 <div>
-                  <h3 className="flex items-center gap-2 text-lg font-bold text-[#0b2b53]">
+                  <h3 className="flex items-center gap-2 text-xl font-bold text-slate-900 group">
                     {campaign.charity.organizationName}
-                    {campaign.charity.verifiedAt && <VerifiedIcon />}
                   </h3>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-500 font-medium mt-0.5 max-w-md truncate">
                     {campaign.charity.description}
                   </p>
                 </div>
@@ -455,132 +482,145 @@ export default function CampaignDetailsPage() {
               <button
                 onClick={handleFollowToggle}
                 disabled={!isLoggedIn || user?.role !== "DONOR"}
-                className={`hidden md:inline-flex rounded-lg px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50 ${
+                className={`hidden md:inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all disabled:opacity-50 ${
                   isFollowing
-                    ? "bg-slate-100 text-slate-600"
-                    : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                    ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    : "bg-emerald-500 text-white shadow-sm hover:bg-emerald-600 hover:shadow"
                 }`}
               >
-                {isFollowing ? "Following" : "Follow"}
+                {isFollowing ? "Following" : "Follow Organization"}
               </button>
             </div>
 
-            <div className="pt-5">
-              <div className="flex items-end justify-between mb-2">
+            <div className="p-6 md:p-8 bg-slate-50/50">
+              <div className="flex items-end justify-between mb-3">
                 <div>
-                  <span className="text-3xl font-extrabold text-[#0b2b53]">
-                    {Number(campaign.currentAmount).toLocaleString()} ETB
+                  <span className="text-4xl font-extrabold text-slate-900 tracking-tight">
+                    {Number(campaign.currentAmount).toLocaleString()}{" "}
+                    <span className="text-xl text-slate-400">ETB</span>
                   </span>
-                  <span className="ml-2 text-sm font-semibold text-slate-500">
+                  <p className="mt-1 text-sm font-semibold text-slate-500">
                     raised of {Number(campaign.targetAmount).toLocaleString()}{" "}
-                    ETB
+                    ETB target
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className="text-2xl font-bold text-emerald-500">
+                    {percentComplete}%
                   </span>
                 </div>
-                <span className="font-bold text-emerald-500">
-                  {percentComplete}%
-                </span>
               </div>
 
-              <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
+              <div className="h-4 w-full overflow-hidden rounded-full bg-slate-200/60 shadow-inner">
                 <div
-                  className="h-full bg-emerald-500 transition-all duration-1000 ease-out"
+                  className="h-full bg-emerald-500 transition-all duration-1000 ease-out flex items-center justify-end px-2"
                   style={{ width: `${percentComplete}%` }}
-                ></div>
+                >
+                  {percentComplete > 10 && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-white/50 animate-pulse"></span>
+                  )}
+                </div>
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-6 text-sm font-medium text-slate-600">
-                <div className="flex items-center gap-2">
-                  <UserIcon /> {campaign.donorCount} Donors
+              <div className="mt-6 flex flex-wrap gap-4 text-sm font-bold text-slate-600">
+                <div className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 ring-1 ring-slate-200/50 shadow-sm">
+                  <Users className="h-4 w-4 text-emerald-500" />
+                  <span className="text-slate-900">
+                    {campaign.donorCount}
+                  </span>{" "}
+                  Donors
                 </div>
-                <div className="flex items-center gap-2">
-                  <ClockIcon /> {daysRemaining} Days Left
-                </div>
-                <div className="flex items-center gap-1 rounded bg-blue-50 px-2 py-0.5 text-blue-700 font-bold uppercase text-[10px]">
-                  Status: {campaign.status}
+                <div className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 ring-1 ring-slate-200/50 shadow-sm">
+                  <Clock className="h-4 w-4 text-amber-500" />
+                  <span className="text-slate-900">{daysRemaining}</span> Days
+                  Left
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-xl font-extrabold text-[#0b2b53]">
+          <div className="rounded-3xl border border-slate-200/50 bg-white p-6 md:p-8 shadow-sm">
+            <h2 className="mb-6 text-2xl font-extrabold text-slate-900 flex items-center gap-3">
               About the Campaign
             </h2>
             <div
-              className={`prose max-w-none text-slate-600 ${!isStoryExpanded ? "line-clamp-4" : ""}`}
+              className={`prose prose-slate max-w-none text-slate-600 font-medium leading-relaxed ${!isStoryExpanded ? "line-clamp-4 md:line-clamp-6" : ""}`}
             >
               {campaign.description
                 .split("\n")
                 .map((paragraph: string, idx: number) => (
-                  <p key={idx} className="mb-4">
+                  <p key={idx} className={`${idx !== 0 && "mt-4"}`}>
                     {paragraph}
                   </p>
                 ))}
             </div>
-            {campaign.description.length > 200 && (
+            {campaign.description.length > 300 && (
               <button
                 onClick={() => setIsExpanded(!isStoryExpanded)}
-                className="mt-2 font-bold text-emerald-500 hover:text-emerald-600 hover:underline"
+                className="mt-4 flex items-center gap-1 font-bold text-emerald-600 hover:text-emerald-700 group transition-colors"
               >
-                {isStoryExpanded ? "Read Less" : "Read More"}
+                {isStoryExpanded ? "Read Less" : "Read Full Story"}
+                <ChevronRight
+                  className={`h-4 w-4 transition-transform ${isStoryExpanded ? "-rotate-90" : "group-hover:translate-x-1"}`}
+                />
               </button>
             )}
           </div>
-
-          {/* Mock Share section left as is for styling */}
-          <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-slate-200">
-            <span className="font-bold text-slate-700">Share:</span>
-            <button className="rounded-full bg-slate-200 p-2 text-slate-700 hover:bg-slate-300 transition">
-              Copy Link
-            </button>
-          </div>
         </div>
 
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-4 min-h-0">
           {userRole !== "CHARITY" && (
             <div
               ref={donateSectionRef}
-              className="sticky top-24 rounded-2xl bg-white p-6 shadow-[0_10px_40px_rgba(10,40,80,0.08)] transition-all duration-300"
+              className="sticky top-8 rounded-3xl bg-white p-6 md:p-8 shadow-xl shadow-slate-200/40 ring-1 ring-slate-200/50 transition-all duration-300"
             >
-              <h2 className="mb-6 text-2xl font-extrabold text-[#0b2b53]">
+              <h2 className="mb-6 text-2xl font-extrabold text-slate-900 flex items-center gap-2">
                 Make a Donation
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                </span>
               </h2>
 
               {donationError && (
-                <div className="mb-4 flex items-center justify-between rounded-lg bg-red-50 p-3 text-sm text-red-500">
-                  <span>{donationError}</span>
-                  <button 
-                    onClick={() => setDonationError("")}
-                    className="text-red-400 hover:text-red-600 focus:outline-none"
-                    aria-label="Close error message"
-                  >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                <div className="mb-6 flex flex-col gap-2 rounded-xl bg-red-50 p-4 text-sm text-red-600 ring-1 ring-red-100">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold flex items-center gap-2">
+                      <XIcon className="h-4 w-4" /> Error
+                    </span>
+                    <button
+                      onClick={() => setDonationError("")}
+                      className="text-red-400 hover:text-red-600 bg-white/50 rounded-full p-1 transition-colors"
+                    >
+                      <XIcon className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <span className="font-medium text-red-500">
+                    {donationError}
+                  </span>
                 </div>
               )}
 
               {campaign.status === "CLOSED" ? (
-                <div className="p-4 bg-slate-100 rounded-xl text-center text-slate-600 font-bold">
+                <div className="p-6 bg-slate-50 rounded-2xl text-center text-slate-600 font-bold border border-slate-100">
                   This campaign is closed to new donations.
                 </div>
-              ) : isLoggedIn ? (
+              ) : userRole !== "CHARITY" ? (
                 <form onSubmit={handleDonate} className="space-y-6">
                   <div>
                     <label className="mb-3 block text-sm font-bold text-slate-700">
                       Select Amount (ETB)
                     </label>
-                    <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="grid grid-cols-2 gap-3 mb-4">
                       {PRESET_AMOUNTS.map((amt) => (
                         <button
                           key={amt}
                           type="button"
                           onClick={() => handleAmountClick(amt)}
-                          className={`rounded-xl border py-2.5 text-center font-bold transition-all ${
+                          className={`rounded-xl border py-3 text-center font-bold text-lg transition-all ${
                             selectedAmount === amt
-                              ? "border-emerald-500 bg-emerald-50 text-emerald-600 shadow-sm"
-                              : "border-slate-200 bg-white text-slate-600 hover:border-emerald-500 hover:text-emerald-500"
+                              ? "border-emerald-500 bg-emerald-50 text-emerald-600 shadow-sm ring-1 ring-emerald-500"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
                           }`}
                         >
                           {amt.toLocaleString()}
@@ -598,60 +638,68 @@ export default function CampaignDetailsPage() {
                         value={customAmount}
                         onChange={handleCustomAmountChange}
                         onClick={() => setSelectedAmount(null)}
-                        className={`w-full rounded-xl border py-3 pl-14 pr-4 transition-all focus:outline-none focus:ring-2 ${customAmount || selectedAmount === null ? "border-emerald-500 bg-emerald-50 focus:ring-emerald-500/20" : "border-slate-200 bg-white focus:border-emerald-500 focus:ring-emerald-500/20"}`}
+                        className={`w-full rounded-xl border py-3.5 pl-14 pr-4 font-bold text-lg transition-all focus:outline-none focus:ring-4 ${customAmount || selectedAmount === null ? "border-emerald-500 bg-white focus:ring-emerald-500/20" : "border-slate-200 bg-slate-50/50 hover:bg-white focus:border-emerald-500 focus:ring-emerald-500/20"}`}
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-4 rounded-xl bg-slate-50 p-4 border border-slate-100">
-                    {isLoggedIn ? (
-                      <div className="mb-2 text-xs font-semibold text-emerald-600 flex justify-between">
-                        <span>Using your account information</span>
-                      </div>
-                    ) : (
-                      <div className="mb-2 text-xs font-semibold text-amber-600 flex justify-between">
-                        <span>Please login before donating</span>
-                      </div>
-                    )}
-
-                    <div>
-                      <label className="mb-1.5 block text-sm font-semibold text-slate-700">
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={donorName}
-                        onChange={(e) => setDonorName(e.target.value)}
-                        disabled={isLoggedIn}
-                        placeholder="Your Name"
-                        className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm disabled:bg-slate-100 disabled:text-slate-500 focus:border-emerald-500 focus:outline-none"
-                      />
+                  <div className="space-y-4 rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-200/50">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-200/60">
+                      <span className="text-xs font-bold text-emerald-600 tracking-wide uppercase">
+                        Donor Details
+                      </span>
                     </div>
 
-                    {isLoggedIn && (
+                    <div className="space-y-3">
                       <div>
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-700">
-                          Email Address
-                        </label>
                         <input
-                          type="email"
-                          value={donorEmail}
-                          disabled
-                          className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm bg-slate-100 text-slate-500 cursor-not-allowed"
+                          type="text"
+                          required
+                          value={donorName}
+                          onChange={(e) => setDonorName(e.target.value)}
+                          disabled={isLoggedIn}
+                          placeholder="Your Full Name"
+                          className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold disabled:bg-slate-100 disabled:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                         />
                       </div>
-                    )}
 
-                    <div>
-                      <label className="flex items-center gap-2 cursor-pointer">
+                      <div>
                         <input
-                          type="checkbox"
-                          checked={isAnonymous}
-                          onChange={(e) => setIsAnonymous(e.target.checked)}
-                          className="rounded text-emerald-500 focus:ring-emerald-500 w-4 h-4 cursor-pointer"
+                          type="email"
+                          required
+                          value={donorEmail}
+                          onChange={(e) => setDonorEmail(e.target.value)}
+                          disabled={isLoggedIn}
+                          placeholder="Email Address"
+                          className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold disabled:bg-slate-100 disabled:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                         />
-                        <span className="text-sm font-semibold text-slate-700">
+                      </div>
+                    </div>
+
+                    <div className="pt-2">
+                      <label className="flex items-center gap-3 cursor-pointer group">
+                        <div className="relative flex items-center justify-center">
+                          <input
+                            type="checkbox"
+                            checked={isAnonymous}
+                            onChange={(e) => setIsAnonymous(e.target.checked)}
+                            className="peer h-5 w-5 cursor-pointer appearance-none rounded border-2 border-slate-300 checked:border-emerald-500 checked:bg-emerald-500 hover:border-emerald-400 transition-all"
+                          />
+                          <svg
+                            className="absolute w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={3}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </div>
+                        <span className="text-sm font-semibold text-slate-700 group-hover:text-slate-900 transition-colors">
                           Donate Anonymously
                         </span>
                       </label>
@@ -733,174 +781,4 @@ export default function CampaignDetailsPage() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                  />
-                </svg>{" "}
-                Secure donation processing
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {showReceipt && receiptData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md scale-100 transform overflow-hidden rounded-3xl bg-white shadow-2xl transition-all">
-            <div className="bg-emerald-500 p-6 text-center text-white relative">
-              <button
-                onClick={() => {
-                  setShowReceipt(false);
-                  setShowReceiptDetails(false);
-                }}
-                className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors focus:outline-none"
-                aria-label="Close receipt"
-              >
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-              <h3 className="text-2xl font-extrabold">Donation Successful!</h3>
-              <p className="mt-1 opacity-90">Thank you for your generosity.</p>
-            </div>
-            <div className="p-8">
-              <div className="space-y-4 text-sm">
-                <div className="flex justify-between border-b border-slate-100 pb-3">
-                  <span className="text-slate-500">Receipt ID</span>
-                  <span className="font-bold text-[#0b2b53]">
-                    {receiptData.receiptReference}
-                  </span>
-                </div>
-                <div className="flex justify-between border-b border-slate-100 pb-3">
-                  <span className="text-slate-500">Donor Name</span>
-                  <span className="font-bold text-[#0b2b53]">
-                    {receiptData.isAnonymous ? "Anonymous" : receiptData.donorName}
-                  </span>
-                </div>
-                <div className="flex justify-between border-b border-slate-100 pb-3">
-                  <span className="text-slate-500">Campaign</span>
-                  <span className="font-bold text-[#0b2b53] max-w-[200px] truncate">
-                    {receiptData.campaignTitle}
-                  </span>
-                </div>
-                <div className="flex justify-between border-b border-slate-100 pb-3">
-                  <span className="text-slate-500">Payment Method</span>
-                  <span className="font-bold text-[#0b2b53]">
-                    {receiptData.paymentMethod || "Chapa Payment"}
-                  </span>
-                </div>
-                <div className="flex justify-between pt-1">
-                  <span className="font-bold text-slate-700">
-                    Total Donated
-                  </span>
-                  <span className="text-xl font-extrabold text-emerald-500">
-                    {receiptData.donationAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETB
-                  </span>
-                </div>
-              </div>
-              <div className="mt-8 flex gap-3">
-                <button 
-                  onClick={() => {
-                    setShowReceiptDetails(true);
-                  }}
-                  className="flex-1 rounded-xl bg-slate-100 py-3 font-bold text-slate-700 transition hover:bg-slate-200"
-                >
-                  View Full Receipt
-                </button>
-                <button 
-                  onClick={handleDownloadReceipt}
-                  className="flex-1 rounded-xl bg-[#0b2b53] py-3 font-bold text-white transition hover:bg-slate-800"
-                >
-                  Download
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showReceiptDetails && receiptData && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/75 p-4 backdrop-blur-sm overflow-hidden">
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl flex flex-col">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5 flex-shrink-0">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-500">
-                  Full Receipt Data
-                </p>
-                <h3 className="mt-1 text-2xl font-extrabold text-[#0b2b53]">
-                  Donation Receipt Details
-                </h3>
-              </div>
-              <button
-                onClick={() => setShowReceiptDetails(false)}
-                className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                aria-label="Close receipt details"
-              >
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="overflow-y-auto flex-1 grid gap-4 px-6 py-6 md:grid-cols-2">
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Receipt ID</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.receiptReference}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Issued Date</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{formatReadableDate(receiptData.issuedDate)}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Donor Name</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.isAnonymous ? "Anonymous" : receiptData.donorName}</p>
-              </div>
-              {!receiptData.isAnonymous && receiptData.donorEmail && (
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Donor Email</p>
-                  <p className="mt-1 text-sm font-bold text-[#0b2b53] break-all">{receiptData.donorEmail}</p>
-                </div>
-              )}
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Campaign</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.campaignTitle}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Charity</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.charityName}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Donation Date</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{formatReadableDate(receiptData.donationDate)}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Payment Status</p>
-                <p className="mt-1 text-sm font-bold text-[#0b2b53]">{receiptData.paymentStatus}</p>
-              </div>
-              <div className="rounded-2xl bg-emerald-50 p-4 md:col-span-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Total Amount</p>
-                <p className="mt-1 text-2xl font-extrabold text-emerald-600">
-                  ETB {receiptData.donationAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-3 border-t border-slate-100 px-6 py-5 sm:flex-row sm:justify-end flex-shrink-0">
-              <button
-                onClick={() => setShowReceiptDetails(false)}
-                className="rounded-xl border border-slate-200 px-5 py-3 font-bold text-slate-600 transition hover:bg-slate-50"
-              >
-                Close
-              </button>
-              <button
-                onClick={handleDownloadReceipt}
-                className="rounded-xl bg-[#0b2b53] px-5 py-3 font-bold text-white transition hover:bg-slate-800"
-              >
-                Download PDF
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.0

@@ -93,3 +93,31 @@ export const verifiedCharityOnly = (req: Request, res: Response, next: NextFunct
 
   return next();
 }
+
+export const optionalAuth = async (req: Request, _res: Response, next: NextFunction) => {
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+  const token = req.cookies?.[AUTH_COOKIE_NAME];
+
+  if (!token) {
+    return next(); // Just pass through, req.user will be undefined
+  }
+
+  try {
+    const decoded = jwt.verify(token, env.JWT_SECRET) as AuthJwtPayload;
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: safeUserSelect,
+    });
+
+    if (user) {
+      req.user = user;
+    }
+
+    return next();
+  } catch {
+    return next(); // Invalid token, act as unauthenticated
+  }
+};

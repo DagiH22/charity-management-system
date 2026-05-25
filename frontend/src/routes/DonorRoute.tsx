@@ -9,11 +9,9 @@ export default function DonorRoute() {
     return <FullScreenLoader />;
   }
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (user.role !== "DONOR") {
+  // Allow GUESTS (!user) or DONORS to see the routes.
+  // Other authenticated roles (Admin/Charity) get bumped to their dash.
+  if (user && user.role !== "DONOR") {
     return <Navigate to="/dashboard" replace />;
   }
 
