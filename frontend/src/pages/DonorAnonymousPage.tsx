@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getDonorAnonymousDonations } from "../services/donor.api";
 import { DonationTable } from "../components/DonationTable";
 import type { DonationItem } from "../components/DonationTable";
@@ -47,7 +47,7 @@ export default function DonorAnonymousPage() {
   const totalPages = donations?.totalPages || 1;
 
   return (
-    <div className="mx-auto max-w-[1100px] py-8 space-y-8">
+    <div className="space-y-8">
       <header className="space-y-2">
         <h1 className="text-3xl font-extrabold text-[#0b2b53]">
           Anonymous Donations
