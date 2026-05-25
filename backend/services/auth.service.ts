@@ -63,6 +63,7 @@ const toSafeUserSelect = {
   charityProfile: {
     select: {
       id: true,
+      status: true,
     },
   },
 } as const;
@@ -88,7 +89,10 @@ type SafeUserWithProfile = {
   profileImage: string | null;
   createdAt: Date;
   updatedAt: Date;
-  charityProfile: { id: number } | null;
+  charityProfile: {
+    id: number;
+    status: "PENDING" | "APPROVED" | "REJECTED";
+  } | null;
 };
 
 type ProfileBankAccount = {
@@ -136,6 +140,7 @@ const toAuthUser = (user: SafeUserWithProfile) => {
     profileImage: user.profileImage,
     hasCharityProfile: Boolean(user.charityProfile),
     charityId: user.charityProfile?.id,
+    charityVerificationStatus: user.charityProfile?.status ?? null,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };

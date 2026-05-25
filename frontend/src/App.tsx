@@ -21,6 +21,7 @@ import CampaignsPage from "./pages/CampaignsPage";
 import CampaignDetailsPage from "./pages/CampaignDetailsPage";
 import CharityCampaignsPage from "./pages/CharityCampaignsPage";
 import CharityContributionsPage from "./pages/CharityContributionsPage";
+import CharityCampaignRequestsPage from "./pages/CharityCampaignRequestsPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -33,6 +34,7 @@ import DonorLayout from "./layouts/DonorLayout";
 import AdminUserManagementPage from "./pages/admin/AdminUserManagementPage";
 import AdminCharityVerificationPage from "./pages/admin/AdminCharityVerificationPage";
 import AdminCampaignOversightPage from "./pages/admin/AdminCampaignOversightPage";
+import AdminCampaignRequestsPage from "./pages/admin/AdminCampaignRequestsPage";
 import AdminDonationLogsPage from "./pages/admin/AdminDonationLogsPage";
 import AdminReportsPage from "./pages/admin/AdminReportsPage";
 import CharityPublicProfilePage from "./pages/CharityPublicProfilePage";
@@ -72,6 +74,10 @@ export default function App() {
               path="/charity/contributions"
               element={<CharityContributionsPage />}
             />
+            <Route
+              path="/charity/campaign-requests"
+              element={<CharityCampaignRequestsPage />}
+            />
           </Route>
 
           <Route element={<AdminRoute />}>
@@ -83,6 +89,10 @@ export default function App() {
             <Route
               path="/admin/campaigns"
               element={<AdminCampaignOversightPage />}
+            />
+            <Route
+              path="/admin/campaign-requests"
+              element={<AdminCampaignRequestsPage />}
             />
             <Route
               path="/admin/donations"

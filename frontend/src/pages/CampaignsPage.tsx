@@ -5,6 +5,7 @@ import CampaignCard from "../components/CampaignCard";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import DonorSidebar from "../components/DonorSidebar";
+import CharitySidebar from "../components/CharitySidebar";
 import { getApiErrorMessage } from "../services/apiErrors";
 import { SearchInput } from "../components/ui/SearchInput";
 import { FilterSelect } from "../components/ui/FilterSelect";
@@ -108,12 +109,14 @@ export default function CampaignsPage() {
   };
 
   const isDonorOrGuest = !user || user?.role === "DONOR";
+  const isCharity = user?.role === "CHARITY";
+  const hasSidebarLayout = isDonorOrGuest || isCharity;
 
   const renderContent = () => (
     <div className="flex-1 min-w-0">
       <header className="mb-10 block items-center justify-between sm:flex">
         <div className="flex items-start gap-4">
-          {isDonorOrGuest && (
+          {hasSidebarLayout && (
             <button
               className="mt-1 inline-flex h-10 w-10 shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 lg:hidden"
               type="button"
@@ -259,6 +262,21 @@ export default function CampaignsPage() {
   );
 
   if (!isDonorOrGuest) {
+    if (isCharity) {
+      return (
+        <div className="relative -mx-[6vw] -my-12 flex min-h-[calc(100vh-73px)] lg:flex-row">
+          <CharitySidebar
+            isOpen={sidebarOpen}
+            user={user}
+            onClose={() => setSidebarOpen(false)}
+          />
+          <div className="min-w-0 flex-1 px-[6vw] py-8 lg:px-8 lg:py-12 flex flex-col bg-slate-50/10">
+            {renderContent()}
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="mx-auto max-w-[1200px] py-12 px-[6vw]">
         {renderContent()}

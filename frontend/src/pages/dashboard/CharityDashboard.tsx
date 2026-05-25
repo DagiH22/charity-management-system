@@ -91,6 +91,9 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
     return donation.donor?.name || donation.guestName || "Unknown Donor";
   };
 
+  const isRejected = user.charityVerificationStatus === "REJECTED";
+  const showVerificationBanner = !user.isVerified;
+
   return (
     <div className="relative -mx-[6vw] -my-12 flex min-h-[calc(100vh-73px)] lg:flex-row">
       {sidebarOpen && (
@@ -156,11 +159,23 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
           </div>
         </header>
 
-        {!user.isVerified && (
-          <div className="mb-8 flex items-start gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
-            <div className="rounded-full bg-amber-100 p-2">
+        {showVerificationBanner && (
+          <div
+            className={`mb-8 flex items-start gap-4 rounded-2xl p-5 shadow-sm ${
+              isRejected
+                ? "border border-rose-200 bg-rose-50"
+                : "border border-amber-200 bg-amber-50"
+            }`}
+          >
+            <div
+              className={`rounded-full p-2 ${
+                isRejected ? "bg-rose-100" : "bg-amber-100"
+              }`}
+            >
               <svg
-                className="h-5 w-5 text-amber-600"
+                className={`h-5 w-5 ${
+                  isRejected ? "text-rose-600" : "text-amber-600"
+                }`}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -174,13 +189,30 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
               </svg>
             </div>
             <div>
-              <p className="font-semibold text-amber-800">
-                Verification pending
+              <p
+                className={`font-semibold ${
+                  isRejected ? "text-rose-800" : "text-amber-800"
+                }`}
+              >
+                {isRejected ? "Verification rejected" : "Verification pending"}
               </p>
-              <p className="mt-1 text-sm text-amber-700">
-                Your charity profile is submitted. An admin will review your
-                document soon. Limited features apply until verified.
+              <p
+                className={`mt-1 text-sm ${
+                  isRejected ? "text-rose-700" : "text-amber-700"
+                }`}
+              >
+                {isRejected
+                  ? "Your charity profile was rejected. Please update your information and submit again for review."
+                  : "Your charity profile is submitted. An admin will review your document soon. Limited features apply until verified."}
               </p>
+              {isRejected && (
+                <Link
+                  to="/charity-profile/setup"
+                  className="mt-3 inline-flex items-center rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-500"
+                >
+                  Resubmit verification
+                </Link>
+              )}
             </div>
           </div>
         )}

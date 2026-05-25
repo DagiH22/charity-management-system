@@ -6,6 +6,7 @@ export type User = {
   email: string;
   role: AuthRole;
   isVerified: boolean;
+  charityVerificationStatus?: "PENDING" | "APPROVED" | "REJECTED" | null;
   bio?: string | null;
   phone?: string | null;
   hasCharityProfile: boolean;

@@ -14,7 +14,10 @@ export default function CharityProfileSetupRoute() {
     return <Navigate to="/login" replace />;
   }
 
-  if (!needsCharityProfileSetup(user)) {
+  const canResubmitRejectedProfile =
+    user.role === "CHARITY" && user.charityVerificationStatus === "REJECTED";
+
+  if (!needsCharityProfileSetup(user) && !canResubmitRejectedProfile) {
     return <Navigate to="/dashboard" replace />;
   }
 

@@ -39,10 +39,12 @@ export default function DonorSidebar({ isOpen, onClose }: DonorSidebarProps) {
         />
       )}
 
+      <div className="hidden w-72 shrink-0 lg:block" aria-hidden="true" />
+
       {/* Sidebar component */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-72 flex-col bg-white border-r border-slate-200 transition-transform duration-300 ease-in-out lg:static lg:z-auto lg:flex lg:w-72 lg:translate-x-0 shadow-xl lg:shadow-none",
+          "fixed inset-y-0 left-0 z-50 w-72 flex-col overflow-hidden self-start bg-white border-r border-slate-200 transition-transform duration-300 ease-in-out lg:fixed lg:top-[80px] lg:bottom-0 lg:z-30 lg:flex lg:h-[calc(100vh-80px)] lg:w-72 lg:translate-x-0 shadow-xl lg:shadow-none",
           isOpen ? "translate-x-0 flex" : "-translate-x-full hidden",
         )}
       >
@@ -66,7 +68,7 @@ export default function DonorSidebar({ isOpen, onClose }: DonorSidebarProps) {
         </div>
 
         <nav
-          className="flex flex-1 flex-col overflow-y-auto pt-6 pb-4"
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto pt-6 pb-4"
           aria-label="Sidebar"
         >
           <div className="px-4 space-y-1">

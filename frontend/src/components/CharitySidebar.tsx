@@ -4,7 +4,9 @@ import {
   HomeIcon,
   PlusCircleIcon,
   RectangleGroupIcon,
+  GlobeAltIcon,
   CurrencyDollarIcon,
+  ClipboardDocumentListIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 
@@ -22,14 +24,24 @@ const navigationItems = [
     icon: PlusCircleIcon,
   },
   {
-    label: "All Campaigns",
+    label: "My Campaigns",
     href: "/charity/campaigns",
     icon: RectangleGroupIcon,
+  },
+  {
+    label: "All Campaigns",
+    href: "/campaigns",
+    icon: GlobeAltIcon,
   },
   {
     label: "Contributions",
     href: "/charity/contributions",
     icon: CurrencyDollarIcon,
+  },
+  {
+    label: "Campaign Requests",
+    href: "/charity/campaign-requests",
+    icon: ClipboardDocumentListIcon,
   },
 ];
 
@@ -56,10 +68,12 @@ export default function CharitySidebar({
         />
       )}
 
+      <div className="hidden w-72 shrink-0 lg:block" aria-hidden="true" />
+
       {/* Sidebar component */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-72 flex-col bg-white border-r border-slate-200 transition-transform duration-300 ease-in-out lg:static lg:z-auto lg:flex lg:w-72 lg:translate-x-0 shadow-xl lg:shadow-none",
+          "fixed inset-y-0 left-0 z-50 w-72 flex-col overflow-hidden self-start bg-white border-r border-slate-200 transition-transform duration-300 ease-in-out lg:fixed lg:top-[81px] lg:bottom-0 lg:z-30 lg:flex lg:h-[calc(100vh-81px)] lg:w-72 lg:translate-x-0 shadow-xl lg:shadow-none",
           isOpen ? "translate-x-0 flex" : "-translate-x-full hidden",
         )}
       >
@@ -83,7 +97,7 @@ export default function CharitySidebar({
         </div>
 
         <nav
-          className="flex flex-1 flex-col overflow-y-auto pt-6 pb-4"
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto pt-6 pb-4"
           aria-label="Sidebar"
         >
           <div className="px-4 space-y-1">

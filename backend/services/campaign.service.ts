@@ -5,6 +5,10 @@ import { prisma } from "../utils/prisma";
 import { createBulkNotifications } from "./notification.service";
 import type { NotificationInput } from "./notification.service";
 import { env } from "../utils/env";
+import {
+  consumeApprovedCampaignRequest,
+  getApprovedAllowanceForCharity,
+} from "./campaignRequest.service";
 
 type UpdateCampaignPayload = {
   title?: string;
@@ -108,18 +112,51 @@ export const createCampaignService = async (
     throw new ApiError(400, "End date must be after start date.");
   }
 
-  const campaign = await prisma.campaign.create({
-    data: {
-      charityId: charityProfile.id,
-      title: payload.title,
-      description: payload.description,
-      targetAmount: new Prisma.Decimal(payload.targetAmount),
-      currentAmount: new Prisma.Decimal(0),
-      startDate,
-      endDate,
-      status: "ACTIVE",
-      imageUrl: payload.imageUrl?.trim() || null,
-    },
+  const currentMonthStart = new Date();
+  currentMonthStart.setDate(1);
+  currentMonthStart.setHours(0, 0, 0, 0);
+
+  const campaign = await prisma.$transaction(async (tx) => {
+    const currentMonthCampaignCount = await tx.campaign.count({
+      where: {
+        charityId: charityProfile.id,
+        createdAt: { gte: currentMonthStart },
+      },
+    });
+
+    const approvedAllowance = await getApprovedAllowanceForCharity(
+      charityProfile.id,
+      tx,
+    );
+
+    const hasReachedLimit = currentMonthCampaignCount >= 2;
+
+    if (hasReachedLimit && !approvedAllowance) {
+      throw new ApiError(
+        403,
+        "You have reached the monthly campaign limit. Request admin approval to create one more campaign.",
+      );
+    }
+
+    const createdCampaign = await tx.campaign.create({
+      data: {
+        charityId: charityProfile.id,
+        title: payload.title,
+        description: payload.description,
+        targetAmount: new Prisma.Decimal(payload.targetAmount),
+        currentAmount: new Prisma.Decimal(0),
+        startDate,
+        endDate,
+        status: "ACTIVE",
+        imageUrl: payload.imageUrl?.trim() || null,
+      },
+    });
+
+    if (hasReachedLimit && approvedAllowance) {
+      await consumeApprovedCampaignRequest(tx, approvedAllowance.id, createdCampaign.id);
+    }
+
+    return createdCampaign;
   });
 
   return campaign;
