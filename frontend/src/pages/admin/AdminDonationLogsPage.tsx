@@ -1,16 +1,27 @@
 import { useEffect, useMemo, useState } from "react";
 import AdminShell from "../../components/AdminShell";
+import formatCurrency from "../../utils/format";
 import { getApiErrorMessage } from "../../services/apiErrors";
-import { getAdminCampaigns, getAdminDonations } from "../../services/adminDashboard.api";
-import type { AdminCampaignsResponse, AdminDonationsResponse } from "../../types/adminDashboard";
+import {
+  getAdminCampaigns,
+  getAdminDonations,
+} from "../../services/adminDashboard.api";
+import type {
+  AdminCampaignsResponse,
+  AdminDonationsResponse,
+} from "../../types/adminDashboard";
 import { SearchInput } from "../../components/ui/SearchInput";
 import { FilterSelect } from "../../components/ui/FilterSelect";
 
 const statusTabs = ["ALL", "COMPLETED", "PENDING", "FAILED"] as const;
 
 export default function AdminDonationLogsPage() {
-  const [donations, setDonations] = useState<AdminDonationsResponse | null>(null);
-  const [campaigns, setCampaigns] = useState<AdminCampaignsResponse["items"]>([]);
+  const [donations, setDonations] = useState<AdminDonationsResponse | null>(
+    null,
+  );
+  const [campaigns, setCampaigns] = useState<AdminCampaignsResponse["items"]>(
+    [],
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -19,14 +30,20 @@ export default function AdminDonationLogsPage() {
   const [anonymous, setAnonymous] = useState<"ALL" | "YES" | "NO">("ALL");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [sortBy, setSortBy] = useState<"donatedAt" | "amount" | "status">("donatedAt");
+  const [sortBy, setSortBy] = useState<"donatedAt" | "amount" | "status">(
+    "donatedAt",
+  );
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
 
   useEffect(() => {
     const loadCampaigns = async () => {
       try {
-        const response = await getAdminCampaigns({ page: 1, limit: 100, sortBy: "createdAt" });
+        const response = await getAdminCampaigns({
+          page: 1,
+          limit: 100,
+          sortBy: "createdAt",
+        });
         setCampaigns(response.data.items);
       } catch {
         setCampaigns([]);
@@ -48,7 +65,11 @@ export default function AdminDonationLogsPage() {
           status: status === "ALL" ? undefined : status,
           campaignId: campaignId ? Number(campaignId) : undefined,
           anonymous:
-            anonymous === "ALL" ? undefined : anonymous === "YES" ? true : false,
+            anonymous === "ALL"
+              ? undefined
+              : anonymous === "YES"
+                ? true
+                : false,
           dateFrom: dateFrom || undefined,
           dateTo: dateTo || undefined,
           sortBy,
@@ -63,7 +84,17 @@ export default function AdminDonationLogsPage() {
     };
 
     void load();
-  }, [anonymous, campaignId, dateFrom, dateTo, page, search, sortBy, sortOrder, status]);
+  }, [
+    anonymous,
+    campaignId,
+    dateFrom,
+    dateTo,
+    page,
+    search,
+    sortBy,
+    sortOrder,
+    status,
+  ]);
 
   const totalPages = donations?.totalPages || 1;
   const donationItems = donations?.items || [];
@@ -121,7 +152,10 @@ export default function AdminDonationLogsPage() {
             setPage(1);
             setCampaignId(event.target.value);
           }}
-          defaultOption={{ value: "", label: `All campaigns (${campaigns.length})` }}
+          defaultOption={{
+            value: "",
+            label: `All campaigns (${campaigns.length})`,
+          }}
           options={campaigns.map((campaign) => ({
             value: campaign.id,
             label: campaign.title,
@@ -168,7 +202,9 @@ export default function AdminDonationLogsPage() {
         />
         <FilterSelect
           value={sortOrder}
-          onChange={(event) => setSortOrder(event.target.value as "asc" | "desc")}
+          onChange={(event) =>
+            setSortOrder(event.target.value as "asc" | "desc")
+          }
           options={[
             { value: "desc", label: "Desc" },
             { value: "asc", label: "Asc" },
@@ -186,7 +222,9 @@ export default function AdminDonationLogsPage() {
           ))}
         </div>
       ) : error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-600">{error}</div>
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-600">
+          {error}
+        </div>
       ) : donationItems.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-slate-500">
           No donations found with the selected filters.
@@ -208,7 +246,7 @@ export default function AdminDonationLogsPage() {
                 <tr key={donation.id} className="border-t border-slate-100">
                   <td className="px-5 py-4">
                     <p className="font-semibold text-emerald-700">
-                      {Number(donation.amount).toLocaleString()} ETB
+                      {formatCurrency(Number(donation.amount))} ETB
                     </p>
                     <p className="text-xs text-slate-500">
                       {donation.transactionId || "No transaction id"}
@@ -218,19 +256,30 @@ export default function AdminDonationLogsPage() {
                     <p className="font-semibold text-[#0b2b53]">
                       {donation.isAnonymous
                         ? "Anonymous Donor"
-                        : donation.donor?.name || donation.guestName || "Guest Donor"}
+                        : donation.donor?.name ||
+                          donation.guestName ||
+                          "Guest Donor"}
                     </p>
                     {!donation.isAnonymous && donation.donor?.email && (
-                      <p className="text-xs text-slate-500">{donation.donor.email}</p>
+                      <p className="text-xs text-slate-500">
+                        {donation.donor.email}
+                      </p>
                     )}
-                    {!donation.isAnonymous && !donation.donor?.email && donation.guestEmail && (
-                      <p className="text-xs text-slate-500">{donation.guestEmail}</p>
-                    )}
+                    {!donation.isAnonymous &&
+                      !donation.donor?.email &&
+                      donation.guestEmail && (
+                        <p className="text-xs text-slate-500">
+                          {donation.guestEmail}
+                        </p>
+                      )}
                   </td>
                   <td className="px-5 py-4">
-                    <p className="font-semibold text-slate-700">{donation.campaign.title}</p>
+                    <p className="font-semibold text-slate-700">
+                      {donation.campaign.title}
+                    </p>
                     <p className="text-xs text-slate-500">
-                      {donation.campaign.charity?.organizationName || "Unknown charity"}
+                      {donation.campaign.charity?.organizationName ||
+                        "Unknown charity"}
                     </p>
                   </td>
                   <td className="px-5 py-4">

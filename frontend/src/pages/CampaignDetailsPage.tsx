@@ -5,6 +5,7 @@ import {
   donateToCampaignRequest,
   getDonationByTxRef,
 } from "../services/campaign.api";
+import formatCurrency from "../utils/format";
 import { useAuthStore } from "../store/authStore";
 import FullScreenLoader from "../components/FullScreenLoader";
 import {
@@ -541,7 +542,7 @@ export default function CampaignDetailsPage() {
                   <p className="text-sm text-slate-500">
                     {campaign.charity.description}
                   </p>
-                  
+
                   {/* Social Links */}
                   {(campaign.charity.socialFacebook ||
                     campaign.charity.socialInstagram ||
@@ -637,10 +638,10 @@ export default function CampaignDetailsPage() {
               <div className="flex items-end justify-between mb-2">
                 <div>
                   <span className="text-3xl font-extrabold text-[#0b2b53]">
-                    {Number(campaign.currentAmount).toLocaleString()} ETB
+                    {formatCurrency(Number(campaign.currentAmount))} ETB
                   </span>
                   <span className="ml-2 text-sm font-semibold text-slate-500">
-                    raised of {Number(campaign.targetAmount).toLocaleString()}{" "}
+                    raised of {formatCurrency(Number(campaign.targetAmount))}{" "}
                     ETB
                   </span>
                 </div>
@@ -696,7 +697,9 @@ export default function CampaignDetailsPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-slate-200 mt-6">
-            <span className="font-bold text-slate-700">Share this campaign:</span>
+            <span className="font-bold text-slate-700">
+              Share this campaign:
+            </span>
             <button
               onClick={() => {
                 navigator.clipboard.writeText(window.location.href);
@@ -778,7 +781,7 @@ export default function CampaignDetailsPage() {
                               : "border-slate-200 bg-white text-slate-600 hover:border-emerald-500 hover:text-emerald-500"
                           }`}
                         >
-                          {amt.toLocaleString()}
+                          {formatCurrency(amt)}
                         </button>
                       ))}
                     </div>
@@ -805,7 +808,9 @@ export default function CampaignDetailsPage() {
                       </div>
                     ) : (
                       <div className="mb-2 text-xs font-semibold text-amber-600 flex justify-between">
-                        <span>Create Account or Login to track your donation history</span>
+                        <span>
+                          Create Account or Login to track your donation history
+                        </span>
                       </div>
                     )}
 
@@ -1001,9 +1006,9 @@ export default function CampaignDetailsPage() {
                     Total Donated
                   </span>
                   <span className="text-xl font-extrabold text-emerald-500">
-                    {receiptData.donationAmount.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
+                    {formatCurrency(receiptData.donationAmount, {
+                      minFraction: 2,
+                      maxFraction: 2,
                     })}{" "}
                     ETB
                   </span>
@@ -1138,9 +1143,9 @@ export default function CampaignDetailsPage() {
                 </p>
                 <p className="mt-1 text-2xl font-extrabold text-emerald-600">
                   ETB{" "}
-                  {receiptData.donationAmount.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
+                  {formatCurrency(receiptData.donationAmount, {
+                    minFraction: 2,
+                    maxFraction: 2,
                   })}
                 </p>
               </div>

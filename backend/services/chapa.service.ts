@@ -417,7 +417,7 @@ export const finalizeDonationFromChapaWebhook = async (payload: unknown) => {
       notificationsToCreate.push({
         userId: donorId,
         title: "Donation successful",
-        message: `Your donation of ${normalized.amount.toLocaleString()} ETB to ${campaign.title} was successful.`,
+        message: `Your donation of ${new Intl.NumberFormat("en-US").format(Number(normalized.amount))} ETB to ${campaign.title} was successful.`,
         type: "DONATION",
         metadata: {
           campaignId,
@@ -435,7 +435,7 @@ export const finalizeDonationFromChapaWebhook = async (payload: unknown) => {
         (normalized.meta.isAnonymous ?? false)
           ? "An anonymous donor"
           : "A donor"
-      } contributed ${normalized.amount.toLocaleString()} ETB to ${campaign.title}.`,
+      } contributed ${new Intl.NumberFormat("en-US").format(Number(normalized.amount))} ETB to ${campaign.title}.`,
       type: "DONATION",
       metadata: {
         campaignId,

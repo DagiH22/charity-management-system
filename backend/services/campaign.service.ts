@@ -153,7 +153,11 @@ export const createCampaignService = async (
     });
 
     if (hasReachedLimit && approvedAllowance) {
-      await consumeApprovedCampaignRequest(tx, approvedAllowance.id, createdCampaign.id);
+      await consumeApprovedCampaignRequest(
+        tx,
+        approvedAllowance.id,
+        createdCampaign.id,
+      );
     }
 
     return createdCampaign;
@@ -226,33 +230,36 @@ export const donateToCampaignService = async (
       },
     });
 
-    await createBulkNotifications([
-      {
-        userId: donorId,
-        title: "Donation successful",
-        message: `Your donation of ${Number(amount).toLocaleString()} ETB to ${campaign.title} was successful.`,
-        type: "DONATION",
-        metadata: {
-          campaignId,
-          donationId: createdDonation.id,
-          amount,
-          isAnonymous,
+    await createBulkNotifications(
+      [
+        {
+          userId: donorId,
+          title: "Donation successful",
+          message: `Your donation of ${new Intl.NumberFormat("en-US").format(Number(amount))} ETB to ${campaign.title} was successful.`,
+          type: "DONATION",
+          metadata: {
+            campaignId,
+            donationId: createdDonation.id,
+            amount,
+            isAnonymous,
+          },
         },
-      },
-      {
-        userId: campaign.charity.userId,
-        title: "New donation received",
-        message: `${isAnonymous ? "An anonymous donor" : "A donor"} contributed ${Number(amount).toLocaleString()} ETB to ${campaign.title}.`,
-        type: "DONATION",
-        metadata: {
-          campaignId,
-          donationId: createdDonation.id,
-          amount,
-          isAnonymous,
-          donorId,
+        {
+          userId: campaign.charity.userId,
+          title: "New donation received",
+          message: `${isAnonymous ? "An anonymous donor" : "A donor"} contributed ${new Intl.NumberFormat("en-US").format(Number(amount))} ETB to ${campaign.title}.`,
+          type: "DONATION",
+          metadata: {
+            campaignId,
+            donationId: createdDonation.id,
+            amount,
+            isAnonymous,
+            donorId,
+          },
         },
-      },
-    ] as NotificationInput[], tx);
+      ] as NotificationInput[],
+      tx,
+    );
 
     return [createdDonation, updated];
   });
@@ -427,26 +434,29 @@ export const closeCampaignService = async (
       select: { userId: true },
     });
 
-    await createBulkNotifications([
-      {
-        userId: charityProfile.userId,
-        title: "Campaign closed",
-        message: `${updated.title} has been closed successfully.`,
-        type: "CAMPAIGN",
-        metadata: {
-          campaignId,
+    await createBulkNotifications(
+      [
+        {
+          userId: charityProfile.userId,
+          title: "Campaign closed",
+          message: `${updated.title} has been closed successfully.`,
+          type: "CAMPAIGN",
+          metadata: {
+            campaignId,
+          },
         },
-      },
-      ...followers.map((follower) => ({
-        userId: follower.userId,
-        title: "Campaign closed",
-        message: `${updated.title} has been closed.`,
-        type: "CAMPAIGN",
-        metadata: {
-          campaignId,
-        },
-      })),
-    ] as NotificationInput[], tx);
+        ...followers.map((follower) => ({
+          userId: follower.userId,
+          title: "Campaign closed",
+          message: `${updated.title} has been closed.`,
+          type: "CAMPAIGN",
+          metadata: {
+            campaignId,
+          },
+        })),
+      ] as NotificationInput[],
+      tx,
+    );
 
     return updated;
   });

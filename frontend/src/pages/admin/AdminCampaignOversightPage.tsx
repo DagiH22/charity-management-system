@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminShell from "../../components/AdminShell";
+import formatCurrency from "../../utils/format";
 import { getApiErrorMessage } from "../../services/apiErrors";
 import { getAdminCampaigns } from "../../services/adminDashboard.api";
 import type { AdminCampaignsResponse } from "../../types/adminDashboard";
@@ -12,12 +13,16 @@ const statusTabs = ["ACTIVE", "CLOSED", "ALL"] as const;
 
 export default function AdminCampaignOversightPage() {
   const navigate = useNavigate();
-  const [campaigns, setCampaigns] = useState<AdminCampaignsResponse | null>(null);
+  const [campaigns, setCampaigns] = useState<AdminCampaignsResponse | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<(typeof statusTabs)[number]>("ALL");
-  const [sortBy, setSortBy] = useState<"createdAt" | "currentAmount" | "targetAmount" | "donorCount">("createdAt");
+  const [sortBy, setSortBy] = useState<
+    "createdAt" | "currentAmount" | "targetAmount" | "donorCount"
+  >("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
 
@@ -61,7 +66,7 @@ export default function AdminCampaignOversightPage() {
   return (
     <AdminShell
       title="Campaign Oversight"
-      description="Review all campaigns across organizations, including active and closed." 
+      description="Review all campaigns across organizations, including active and closed."
     >
       <div className="mb-6 flex flex-wrap gap-3">
         {statusTabs.map((tab) => (
@@ -104,7 +109,9 @@ export default function AdminCampaignOversightPage() {
         />
         <FilterSelect
           value={sortOrder}
-          onChange={(event) => setSortOrder(event.target.value as "asc" | "desc")}
+          onChange={(event) =>
+            setSortOrder(event.target.value as "asc" | "desc")
+          }
           options={[
             { value: "desc", label: "Descending" },
             { value: "asc", label: "Ascending" },
@@ -122,7 +129,9 @@ export default function AdminCampaignOversightPage() {
           ))}
         </div>
       ) : error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-600">{error}</div>
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-600">
+          {error}
+        </div>
       ) : campaigns?.items.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-slate-500">
           No campaigns found.
@@ -132,7 +141,9 @@ export default function AdminCampaignOversightPage() {
           {campaigns?.items.map((campaign) => {
             const progress = Math.min(
               100,
-              (Number(campaign.currentAmount) / Number(campaign.targetAmount || 1)) * 100,
+              (Number(campaign.currentAmount) /
+                Number(campaign.targetAmount || 1)) *
+                100,
             );
 
             return (
@@ -155,7 +166,9 @@ export default function AdminCampaignOversightPage() {
                 )}
                 <div className="p-5">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="line-clamp-1 text-lg font-bold text-[#0b2b53]">{campaign.title}</h3>
+                    <h3 className="line-clamp-1 text-lg font-bold text-[#0b2b53]">
+                      {campaign.title}
+                    </h3>
                     <span
                       className={`rounded-full px-2 py-1 text-[10px] font-bold ${
                         campaign.status === "ACTIVE"
@@ -168,17 +181,24 @@ export default function AdminCampaignOversightPage() {
                       {campaign.status}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">{campaign.charity.organizationName}</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {campaign.charity.organizationName}
+                  </p>
                   <p className="mt-2 text-sm text-slate-600">
-                    {Number(campaign.currentAmount).toLocaleString()} / {" "}
-                    {Number(campaign.targetAmount).toLocaleString()} ETB
+                    {formatCurrency(Number(campaign.currentAmount))} /{" "}
+                    {formatCurrency(Number(campaign.targetAmount))} ETB
                   </p>
                   <div className="mt-3 h-2 rounded-full bg-slate-100">
-                    <div className="h-2 rounded-full bg-emerald-500" style={{ width: `${progress}%` }} />
+                    <div
+                      className="h-2 rounded-full bg-emerald-500"
+                      style={{ width: `${progress}%` }}
+                    />
                   </div>
                   <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
                     <span>{campaign.donorCount} donors</span>
-                    <span>{new Date(campaign.createdAt).toLocaleDateString()}</span>
+                    <span>
+                      {new Date(campaign.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
                 </div>
               </button>

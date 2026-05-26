@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { getDonorDashboard } from "../../services/donor.api";
 import { resolveAssetUrl } from "../../utils/media";
 import Avatar from "../../components/Avatar";
+import formatCurrency from "../../utils/format";
 import DonorSidebar from "../../components/DonorSidebar";
 import {
   CreditCard,
@@ -153,7 +154,7 @@ export default function DonorDashboard({ user }: DonorDashboardProps) {
                 ) : (
                   <>
                     <p className="text-3xl font-extrabold text-slate-900">
-                      {stats.totalDonated.toLocaleString()}
+                      {formatCurrency(Number(stats.totalDonated))}
                     </p>
                     <span className="text-sm font-semibold text-slate-500">
                       ETB
@@ -189,7 +190,7 @@ export default function DonorDashboard({ user }: DonorDashboardProps) {
               </h3>
               <div className="mt-2 flex items-baseline gap-2">
                 <p className="text-3xl font-extrabold text-slate-900">
-                  {stats.monthlyTotal.toLocaleString()}
+                  {formatCurrency(Number(stats.monthlyTotal))}
                 </p>
                 <span className="text-sm font-semibold text-slate-500">
                   ETB
@@ -356,7 +357,7 @@ export default function DonorDashboard({ user }: DonorDashboardProps) {
                       </div>
                       <div className="sm:text-right pl-14 sm:pl-0 flex items-center justify-between sm:block">
                         <p className="font-extrabold text-slate-900 text-lg">
-                          {Number(donation.amount).toLocaleString()}{" "}
+                          {formatCurrency(Number(donation.amount))}{" "}
                           <span className="text-sm text-slate-500">ETB</span>
                         </p>
                       </div>
@@ -461,8 +462,8 @@ export default function DonorDashboard({ user }: DonorDashboardProps) {
                           <div className="mt-auto pt-3">
                             <div className="flex justify-between text-xs font-semibold mb-1.5">
                               <span className="text-slate-700">
-                                {Number(camp.currentAmount).toLocaleString()}{" "}
-                                ETB raised
+                                {formatCurrency(Number(camp.currentAmount))} ETB
+                                raised
                               </span>
                               <span className="text-emerald-600">
                                 {progress}%

@@ -14,13 +14,14 @@ import {
   Quote,
   Sparkles,
 } from "lucide-react";
-import CampaignCard from "../components/CampaignCard";
+import { CompactCampaignCard } from "../components/CompactCampaignCard";
 import Footer from "../components/Footer";
 import type { Campaign } from "../types/campaign";
 import {
   getFeaturedCampaigns,
   getPlatformStats,
 } from "../services/campaign.api";
+import formatCurrency from "../utils/format";
 import type { PlatformStats } from "../services/campaign.api";
 
 /* ════════════════════════════════════════
@@ -148,11 +149,7 @@ function formatNumber(n: number): string {
   return n.toLocaleString();
 }
 
-function formatCurrency(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M ETB`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K ETB`;
-  return `${n.toLocaleString()} ETB`;
-}
+// use shared formatCurrency from utils for money formatting
 
 /* ════════════════════════════════════════
    Main Component
@@ -368,8 +365,7 @@ const HomePage = () => {
                       No campaigns yet
                     </p>
                     <p className="mt-2 text-sm text-slate-500">
-                      Check back soon — new campaigns are being added
-                      regularly.
+                      Check back soon — new campaigns are being added regularly.
                     </p>
                   </div>
                 ) : (
@@ -378,7 +374,7 @@ const HomePage = () => {
                       key={campaign.id}
                       className="animate-fade-in-up transition-transform hover:-translate-y-1"
                     >
-                      <CampaignCard campaign={campaign} />
+                      <CompactCampaignCard campaign={campaign} />
                     </div>
                   ))
                 )}
@@ -400,9 +396,9 @@ const HomePage = () => {
               A simple platform built to connect generosity with real needs
             </h2>
             <p className="mt-5 text-base leading-relaxed text-slate-600 sm:text-lg">
-              CharityHub helps people discover meaningful causes, support trusted
-              campaigns, and follow the difference their contributions make in
-              communities that need it most.
+              CharityHub helps people discover meaningful causes, support
+              trusted campaigns, and follow the difference their contributions
+              make in communities that need it most.
             </p>
           </div>
 
@@ -534,9 +530,7 @@ const HomePage = () => {
                     <p className="text-sm font-bold text-[#0b2b53]">
                       {testimonial.name}
                     </p>
-                    <p className="text-xs text-slate-500">
-                      {testimonial.role}
-                    </p>
+                    <p className="text-xs text-slate-500">{testimonial.role}</p>
                   </div>
                 </div>
               </div>

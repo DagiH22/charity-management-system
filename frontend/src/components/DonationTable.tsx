@@ -1,4 +1,5 @@
 import { Download } from "lucide-react";
+import formatCurrency from "../utils/format";
 
 export type DonationItem = {
   id: number;
@@ -50,7 +51,7 @@ export const DonationTable = ({
                 {donation.campaign.title}
               </td>
               <td className="px-6 py-4 text-emerald-600 font-bold">
-                {Number(donation.amount).toLocaleString()} ETB
+                {formatCurrency(Number(donation.amount))} ETB
               </td>
               <td className="px-6 py-4 text-slate-500">
                 {new Date(donation.donatedAt).toLocaleDateString()}

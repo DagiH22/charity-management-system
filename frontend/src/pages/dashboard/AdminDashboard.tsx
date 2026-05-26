@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminShell from "../../components/AdminShell";
+import formatCurrency from "../../utils/format";
 import DashboardErrorState from "../../components/dashboard/DashboardErrorState";
 import DashboardLoadingState from "../../components/dashboard/DashboardLoadingState";
 import DashboardSectionCard from "../../components/dashboard/DashboardSectionCard";
@@ -41,7 +42,10 @@ export default function AdminDashboard() {
       return 1;
     }
 
-    return Math.max(...overview.donationTrends.map((row) => row.totalAmount), 1);
+    return Math.max(
+      ...overview.donationTrends.map((row) => row.totalAmount),
+      1,
+    );
   }, [overview]);
 
   return (
@@ -60,33 +64,36 @@ export default function AdminDashboard() {
       {isLoading ? (
         <DashboardLoadingState />
       ) : error ? (
-        <DashboardErrorState message={error} onRetry={() => window.location.reload()} />
+        <DashboardErrorState
+          message={error}
+          onRetry={() => window.location.reload()}
+        />
       ) : overview ? (
         <>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
             <DashboardStatCard
               title="Total Donations"
-              value={overview.stats.totalDonations.toLocaleString()}
+              value={formatCurrency(overview.stats.totalDonations)}
               subtitle="Completed donations"
             />
             <DashboardStatCard
               title="Active Campaigns"
-              value={overview.stats.activeCampaigns.toLocaleString()}
+              value={formatCurrency(overview.stats.activeCampaigns)}
               subtitle="Across the platform"
             />
             <DashboardStatCard
               title="Total Donors"
-              value={overview.stats.totalDonors.toLocaleString()}
+              value={formatCurrency(overview.stats.totalDonors)}
               subtitle="Unique contributors"
             />
             <DashboardStatCard
               title="Total Raised"
-              value={`${overview.stats.totalRaised.toLocaleString()} ETB`}
+              value={`${formatCurrency(Number(overview.stats.totalRaised))} ETB`}
               subtitle="Completed donations only"
             />
             <DashboardStatCard
               title={monthlyLabel}
-              value={`${overview.stats.monthlyDonations.toLocaleString()} ETB`}
+              value={`${formatCurrency(Number(overview.stats.monthlyDonations))} ETB`}
               subtitle="Monthly donation volume"
               className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50/50"
               titleClassName="text-emerald-800"
@@ -96,11 +103,18 @@ export default function AdminDashboard() {
           </div>
 
           <section className="mt-8 grid gap-6 xl:grid-cols-3">
-            <DashboardSectionCard className="xl:col-span-2" title="Donation Trend (6 months)" action={
-              <Link className="text-sm font-semibold text-emerald-600" to="/admin/reports">
-                Detailed Reports
-              </Link>
-            }>
+            <DashboardSectionCard
+              className="xl:col-span-2"
+              title="Donation Trend (6 months)"
+              action={
+                <Link
+                  className="text-sm font-semibold text-emerald-600"
+                  to="/admin/reports"
+                >
+                  Detailed Reports
+                </Link>
+              }
+            >
               <div className="space-y-3">
                 {overview.donationTrends.map((item) => {
                   const width = (item.totalAmount / trendMaxAmount) * 100;
@@ -110,7 +124,8 @@ export default function AdminDashboard() {
                       <div className="mb-1 flex items-center justify-between text-xs text-slate-500">
                         <span>{item.month}</span>
                         <span>
-                          {item.totalAmount.toLocaleString()} ETB ({item.donationsCount})
+                          {formatCurrency(item.totalAmount)} ETB (
+                          {formatCurrency(item.donationsCount)})
                         </span>
                       </div>
                       <div className="h-2 rounded-full bg-slate-100">
@@ -128,19 +143,25 @@ export default function AdminDashboard() {
             <DashboardSectionCard title="Verification Queue">
               <div className="mt-5 space-y-3">
                 <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-                  <p className="text-xs font-semibold uppercase text-amber-700">Pending</p>
+                  <p className="text-xs font-semibold uppercase text-amber-700">
+                    Pending
+                  </p>
                   <p className="mt-1 text-2xl font-extrabold text-amber-900">
                     {overview.charityVerificationCounts.PENDING}
                   </p>
                 </div>
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-                  <p className="text-xs font-semibold uppercase text-emerald-700">Approved</p>
+                  <p className="text-xs font-semibold uppercase text-emerald-700">
+                    Approved
+                  </p>
                   <p className="mt-1 text-2xl font-extrabold text-emerald-900">
                     {overview.charityVerificationCounts.APPROVED}
                   </p>
                 </div>
                 <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3">
-                  <p className="text-xs font-semibold uppercase text-rose-700">Rejected</p>
+                  <p className="text-xs font-semibold uppercase text-rose-700">
+                    Rejected
+                  </p>
                   <p className="mt-1 text-2xl font-extrabold text-rose-900">
                     {overview.charityVerificationCounts.REJECTED}
                   </p>
@@ -153,7 +174,10 @@ export default function AdminDashboard() {
             className="mt-8"
             title="Recent Donations"
             action={
-              <Link className="text-sm font-semibold text-emerald-600" to="/admin/donations">
+              <Link
+                className="text-sm font-semibold text-emerald-600"
+                to="/admin/donations"
+              >
                 View Donation Logs
               </Link>
             }
@@ -171,19 +195,25 @@ export default function AdminDashboard() {
                   >
                     <div>
                       <p className="font-semibold text-[#0b2b53]">
-                        {donation.campaign.title} · {donation.campaign.charity?.organizationName || "Unknown charity"}
+                        {donation.campaign.title} ·{" "}
+                        {donation.campaign.charity?.organizationName ||
+                          "Unknown charity"}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">
                         {donation.isAnonymous
                           ? "Anonymous donor"
-                          : donation.donor?.name || donation.guestName || "Guest donor"} ·{" "}
-                        {new Date(donation.donatedAt).toLocaleString()}
-                        {donation.transactionId ? ` · ${donation.transactionId}` : ""}
+                          : donation.donor?.name ||
+                            donation.guestName ||
+                            "Guest donor"}{" "}
+                        · {new Date(donation.donatedAt).toLocaleString()}
+                        {donation.transactionId
+                          ? ` · ${donation.transactionId}`
+                          : ""}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-bold text-emerald-600">
-                        {Number(donation.amount).toLocaleString()} ETB
+                        {formatCurrency(Number(donation.amount))} ETB
                       </p>
                       <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
                         {donation.status}
@@ -199,7 +229,10 @@ export default function AdminDashboard() {
             className="mt-8"
             title="Top Campaigns"
             action={
-              <Link className="text-sm font-semibold text-emerald-600" to="/admin/campaigns">
+              <Link
+                className="text-sm font-semibold text-emerald-600"
+                to="/admin/campaigns"
+              >
                 Campaign Oversight
               </Link>
             }
@@ -211,15 +244,18 @@ export default function AdminDashboard() {
                   className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-4"
                 >
                   <div>
-                    <p className="font-semibold text-[#0b2b53]">{campaign.title}</p>
+                    <p className="font-semibold text-[#0b2b53]">
+                      {campaign.title}
+                    </p>
                     <p className="mt-1 text-xs text-slate-500">
-                      {campaign.charity?.organizationName || "Unknown charity"} · {campaign.donorCount} donors
+                      {campaign.charity?.organizationName || "Unknown charity"}{" "}
+                      · {campaign.donorCount} donors
                     </p>
                   </div>
                   <div className="text-right text-sm">
                     <p className="font-bold text-slate-900">
-                      {Number(campaign.currentAmount).toLocaleString()} /{" "}
-                      {Number(campaign.targetAmount).toLocaleString()} ETB
+                      {formatCurrency(Number(campaign.currentAmount))} /{" "}
+                      {formatCurrency(Number(campaign.targetAmount))} ETB
                     </p>
                     <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
                       {campaign.status}
