@@ -13,6 +13,7 @@ import type {
   CharityDonation,
 } from "../../types/charityDashboard";
 import { resolveAssetUrl } from "../../utils/media";
+import formatCurrency from "../../utils/format";
 
 type CharityDashboardProps = {
   user: User;
@@ -231,7 +232,7 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
                 className="group transition-all hover:border-emerald-200 hover:shadow-md"
                 title="Total Raised"
                 titleClassName="group-hover:text-emerald-600"
-                value={`${stats.totalRaised.toLocaleString()} ETB`}
+                value={`${formatCurrency(Number(stats.totalRaised))} ETB`}
                 subtitle={`From ${stats.totalContributors} contributors`}
                 icon={
                   <svg
@@ -335,7 +336,7 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
                 titleClassName="text-emerald-800"
                 value={
                   <>
-                    {stats.monthlyContributions.toLocaleString()}{" "}
+                    {formatCurrency(stats.monthlyContributions)}{" "}
                     <span className="text-xl font-bold">ETB</span>
                   </>
                 }
@@ -484,17 +485,17 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
                             <div className="mb-2 flex items-end justify-between text-sm">
                               <div>
                                 <span className="font-bold text-slate-900">
-                                  {Number(
-                                    campaign.currentAmount,
-                                  ).toLocaleString()}{" "}
+                                  {formatCurrency(
+                                    Number(campaign.currentAmount),
+                                  )}{" "}
                                   ETB
                                 </span>
                                 <span className="text-slate-500">
                                   {" "}
                                   raised of{" "}
-                                  {Number(
-                                    campaign.targetAmount,
-                                  ).toLocaleString()}
+                                  {formatCurrency(
+                                    Number(campaign.targetAmount),
+                                  )}
                                 </span>
                               </div>
                               <span className="font-semibold text-emerald-600">
@@ -540,7 +541,9 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
 
             <DashboardSectionCard
               className="mt-10 p-8 shadow-[0_10px_40px_rgba(10,40,80,0.04)]"
-              title={<span className="text-[#0b2b53]">Recent Contributions</span>}
+              title={
+                <span className="text-[#0b2b53]">Recent Contributions</span>
+              }
               action={
                 <Link
                   className="text-sm font-semibold text-emerald-600 hover:text-emerald-500"
@@ -600,7 +603,7 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-extrabold text-emerald-600">
-                          {Number(donation.amount).toLocaleString()} ETB
+                          {formatCurrency(Number(donation.amount))} ETB
                         </p>
                         <span
                           className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${

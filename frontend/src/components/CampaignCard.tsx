@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { closeCampaign } from "../services/campaign.api";
 import { resolveAssetUrl } from "../utils/media";
+import formatCurrency from "../utils/format";
 
 type FeedbackState = {
   type: "success" | "error";
@@ -28,7 +29,6 @@ const CampaignCard = ({
   const [closing, setClosing] = useState(false);
   const [status, setStatus] = useState(campaign.status);
   const [feedback, setFeedback] = useState<FeedbackState>(null);
-
 
   async function handleCloseCampaign(id: number): Promise<void> {
     if (
@@ -125,11 +125,11 @@ const CampaignCard = ({
       <div className="mb-4">
         <div className="mb-2 flex items-center justify-between text-sm font-medium">
           <span className="text-gray-600">
-            Raised: ${campaign.currentAmount.toLocaleString()}
+            Raised: ETB {formatCurrency(Number(campaign.currentAmount))}
           </span>
 
           <span className="text-emerald-600">
-            Goal: ${campaign.targetAmount.toLocaleString()}
+            Goal: ETB {formatCurrency(Number(campaign.targetAmount))}
           </span>
         </div>
 

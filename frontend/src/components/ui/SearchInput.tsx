@@ -1,11 +1,15 @@
-import React, { InputHTMLAttributes } from 'react';
-import { Search } from 'lucide-react';
+import type { InputHTMLAttributes } from "react";
+import { Search } from "lucide-react";
 
 interface SearchInputProps extends InputHTMLAttributes<HTMLInputElement> {
   containerClassName?: string;
 }
 
-export function SearchInput({ containerClassName = '', className = '', ...props }: SearchInputProps) {
+export function SearchInput({
+  containerClassName = "",
+  className = "",
+  ...props
+}: SearchInputProps) {
   return (
     <div className={`relative ${containerClassName}`}>
       <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">

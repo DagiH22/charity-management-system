@@ -157,6 +157,8 @@ export type AdminDonationsResponse = {
     isAnonymous: boolean;
     donatedAt: string;
     transactionId?: string | null;
+    guestName?: string | null;
+    guestEmail?: string | null;
     status: "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
     donor: {
       id: number;

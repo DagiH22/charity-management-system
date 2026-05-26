@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { getDonorFollowingCampaigns } from "../services/donor.api";
-import { resolveAssetUrl } from "../utils/media";
 import { SearchInput } from "../components/ui/SearchInput";
 import { FilterSelect } from "../components/ui/FilterSelect";
+import { CompactCampaignCard } from "../components/CompactCampaignCard";
 
 type FollowedCampaign = {
   id: number;
@@ -30,7 +29,6 @@ type FollowingResponse = {
 };
 
 export default function DonorFollowingPage() {
-  const navigate = useNavigate();
   const [following, setFollowing] = useState<FollowingResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -124,75 +122,9 @@ export default function DonorFollowingPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {following?.items.map((follow) => {
-              const camp = follow.campaign;
-              const progress = Math.min(
-                Math.round(
-                  (Number(camp.currentAmount) / Number(camp.targetAmount)) *
-                    100,
-                ),
-                100,
-              );
-              const daysRemaining = camp.endDate
-                ? Math.max(
-                    0,
-                    Math.ceil(
-                      (new Date(camp.endDate).getTime() - Date.now()) /
-                        (1000 * 60 * 60 * 24),
-                    ),
-                  )
-                : null;
-
-              return (
-                <div
-                  key={follow.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-                >
-                  <div className="flex gap-4">
-                    <img
-                      src={
-                        resolveAssetUrl(camp.imageUrl) ||
-                        "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400&q=80"
-                      }
-                      alt={camp.title}
-                      className="h-20 w-24 rounded-xl object-cover"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <h3 className="truncate text-lg font-bold text-[#0b2b53]">
-                        {camp.title}
-                      </h3>
-                      <p className="mt-1 text-sm text-slate-500 line-clamp-2">
-                        {camp.description}
-                      </p>
-                      <div className="mt-3 flex items-center gap-2">
-                        <div className="h-2 flex-1 rounded-full bg-slate-200 overflow-hidden">
-                          <div
-                            className="h-full bg-emerald-500"
-                            style={{ width: `${progress}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-xs font-bold text-slate-500">
-                          {progress}%
-                        </span>
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold text-slate-500">
-                        <span>{camp.donorCount} donors</span>
-                        {daysRemaining !== null && (
-                          <span>{daysRemaining} days left</span>
-                        )}
-                        <span className="uppercase">{camp.status}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => navigate(`/campaigns/${camp.id}`)}
-                    className="mt-4 w-full rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-700"
-                  >
-                    View Campaign
-                  </button>
-                </div>
-              );
-            })}
+            {following?.items.map((follow) => (
+              <CompactCampaignCard key={follow.id} campaign={follow.campaign} />
+            ))}
           </div>
           <div className="flex items-center justify-between pt-4">
             <button

@@ -28,8 +28,8 @@ export default function NavBar() {
 
   const donorNavLinks = [
     { label: "Home", href: "/" },
-    { label: "Campaigns", href: "/campaigns" },
     { label: "Dashboard", href: "/dashboard" },
+    { label: "Campaigns", href: "/campaigns" },
   ];
 
   const navLinks =

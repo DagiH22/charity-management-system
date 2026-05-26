@@ -14,6 +14,7 @@ import type {
   CharityDonation,
 } from "../types/charityDashboard";
 import { resolveAssetUrl } from "../utils/media";
+import formatCurrency from "../utils/format";
 import { SearchInput } from "../components/ui/SearchInput";
 import { FilterSelect } from "../components/ui/FilterSelect";
 
@@ -136,18 +137,15 @@ export default function CharityContributionsPage() {
     }));
 
     try {
-      const response = await getCharityCampaignContributions(
-        campaignId,
-        {
-          page: nextPage,
-          limit: 8,
-          search: search || undefined,
-          dateFrom: dateFrom || undefined,
-          dateTo: dateTo || undefined,
-          sortBy,
-          sortOrder,
-        },
-      );
+      const response = await getCharityCampaignContributions(campaignId, {
+        page: nextPage,
+        limit: 8,
+        search: search || undefined,
+        dateFrom: dateFrom || undefined,
+        dateTo: dateTo || undefined,
+        sortBy,
+        sortOrder,
+      });
       setExpandedCampaigns((prev) => ({
         ...prev,
         [campaignId]: {
@@ -252,7 +250,10 @@ export default function CharityContributionsPage() {
               setPage(1);
               setSelectedCampaign(event.target.value);
             }}
-            defaultOption={{ value: "", label: `All campaigns (${campaignTotal})` }}
+            defaultOption={{
+              value: "",
+              label: `All campaigns (${campaignTotal})`,
+            }}
             options={campaignOptions.map((campaign) => ({
               value: campaign.id,
               label: campaign.title,
@@ -360,8 +361,8 @@ export default function CharityContributionsPage() {
                           {group.campaign.title}
                         </h3>
                         <p className="text-sm text-slate-500">
-                          {Number(group.totals.totalRaised).toLocaleString()}{" "}
-                          ETB · {group.totals.donorCount} donors ·{" "}
+                          {formatCurrency(Number(group.totals.totalRaised))} ETB
+                          · {group.totals.donorCount} donors ·{" "}
                           {group.totals.donationsCount} donations
                         </p>
                       </div>
@@ -408,7 +409,7 @@ export default function CharityContributionsPage() {
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-bold text-emerald-600">
-                              {Number(donation.amount).toLocaleString()} ETB
+                              {formatCurrency(Number(donation.amount))} ETB
                             </p>
                             <span
                               className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${renderStatusBadge(

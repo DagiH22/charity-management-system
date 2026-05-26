@@ -81,7 +81,10 @@ export const generateReceiptPDF = (receiptData: ReceiptPDFData) => {
     y += Math.max(6, wrapped.length * 5.5);
   };
 
-  drawField("Name", receiptData.isAnonymous ? "Anonymous" : receiptData.donorName);
+  drawField(
+    "Name",
+    receiptData.isAnonymous ? "Anonymous" : receiptData.donorName,
+  );
 
   if (!receiptData.isAnonymous && receiptData.donorEmail) {
     drawField("Email", receiptData.donorEmail);
@@ -98,7 +101,12 @@ export const generateReceiptPDF = (receiptData: ReceiptPDFData) => {
 
   drawField("Campaign", receiptData.campaignTitle);
   drawField("Charity", receiptData.charityName);
-  drawField("Amount", `ETB ${receiptData.donationAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+  // format amount with two decimal places
+  const amountStr = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number(receiptData.donationAmount || 0));
+  drawField("Amount", `ETB ${amountStr}`);
   drawField("Date", formatReadableDate(receiptData.donationDate));
   drawField("Status", receiptData.paymentStatus);
 

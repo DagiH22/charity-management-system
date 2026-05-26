@@ -1,13 +1,22 @@
-import React, { SelectHTMLAttributes, ReactNode } from 'react';
-import { ChevronDown } from 'lucide-react';
+import type { SelectHTMLAttributes } from "react";
+import { ChevronDown } from "lucide-react";
 
-interface FilterSelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'children'> {
-  options: { value: string | number; label: string }[];
+interface FilterSelectProps extends Omit<
+  SelectHTMLAttributes<HTMLSelectElement>,
+  "children"
+> {
+  options: ReadonlyArray<{ value: string | number; label: string }>;
   containerClassName?: string;
   defaultOption?: { value: string | number; label: string };
 }
 
-export function FilterSelect({ options, containerClassName = '', className = '', defaultOption, ...props }: FilterSelectProps) {
+export function FilterSelect({
+  options,
+  containerClassName = "",
+  className = "",
+  defaultOption,
+  ...props
+}: FilterSelectProps) {
   return (
     <div className={`relative ${containerClassName}`}>
       <select
@@ -15,9 +24,7 @@ export function FilterSelect({ options, containerClassName = '', className = '',
         {...props}
       >
         {defaultOption && (
-          <option value={defaultOption.value}>
-            {defaultOption.label}
-          </option>
+          <option value={defaultOption.value}>{defaultOption.label}</option>
         )}
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>

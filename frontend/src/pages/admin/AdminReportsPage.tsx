@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import AdminShell from "../../components/AdminShell";
+import formatCurrency from "../../utils/format";
 import { getApiErrorMessage } from "../../services/apiErrors";
 import { getAdminReports } from "../../services/adminDashboard.api";
 import type { AdminReportsResponse } from "../../types/adminDashboard";
@@ -36,7 +37,10 @@ export default function AdminReportsPage() {
       return 1;
     }
 
-    return Math.max(...reports.donationTrends.map((trend) => trend.totalAmount), 1);
+    return Math.max(
+      ...reports.donationTrends.map((trend) => trend.totalAmount),
+      1,
+    );
   }, [reports]);
 
   return (
@@ -89,32 +93,42 @@ export default function AdminReportsPage() {
           ))}
         </div>
       ) : error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-600">{error}</div>
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-600">
+          {error}
+        </div>
       ) : reports ? (
         <>
           <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-5">
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Users</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Users
+              </p>
               <p className="mt-2 text-2xl font-extrabold text-slate-900">
-                {reports.platformStats.totalUsers.toLocaleString()}
+                {formatCurrency(reports.platformStats.totalUsers)}
               </p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Campaigns</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Campaigns
+              </p>
               <p className="mt-2 text-2xl font-extrabold text-slate-900">
-                {reports.platformStats.totalCampaigns.toLocaleString()}
+                {formatCurrency(reports.platformStats.totalCampaigns)}
               </p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Donations</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Donations
+              </p>
               <p className="mt-2 text-2xl font-extrabold text-slate-900">
-                {reports.platformStats.totalDonations.toLocaleString()}
+                {formatCurrency(reports.platformStats.totalDonations)}
               </p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Total Raised</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Total Raised
+              </p>
               <p className="mt-2 text-2xl font-extrabold text-slate-900">
-                {reports.platformStats.totalRaised.toLocaleString()} ETB
+                {formatCurrency(reports.platformStats.totalRaised)} ETB
               </p>
             </div>
             <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
@@ -122,14 +136,16 @@ export default function AdminReportsPage() {
                 Active Campaigns
               </p>
               <p className="mt-2 text-2xl font-extrabold text-emerald-900">
-                {reports.systemUsage.activeCampaigns.toLocaleString()}
+                {formatCurrency(reports.systemUsage.activeCampaigns)}
               </p>
             </div>
           </section>
 
           <section className="mt-8 grid gap-6 lg:grid-cols-2">
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-slate-900">Donation Trends (12 months)</h2>
+              <h2 className="text-lg font-bold text-slate-900">
+                Donation Trends (12 months)
+              </h2>
               <div className="mt-5 space-y-3">
                 {reports.donationTrends.map((trend) => {
                   const width = (trend.totalAmount / maxTrendAmount) * 100;
@@ -139,7 +155,8 @@ export default function AdminReportsPage() {
                       <div className="mb-1 flex items-center justify-between text-xs text-slate-500">
                         <span>{trend.month}</span>
                         <span>
-                          {trend.totalAmount.toLocaleString()} ETB ({trend.donationsCount})
+                          {formatCurrency(trend.totalAmount)} ETB (
+                          {formatCurrency(trend.donationsCount)})
                         </span>
                       </div>
                       <div className="h-2 rounded-full bg-slate-100">
@@ -155,24 +172,28 @@ export default function AdminReportsPage() {
             </div>
 
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-slate-900">System Usage (Last 30 Days)</h2>
+              <h2 className="text-lg font-bold text-slate-900">
+                System Usage (Last 30 Days)
+              </h2>
               <div className="mt-5 space-y-3">
                 <div className="rounded-xl bg-slate-50 px-4 py-3">
                   <p className="text-xs text-slate-500">New users</p>
                   <p className="text-xl font-bold text-slate-900">
-                    {reports.systemUsage.newUsersLast30Days.toLocaleString()}
+                    {formatCurrency(reports.systemUsage.newUsersLast30Days)}
                   </p>
                 </div>
                 <div className="rounded-xl bg-slate-50 px-4 py-3">
                   <p className="text-xs text-slate-500">Active donors</p>
                   <p className="text-xl font-bold text-slate-900">
-                    {reports.systemUsage.activeDonorsLast30Days.toLocaleString()}
+                    {formatCurrency(reports.systemUsage.activeDonorsLast30Days)}
                   </p>
                 </div>
                 <div className="rounded-xl bg-slate-50 px-4 py-3">
                   <p className="text-xs text-slate-500">Completed donations</p>
                   <p className="text-xl font-bold text-slate-900">
-                    {reports.systemUsage.completedDonationsLast30Days.toLocaleString()}
+                    {formatCurrency(
+                      reports.systemUsage.completedDonationsLast30Days,
+                    )}
                   </p>
                 </div>
               </div>
@@ -180,9 +201,13 @@ export default function AdminReportsPage() {
           </section>
 
           <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-900">Donation Summary Per Campaign</h2>
+            <h2 className="text-lg font-bold text-slate-900">
+              Donation Summary Per Campaign
+            </h2>
             {reports.campaignSummaries.length === 0 ? (
-              <p className="mt-4 text-sm text-slate-500">No campaign report data available.</p>
+              <p className="mt-4 text-sm text-slate-500">
+                No campaign report data available.
+              </p>
             ) : (
               <div className="mt-5 overflow-x-auto">
                 <table className="w-full text-sm">
@@ -197,22 +222,29 @@ export default function AdminReportsPage() {
                   </thead>
                   <tbody>
                     {reports.campaignSummaries.map((campaign) => (
-                      <tr key={campaign.id} className="border-t border-slate-100">
+                      <tr
+                        key={campaign.id}
+                        className="border-t border-slate-100"
+                      >
                         <td className="px-4 py-3">
-                          <p className="font-semibold text-[#0b2b53]">{campaign.title}</p>
-                          <p className="text-xs text-slate-500">{campaign.status}</p>
+                          <p className="font-semibold text-[#0b2b53]">
+                            {campaign.title}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {campaign.status}
+                          </p>
                         </td>
                         <td className="px-4 py-3 text-slate-600">
                           {campaign.charity.organizationName}
                         </td>
                         <td className="px-4 py-3 font-semibold text-emerald-700">
-                          {campaign.periodRaised.toLocaleString()} ETB
+                          {formatCurrency(campaign.periodRaised)} ETB
                         </td>
                         <td className="px-4 py-3 text-slate-600">
-                          {campaign.periodDonationsCount.toLocaleString()}
+                          {formatCurrency(campaign.periodDonationsCount)}
                         </td>
                         <td className="px-4 py-3 text-slate-600">
-                          {campaign.periodUniqueDonors.toLocaleString()}
+                          {formatCurrency(campaign.periodUniqueDonors)}
                         </td>
                       </tr>
                     ))}
