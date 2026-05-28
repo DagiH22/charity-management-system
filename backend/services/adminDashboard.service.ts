@@ -112,6 +112,7 @@ export const getAdminOverviewService = async () => {
         id: true,
         title: true,
         status: true,
+        category: true,
         currentAmount: true,
         targetAmount: true,
         donorCount: true,
@@ -132,7 +133,10 @@ export const getAdminOverviewService = async () => {
       acc[group.status] = group._count._all;
       return acc;
     },
-    { ACTIVE: 0, CLOSED: 0, DRAFT: 0 } as Record<"ACTIVE" | "CLOSED" | "DRAFT", number>,
+    { ACTIVE: 0, CLOSED: 0, DRAFT: 0 } as Record<
+      "ACTIVE" | "CLOSED" | "DRAFT",
+      number
+    >,
   );
 
   const charityVerificationCounts = verificationCounts.reduce(
@@ -140,10 +144,16 @@ export const getAdminOverviewService = async () => {
       acc[group.status] = group._count._all;
       return acc;
     },
-    { PENDING: 0, APPROVED: 0, REJECTED: 0 } as Record<"PENDING" | "APPROVED" | "REJECTED", number>,
+    { PENDING: 0, APPROVED: 0, REJECTED: 0 } as Record<
+      "PENDING" | "APPROVED" | "REJECTED",
+      number
+    >,
   );
 
-  const trendMap = new Map<string, { totalAmount: number; donationsCount: number }>();
+  const trendMap = new Map<
+    string,
+    { totalAmount: number; donationsCount: number }
+  >();
   trendMonths.forEach((item) => {
     trendMap.set(item.key, { totalAmount: 0, donationsCount: 0 });
   });
@@ -188,11 +198,17 @@ export const getAdminUsersService = async (options: {
   limit: number;
   search?: string;
   role?: "DONOR" | "CHARITY" | "ADMIN";
-  verification?: "PENDING" | "APPROVED" | "REJECTED" | "VERIFIED" | "UNVERIFIED";
+  verification?:
+    | "PENDING"
+    | "APPROVED"
+    | "REJECTED"
+    | "VERIFIED"
+    | "UNVERIFIED";
   sortBy?: "createdAt" | "name" | "email";
   sortOrder?: "asc" | "desc";
 }) => {
-  const { page, limit, search, role, verification, sortBy, sortOrder } = options;
+  const { page, limit, search, role, verification, sortBy, sortOrder } =
+    options;
 
   const where: Prisma.UserWhereInput = {
     ...(role ? { role } : {}),
@@ -268,7 +284,10 @@ export const getAdminUsersService = async (options: {
       acc[group.role] = group._count._all;
       return acc;
     },
-    { DONOR: 0, CHARITY: 0, ADMIN: 0 } as Record<"DONOR" | "CHARITY" | "ADMIN", number>,
+    { DONOR: 0, CHARITY: 0, ADMIN: 0 } as Record<
+      "DONOR" | "CHARITY" | "ADMIN",
+      number
+    >,
   );
 
   return {
@@ -347,7 +366,10 @@ export const getAdminCharityVerificationsService = async (options: {
       acc[group.status] = group._count._all;
       return acc;
     },
-    { PENDING: 0, APPROVED: 0, REJECTED: 0 } as Record<"PENDING" | "APPROVED" | "REJECTED", number>,
+    { PENDING: 0, APPROVED: 0, REJECTED: 0 } as Record<
+      "PENDING" | "APPROVED" | "REJECTED",
+      number
+    >,
   );
 
   return {
@@ -393,6 +415,7 @@ export const getAdminCampaignOversightService = async (options: {
         title: true,
         status: true,
         imageUrl: true,
+        category: true,
         currentAmount: true,
         targetAmount: true,
         donorCount: true,
@@ -425,7 +448,10 @@ export const getAdminCampaignOversightService = async (options: {
       acc[group.status] = group._count._all;
       return acc;
     },
-    { ACTIVE: 0, CLOSED: 0, DRAFT: 0 } as Record<"ACTIVE" | "CLOSED" | "DRAFT", number>,
+    { ACTIVE: 0, CLOSED: 0, DRAFT: 0 } as Record<
+      "ACTIVE" | "CLOSED" | "DRAFT",
+      number
+    >,
   );
 
   return {
@@ -633,7 +659,9 @@ export const getAdminReportsService = async (options: {
       0,
     );
 
-    const uniqueDonors = new Set(campaign.donations.map((item) => item.donorId));
+    const uniqueDonors = new Set(
+      campaign.donations.map((item) => item.donorId),
+    );
 
     return {
       id: campaign.id,
@@ -650,7 +678,10 @@ export const getAdminReportsService = async (options: {
   });
 
   const trendMonths = buildRecentMonthKeys(12);
-  const trendMap = new Map<string, { totalAmount: number; donationsCount: number }>();
+  const trendMap = new Map<
+    string,
+    { totalAmount: number; donationsCount: number }
+  >();
 
   trendMonths.forEach((item) => {
     trendMap.set(item.key, { totalAmount: 0, donationsCount: 0 });

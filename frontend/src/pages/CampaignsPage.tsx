@@ -9,6 +9,8 @@ import CharitySidebar from "../components/CharitySidebar";
 import { getApiErrorMessage } from "../services/apiErrors";
 import { SearchInput } from "../components/ui/SearchInput";
 import { FilterSelect } from "../components/ui/FilterSelect";
+import type { CampaignCategory } from "../utils/campaignCategories";
+import CategoryDropdown from "../components/ui/CategoryDropdown";
 
 const statusOptions = [
   { label: "Active", value: "ACTIVE" },
@@ -33,6 +35,7 @@ export default function CampaignsPage() {
   const [search, setSearch] = useState("");
   // Use backend status values (uppercase) to match returned data: 'ACTIVE' | 'CLOSED'
   const [status, setStatus] = useState<"ALL" | "ACTIVE" | "CLOSED">("ALL");
+  const [category, setCategory] = useState<"ALL" | CampaignCategory>("ALL");
   const [sortBy, setSortBy] = useState<
     "createdAt" | "currentAmount" | "targetAmount" | "donorCount" | "endDate"
   >("createdAt");
@@ -53,7 +56,9 @@ export default function CampaignsPage() {
         setError("");
         // Usually, would map filter states natively into an API request
         // Using existing `getAllCampaigns` and filtering linearly if not paginated on this endpoint for guest access temporarily
-        const data = await getAllCampaigns();
+        const data = await getAllCampaigns({
+          category: category === "ALL" ? undefined : category,
+        });
         let fetchedData = data.data || [];
 
         // Quick local filter mapped dynamically
@@ -61,6 +66,12 @@ export default function CampaignsPage() {
           // Normalize campaign.status to uppercase string to avoid mismatches
           fetchedData = fetchedData.filter(
             (c: Campaign) => String(c.status).toUpperCase() === status,
+          );
+        }
+
+        if (category !== "ALL") {
+          fetchedData = fetchedData.filter(
+            (c: Campaign) => c.category === category,
           );
         }
 
@@ -96,7 +107,7 @@ export default function CampaignsPage() {
     };
 
     fetchCampaigns();
-  }, [navigate, status, search, sortBy, sortOrder]);
+  }, [navigate, status, search, sortBy, sortOrder, category]);
 
   const handleCampaignClosed = (campaignId: number) => {
     setCampaigns(
@@ -150,12 +161,19 @@ export default function CampaignsPage() {
               onChange={(e) => setSearch(e.target.value)}
               containerClassName="max-w-md flex-1"
             />
-            <FilterSelect
-              value={status}
-              onChange={(e) => setStatus(e.target.value as any)}
-              defaultOption={{ value: "ALL", label: "All Status" }}
-              options={statusOptions}
-            />
+            <div className="flex items-center gap-3">
+              <FilterSelect
+                value={status}
+                onChange={(e) => setStatus(e.target.value as any)}
+                defaultOption={{ value: "ALL", label: "All Status" }}
+                options={statusOptions}
+                containerClassName="w-44"
+              />
+              <CategoryDropdown
+                value={category}
+                onChange={(v) => setCategory(v as any)}
+              />
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <FilterSelect
@@ -205,6 +223,8 @@ export default function CampaignsPage() {
           </div>
         </div>
       </div>
+
+      {/* category/status controls are in the main filter bar above; removed duplicate controls */}
 
       {error && (
         <div className="mb-6 rounded-xl bg-red-50 p-4 text-red-700 font-semibold">

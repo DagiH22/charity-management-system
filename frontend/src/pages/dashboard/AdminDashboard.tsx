@@ -9,6 +9,7 @@ import DashboardStatCard from "../../components/dashboard/DashboardStatCard";
 import { getApiErrorMessage } from "../../services/apiErrors";
 import { getAdminOverview } from "../../services/adminDashboard.api";
 import type { AdminOverviewResponse } from "../../types/adminDashboard";
+import CategoryBadge from "../../components/CategoryBadge";
 
 export default function AdminDashboard() {
   const [overview, setOverview] = useState<AdminOverviewResponse | null>(null);
@@ -247,6 +248,9 @@ export default function AdminDashboard() {
                     <p className="font-semibold text-[#0b2b53]">
                       {campaign.title}
                     </p>
+                    <div className="mt-1">
+                      <CategoryBadge category={campaign.category} />
+                    </div>
                     <p className="mt-1 text-xs text-slate-500">
                       {campaign.charity?.organizationName || "Unknown charity"}{" "}
                       · {campaign.donorCount} donors

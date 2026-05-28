@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+﻿import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useLocation, Link as RouterLink } from "react-router-dom";
 import {
   getPublicCampaignById,
@@ -16,6 +16,7 @@ import { resolveAssetUrl } from "../utils/media";
 import { getDonationReceipt } from "../services/donation.api";
 import { generateReceiptPDF, type ReceiptPDFData } from "../utils/receiptPdf";
 import { Link as LinkIcon, CheckCircle2 } from "lucide-react";
+import CategoryBadge from "../components/CategoryBadge";
 
 const PRESET_AMOUNTS = [100, 250, 500, 1000];
 
@@ -186,10 +187,10 @@ export default function CampaignDetailsPage() {
       params.get("ref_id") ||
       params.get("transactionId");
 
-    console.log("🔍 Checking for Chapa redirect...");
-    console.log("📍 Current URL:", window.location.href);
-    console.log("🔑 Query params:", Object.fromEntries(params));
-    console.log("💳 TX_REF found:", txRef);
+    console.log("ðŸ” Checking for Chapa redirect...");
+    console.log("ðŸ“ Current URL:", window.location.href);
+    console.log("ðŸ”‘ Query params:", Object.fromEntries(params));
+    console.log("ðŸ’³ TX_REF found:", txRef);
 
     // Check sessionStorage for donation info stored before Chapa redirect
     let donationFromStorage = null;
@@ -198,7 +199,7 @@ export default function CampaignDetailsPage() {
       if (stored) {
         donationFromStorage = JSON.parse(stored);
         console.log(
-          "📦 Found donation in sessionStorage:",
+          "ðŸ“¦ Found donation in sessionStorage:",
           donationFromStorage,
         );
       }
@@ -208,7 +209,7 @@ export default function CampaignDetailsPage() {
 
     // If neither URL param nor storage, nothing to do
     if (!txRef && !donationFromStorage) {
-      console.log("⚠️ No transaction reference found, skipping receipt fetch");
+      console.log("âš ï¸ No transaction reference found, skipping receipt fetch");
       return;
     }
 
@@ -216,25 +217,25 @@ export default function CampaignDetailsPage() {
       const txRefToUse = txRef || donationFromStorage?.tx_ref;
 
       if (!txRefToUse) {
-        console.error("❌ No tx_ref available to fetch donation");
+        console.error("âŒ No tx_ref available to fetch donation");
         return;
       }
 
       try {
-        console.log("🚀 Fetching donation details for tx_ref:", txRefToUse);
+        console.log("ðŸš€ Fetching donation details for tx_ref:", txRefToUse);
         const res = await getDonationByTxRef(txRefToUse);
-        console.log("✅ Donation fetched successfully:", res);
+        console.log("âœ… Donation fetched successfully:", res);
         const donation = res.data.donation;
 
         // CHECK PAYMENT STATUS - Only show receipt if COMPLETED
         if (donation.status !== "COMPLETED") {
-          console.warn("⚠️ Payment not completed. Status:", donation.status);
+          console.warn("âš ï¸ Payment not completed. Status:", donation.status);
           if (donation.status === "FAILED") {
-            setDonationError("❌ Payment failed. Please try again.");
+            setDonationError("âŒ Payment failed. Please try again.");
           } else if (donation.status === "PENDING") {
-            setDonationError("⏳ Payment is still pending. Please wait...");
+            setDonationError("â³ Payment is still pending. Please wait...");
           } else {
-            setDonationError("❌ Payment was not successful.");
+            setDonationError("âŒ Payment was not successful.");
           }
           // Clean up storage
           sessionStorage.removeItem("chapaRedirectDonation");
@@ -252,7 +253,7 @@ export default function CampaignDetailsPage() {
           paymentMethod: receiptResponse.data.paymentMethod || "Chapa Payment",
         });
         setShowReceiptDetails(false);
-        console.log("🎫 Receipt data set from API, showing modal");
+        console.log("ðŸŽ« Receipt data set from API, showing modal");
         setShowReceipt(true);
 
         // Clean up storage
@@ -260,12 +261,12 @@ export default function CampaignDetailsPage() {
         await loadData();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
-        console.error("❌ Error fetching donation details:", err);
+        console.error("âŒ Error fetching donation details:", err);
         console.error("Error response:", err.response);
         console.error("Error message:", err.message);
 
         setDonationError(
-          "❌ Could not verify payment status. Please contact support.",
+          "âŒ Could not verify payment status. Please contact support.",
         );
         sessionStorage.removeItem("chapaRedirectDonation");
       }
@@ -447,7 +448,7 @@ export default function CampaignDetailsPage() {
         "chapaRedirectDonation",
         JSON.stringify(donationInfo),
       );
-      console.log("💾 Stored donation info in sessionStorage:", donationInfo);
+      console.log("ðŸ’¾ Stored donation info in sessionStorage:", donationInfo);
 
       // Build and submit a form to Chapa hosted endpoint
       const form = document.createElement("form");
@@ -500,10 +501,16 @@ export default function CampaignDetailsPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
         <div className="absolute bottom-6 left-6 right-6">
           <span
-            className={`mb-3 inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm ${campaign.status === "ACTIVE" ? "bg-emerald-500" : "bg-slate-500"}`}
+            className={`inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm border border-white/20 backdrop-blur-md ${campaign.status === "ACTIVE" ? "bg-emerald-500/80" : "bg-slate-500/80"}`}
           >
             {campaign.status}
           </span>
+          <div className="mb-3">
+            <CategoryBadge
+              category={campaign.category}
+              className="bg-white/90"
+            />
+          </div>
           <h1 className="text-2xl font-extrabold text-white md:text-4xl lg:text-5xl">
             {campaign.title}
           </h1>
@@ -1171,3 +1178,4 @@ export default function CampaignDetailsPage() {
     </div>
   );
 }
+

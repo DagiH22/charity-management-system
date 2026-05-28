@@ -26,6 +26,7 @@ export type AdminOverviewResponse = {
     id: number;
     title: string;
     status: "ACTIVE" | "CLOSED" | "DRAFT";
+    category?: string;
     currentAmount: number;
     targetAmount: number;
     donorCount: number;
@@ -124,6 +125,7 @@ export type AdminCampaignsResponse = {
     title: string;
     status: "ACTIVE" | "CLOSED" | "DRAFT";
     imageUrl?: string | null;
+    category?: string;
     currentAmount: number;
     targetAmount: number;
     donorCount: number;

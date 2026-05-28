@@ -33,16 +33,15 @@ export type CampaignDonationCheckout = {
   };
 };
 
-export const createCampaign = async (
-  payload: {
-    title: string;
-    description: string;
-    targetAmount: number;
-    startDate: string;
-    endDate: string;
-    imageUrl?: string | null;
-  },
-) => {
+export const createCampaign = async (payload: {
+  title: string;
+  description: string;
+  category: string;
+  targetAmount: number;
+  startDate: string;
+  endDate: string;
+  imageUrl?: string | null;
+}) => {
   const { data } = await http.post("/campaign/create", payload);
 
   return data;
@@ -65,6 +64,7 @@ export const updateCampaign = async (
   data: {
     title: string;
     description: string;
+    category: string;
     targetAmount: number;
     endDate: string;
     imageUrl?: string | null;
@@ -102,8 +102,8 @@ export const closeCampaign = async (id: string | undefined) => {
   return response.data;
 };
 
-export const getAllCampaigns = async () => {
-  const { data } = await http.get(`/campaign/all`);
+export const getAllCampaigns = async (params?: { category?: string }) => {
+  const { data } = await http.get(`/campaign/all`, { params });
 
   return data;
 };

@@ -6,14 +6,19 @@ import {
   getAdminCampaignRequests,
   rejectCampaignRequest,
 } from "../../services/campaignRequest.api";
-import type { AdminCampaignRequestsResponse, CampaignRequestItem } from "../../types/campaignRequest";
+import type {
+  AdminCampaignRequestsResponse,
+  CampaignRequestItem,
+} from "../../types/campaignRequest";
 import { SearchInput } from "../../components/ui/SearchInput";
 import { FilterSelect } from "../../components/ui/FilterSelect";
+import CategoryDropdown from "../../components/ui/CategoryDropdown";
 
 const statusTabs = ["ALL", "PENDING", "APPROVED", "REJECTED"] as const;
 
 export default function AdminCampaignRequestsPage() {
-  const [requests, setRequests] = useState<AdminCampaignRequestsResponse | null>(null);
+  const [requests, setRequests] =
+    useState<AdminCampaignRequestsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -22,6 +27,7 @@ export default function AdminCampaignRequestsPage() {
   const [page, setPage] = useState(1);
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [category, setCategory] = useState("ALL");
 
   const loadRequests = useCallback(async () => {
     try {
@@ -47,14 +53,23 @@ export default function AdminCampaignRequestsPage() {
   }, [loadRequests]);
 
   const totalPages = requests?.totalPages || 1;
-  const statusCounts = useMemo(() => ({
-    ALL: (requests?.statusCounts.PENDING || 0) + (requests?.statusCounts.APPROVED || 0) + (requests?.statusCounts.REJECTED || 0),
-    PENDING: requests?.statusCounts.PENDING || 0,
-    APPROVED: requests?.statusCounts.APPROVED || 0,
-    REJECTED: requests?.statusCounts.REJECTED || 0,
-  }), [requests]);
+  const statusCounts = useMemo(
+    () => ({
+      ALL:
+        (requests?.statusCounts.PENDING || 0) +
+        (requests?.statusCounts.APPROVED || 0) +
+        (requests?.statusCounts.REJECTED || 0),
+      PENDING: requests?.statusCounts.PENDING || 0,
+      APPROVED: requests?.statusCounts.APPROVED || 0,
+      REJECTED: requests?.statusCounts.REJECTED || 0,
+    }),
+    [requests],
+  );
 
-  const handleAction = async (requestId: number, action: "approve" | "reject") => {
+  const handleAction = async (
+    requestId: number,
+    action: "approve" | "reject",
+  ) => {
     try {
       setActionLoadingId(requestId);
       setActionMessage(null);
@@ -77,24 +92,33 @@ export default function AdminCampaignRequestsPage() {
       title="Campaign Requests"
       description="Review charity requests for additional campaign slots and approve or reject them."
     >
-      <div className="mb-6 flex flex-wrap gap-3">
-        {statusTabs.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => {
-              setPage(1);
-              setStatus(tab);
-            }}
-            className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-              status === tab
-                ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                : "border-slate-200 bg-white text-slate-600 hover:border-emerald-300"
-            }`}
-          >
-            {tab} ({statusCounts[tab]})
-          </button>
-        ))}
+      <div className="mb-6 flex items-center gap-3">
+        <FilterSelect
+          value={status}
+          onChange={(e) => {
+            setPage(1);
+            setStatus(e.target.value as any);
+          }}
+          defaultOption={{ value: "ALL", label: "All Status" }}
+          options={[
+            { value: "PENDING", label: "Pending" },
+            { value: "APPROVED", label: "Approved" },
+            { value: "REJECTED", label: "Rejected" },
+          ]}
+          containerClassName="w-44"
+        />
+        <CategoryDropdown
+          value={category}
+          onChange={(v) => {
+            setCategory(v);
+            setPage(1);
+          }}
+        />
+        <div className="ml-3 text-xs text-slate-500">
+          <span className="mr-2">PENDING ({statusCounts.PENDING})</span>
+          <span className="mr-2">APPROVED ({statusCounts.APPROVED})</span>
+          <span>REJECTED ({statusCounts.REJECTED})</span>
+        </div>
       </div>
 
       <div className="mb-6 grid gap-3 md:grid-cols-[1.2fr_0.6fr_auto]">
@@ -108,7 +132,9 @@ export default function AdminCampaignRequestsPage() {
         />
         <FilterSelect
           value={sortOrder}
-          onChange={(event) => setSortOrder(event.target.value as "asc" | "desc")}
+          onChange={(event) =>
+            setSortOrder(event.target.value as "asc" | "desc")
+          }
           options={[
             { value: "desc", label: "Newest" },
             { value: "asc", label: "Oldest" },
@@ -135,7 +161,9 @@ export default function AdminCampaignRequestsPage() {
           ))}
         </div>
       ) : error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-600">{error}</div>
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-600">
+          {error}
+        </div>
       ) : requests?.items.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-slate-500">
           No campaign requests found.
@@ -168,16 +196,21 @@ export default function AdminCampaignRequestsPage() {
                   <p className="mt-1 text-xs text-slate-500">
                     {request.charity.user.name} · {request.charity.user.email}
                   </p>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">{request.reason}</p>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                    {request.reason}
+                  </p>
                   <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-500">
-                    <span>Requested {new Date(request.requestedAt).toLocaleString()}</span>
+                    <span>
+                      Requested {new Date(request.requestedAt).toLocaleString()}
+                    </span>
                     <span>This month: {request.monthCampaignCount}</span>
                     <span>Total hosted: {request.totalCampaignCount}</span>
                     <span>Active: {request.activeCampaignCount}</span>
                   </div>
                   {request.reviewedBy && request.reviewedAt && (
                     <p className="mt-2 text-xs text-slate-500">
-                      Reviewed by {request.reviewedBy.name} on {new Date(request.reviewedAt).toLocaleString()}
+                      Reviewed by {request.reviewedBy.name} on{" "}
+                      {new Date(request.reviewedAt).toLocaleString()}
                     </p>
                   )}
                 </div>
@@ -190,7 +223,9 @@ export default function AdminCampaignRequestsPage() {
                       onClick={() => void handleAction(request.id, "approve")}
                       className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-70"
                     >
-                      {actionLoadingId === request.id ? "Working..." : "Approve"}
+                      {actionLoadingId === request.id
+                        ? "Working..."
+                        : "Approve"}
                     </button>
                     <button
                       type="button"

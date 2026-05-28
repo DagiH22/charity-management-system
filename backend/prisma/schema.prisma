@@ -58,6 +58,7 @@ model Campaign {
   charityId     Int
   title         String           @db.VarChar(150)
   description   String           @db.Text
+  category      CampaignCategory @default(OTHER)
   targetAmount  Decimal          @db.Decimal(12, 2)
   currentAmount Decimal          @default(0.00) @db.Decimal(12, 2)
   status        CampaignStatus   @default(ACTIVE)
@@ -186,6 +187,21 @@ enum CampaignStatus {
   ACTIVE
   CLOSED
   DRAFT
+}
+
+enum CampaignCategory {
+  HEALTH
+  EDUCATION
+  DISASTER_RELIEF
+  FOOD_SUPPORT
+  CHILDREN
+  ELDERLY
+  ENVIRONMENT
+  ANIMAL_WELFARE
+  COMMUNITY
+  RELIGIOUS
+  EMERGENCY
+  OTHER
 }
 
 enum DonationStatus {

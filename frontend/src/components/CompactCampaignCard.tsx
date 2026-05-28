@@ -1,11 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { resolveAssetUrl } from "../utils/media";
+import CategoryBadge from "./CategoryBadge";
 
 type CompactCampaignCardProps = {
   campaign: {
     id: number;
     title: string;
     description: string;
+    category?: string;
     currentAmount: number | string;
     targetAmount: number | string;
     donorCount?: number; // make optional since some endpoints might not return it
@@ -38,16 +40,24 @@ export const CompactCampaignCard = ({ campaign }: CompactCampaignCardProps) => {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm flex flex-col justify-between h-full">
       <div className="flex gap-4">
-        <img
-          src={
-            resolveAssetUrl(campaign.imageUrl) ||
-            "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400&q=80"
-          }
-          alt={campaign.title}
-          className="h-20 w-24 rounded-xl object-cover"
-        />
+        <div className="relative">
+          <img
+            src={
+              resolveAssetUrl(campaign.imageUrl) ||
+              "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400&q=80"
+            }
+            alt={campaign.title}
+            className="h-24 w-24 rounded-xl object-cover"
+          />
+        </div>
         <div className="flex-1 min-w-0">
-          <h3 className="truncate text-lg font-bold text-[#0b2b53]">
+          <div className="mb-2">
+            <CategoryBadge
+              category={campaign.category}
+              className="!text-[10px]"
+            />
+          </div>
+          <h3 className="line-clamp-2 text-base font-bold leading-snug text-[#0b2b53]">
             {campaign.title}
           </h3>
           <p className="mt-1 text-sm text-slate-500 line-clamp-2">

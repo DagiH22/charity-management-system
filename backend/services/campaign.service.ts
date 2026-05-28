@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, CampaignCategory } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import { ApiError } from "../utils/ApiError";
 import { prisma } from "../utils/prisma";
@@ -13,6 +13,7 @@ import {
 type UpdateCampaignPayload = {
   title?: string;
   description?: string;
+  category?: CampaignCategory;
   targetAmount?: number;
   endDate?: string;
   imageUrl?: string | null;
@@ -20,6 +21,7 @@ type UpdateCampaignPayload = {
 type CreateCampaignPayload = {
   title: string;
   description: string;
+  category: CampaignCategory;
   targetAmount: number;
   startDate: string;
   endDate: string;
@@ -143,6 +145,7 @@ export const createCampaignService = async (
         charityId: charityProfile.id,
         title: payload.title,
         description: payload.description,
+        category: payload.category,
         targetAmount: new Prisma.Decimal(payload.targetAmount),
         currentAmount: new Prisma.Decimal(0),
         startDate,
@@ -349,6 +352,10 @@ export const updateCampaignService = async (
           description: payload.description,
         }),
 
+        ...(payload.category && {
+          category: payload.category,
+        }),
+
         ...(payload.targetAmount && {
           targetAmount: new Prisma.Decimal(payload.targetAmount),
         }),
@@ -464,12 +471,15 @@ export const closeCampaignService = async (
   return closedCampaign;
 };
 
-export const getAllCampaignsService = async () => {
+export const getAllCampaignsService = async (options?: {
+  category?: CampaignCategory;
+}) => {
   return prisma.campaign.findMany({
     where: {
       status: {
         in: ["ACTIVE"],
       },
+      ...(options?.category ? { category: options.category } : {}),
     },
     include: {
       charity: {

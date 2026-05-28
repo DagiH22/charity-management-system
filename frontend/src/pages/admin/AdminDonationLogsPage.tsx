@@ -12,6 +12,7 @@ import type {
 } from "../../types/adminDashboard";
 import { SearchInput } from "../../components/ui/SearchInput";
 import { FilterSelect } from "../../components/ui/FilterSelect";
+import CategoryDropdown from "../../components/ui/CategoryDropdown";
 
 const statusTabs = ["ALL", "COMPLETED", "PENDING", "FAILED"] as const;
 
@@ -35,6 +36,7 @@ export default function AdminDonationLogsPage() {
   );
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
+  const [category, setCategory] = useState("ALL");
 
   useEffect(() => {
     const loadCampaigns = async () => {
@@ -117,24 +119,33 @@ export default function AdminDonationLogsPage() {
       title="Donation Logs"
       description="Inspect all platform donations and filter by campaign, date range, status, or anonymity."
     >
-      <div className="mb-6 flex flex-wrap gap-3">
-        {statusTabs.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => {
-              setStatus(tab);
-              setPage(1);
-            }}
-            className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-              status === tab
-                ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                : "border-slate-200 bg-white text-slate-600 hover:border-emerald-300"
-            }`}
-          >
-            {tab} ({statusCounts[tab]})
-          </button>
-        ))}
+      <div className="mb-6 flex items-center gap-3">
+        <FilterSelect
+          value={status}
+          onChange={(e) => {
+            setStatus(e.target.value as any);
+            setPage(1);
+          }}
+          defaultOption={{ value: "ALL", label: "All Status" }}
+          options={[
+            { label: "Completed", value: "COMPLETED" },
+            { label: "Pending", value: "PENDING" },
+            { label: "Failed", value: "FAILED" },
+          ]}
+          containerClassName="w-44"
+        />
+        <CategoryDropdown
+          value={category}
+          onChange={(v) => {
+            setCategory(v);
+            setPage(1);
+          }}
+        />
+        <div className="ml-2 flex items-center gap-3 text-xs text-slate-500">
+          <span>COMPLETED ({statusCounts.COMPLETED})</span>
+          <span>PENDING ({statusCounts.PENDING})</span>
+          <span>FAILED ({statusCounts.FAILED})</span>
+        </div>
       </div>
 
       <div className="mb-6 grid gap-3 lg:grid-cols-[1.1fr_0.9fr_0.6fr_0.6fr_0.6fr_0.6fr_auto]">

@@ -1,22 +1,34 @@
 import { z } from "zod";
+import {
+  campaignCategoryOptions,
+  type CampaignCategory,
+} from "./campaignCategories";
 
 export type CampaignFormValues = {
   title: string;
   description: string;
+  category: CampaignCategory | "";
   targetAmount: string;
   startDate: string;
   endDate: string;
 };
 
-export type CampaignFormErrors = Partial<Record<keyof CampaignFormValues, string>>;
+export type CampaignFormErrors = Partial<
+  Record<keyof CampaignFormValues, string>
+>;
 
 export const initialCampaignFormValues: CampaignFormValues = {
   title: "",
   description: "",
+  category: "",
   targetAmount: "",
   startDate: "",
   endDate: "",
 };
+
+const campaignCategoryValues = campaignCategoryOptions.map(
+  (item) => item.value,
+) as [CampaignCategory, ...CampaignCategory[]];
 
 export const campaignSchema = z
   .object({
@@ -29,6 +41,7 @@ export const campaignSchema = z
       .string()
       .trim()
       .min(20, "Description must be at least 20 characters"),
+    category: z.enum(campaignCategoryValues),
     targetAmount: z.coerce
       .number()
       .positive("Fundraising goal must be greater than 0"),
@@ -55,7 +68,10 @@ export const campaignSchema = z
       });
     }
 
-    if (!Number.isNaN(startDate.getTime()) && !Number.isNaN(endDate.getTime())) {
+    if (
+      !Number.isNaN(startDate.getTime()) &&
+      !Number.isNaN(endDate.getTime())
+    ) {
       if (endDate < startDate) {
         context.addIssue({
           code: "custom",
@@ -95,6 +111,8 @@ export const editCampaignSchema = z.object({
     .string()
     .trim()
     .min(20, "Description must be at least 20 characters"),
+
+  category: z.enum(campaignCategoryValues),
 
   targetAmount: z.coerce
     .number()

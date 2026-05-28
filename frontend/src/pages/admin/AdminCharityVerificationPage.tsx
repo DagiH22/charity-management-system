@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import AdminShell from "../../components/AdminShell";
 import { SearchInput } from "../../components/ui/SearchInput";
+import { FilterSelect } from "../../components/ui/FilterSelect";
+import CategoryDropdown from "../../components/ui/CategoryDropdown";
 import {
   approveCharityProfileRequest,
   getPublicFileUrl,
@@ -13,7 +15,9 @@ import type { AdminCharitiesResponse } from "../../types/adminDashboard";
 const statusTabs = ["PENDING", "APPROVED", "REJECTED", "ALL"] as const;
 
 export default function AdminCharityVerificationPage() {
-  const [charities, setCharities] = useState<AdminCharitiesResponse | null>(null);
+  const [charities, setCharities] = useState<AdminCharitiesResponse | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -21,6 +25,7 @@ export default function AdminCharityVerificationPage() {
   const [status, setStatus] = useState<(typeof statusTabs)[number]>("PENDING");
   const [page, setPage] = useState(1);
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [category, setCategory] = useState("ALL");
 
   const loadCharities = async () => {
     try {
@@ -96,24 +101,33 @@ export default function AdminCharityVerificationPage() {
       title="Charity Verification"
       description="Review pending registrations, and monitor approved or rejected charity profiles."
     >
-      <div className="mb-6 flex flex-wrap gap-3">
-        {statusTabs.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => {
-              setStatus(tab);
-              setPage(1);
-            }}
-            className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-              status === tab
-                ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                : "border-slate-200 bg-white text-slate-600 hover:border-emerald-300"
-            }`}
-          >
-            {tab} ({tabCounts[tab]})
-          </button>
-        ))}
+      <div className="mb-6 flex items-center gap-3">
+        <FilterSelect
+          value={status}
+          onChange={(event) => {
+            setPage(1);
+            setStatus(event.target.value as any);
+          }}
+          defaultOption={{ value: "PENDING", label: "Pending" }}
+          options={[
+            { value: "PENDING", label: "Pending" },
+            { value: "APPROVED", label: "Approved" },
+            { value: "REJECTED", label: "Rejected" },
+            { value: "ALL", label: "All" },
+          ]}
+          containerClassName="w-44"
+        />
+        <CategoryDropdown
+          value={category}
+          onChange={(v) => {
+            setCategory(v);
+          }}
+        />
+        <div className="ml-3 text-xs text-slate-500">
+          <span className="mr-2">PENDING ({tabCounts.PENDING})</span>
+          <span className="mr-2">APPROVED ({tabCounts.APPROVED})</span>
+          <span>REJECTED ({tabCounts.REJECTED})</span>
+        </div>
       </div>
 
       {feedback && (
@@ -162,7 +176,9 @@ export default function AdminCharityVerificationPage() {
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h3 className="text-lg font-bold text-[#0b2b53]">{profile.organizationName}</h3>
+                  <h3 className="text-lg font-bold text-[#0b2b53]">
+                    {profile.organizationName}
+                  </h3>
                   <p className="mt-1 text-sm text-slate-600">
                     {profile.user.name} ({profile.user.email})
                   </p>
@@ -213,7 +229,9 @@ export default function AdminCharityVerificationPage() {
                 </div>
               </div>
 
-              <p className="mt-4 text-sm text-slate-700">{profile.description}</p>
+              <p className="mt-4 text-sm text-slate-700">
+                {profile.description}
+              </p>
 
               <div className="mt-4 flex flex-wrap gap-2">
                 <a

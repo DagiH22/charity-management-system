@@ -1,7 +1,10 @@
+import type { CampaignCategory } from "../utils/campaignCategories";
+
 export type Campaign = {
   id: number;
   title: string;
   description: string;
+  category: CampaignCategory;
   targetAmount: number;
   currentAmount: number;
   status: "Pending" | "Active" | "Closed";
@@ -28,6 +31,7 @@ export type Campaign = {
 export type EditCampaignFormValues = {
   title: string;
   description: string;
+  category: CampaignCategory | "";
   targetAmount: string;
   endDate: string;
 };

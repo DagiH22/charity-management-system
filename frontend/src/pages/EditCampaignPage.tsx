@@ -11,6 +11,7 @@ import {
 import ImageUploadField from "../components/ImageUploadField";
 import { validateImageFile } from "../utils/fileValidation";
 import { resolveAssetUrl } from "../utils/media";
+import { campaignCategoryOptions } from "../utils/campaignCategories";
 
 type EditCampaignErrors = Partial<Record<keyof EditCampaignFormValues, string>>;
 
@@ -34,6 +35,7 @@ const EditCampaign = () => {
   const [formValues, setFormValues] = useState<EditCampaignFormValues>({
     title: "",
     description: "",
+    category: "",
     targetAmount: "",
     endDate: "",
   });
@@ -63,6 +65,7 @@ const EditCampaign = () => {
         setFormValues({
           title: campaign.title,
           description: campaign.description,
+          category: campaign.category || "",
           targetAmount: campaign.targetAmount,
           endDate: campaign.endDate.split("T")[0],
         });
@@ -82,7 +85,9 @@ const EditCampaign = () => {
   }, [id]);
 
   const handleChange = (
-    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    event: ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value } = event.target;
 
@@ -132,8 +137,9 @@ const EditCampaign = () => {
       let nextImageUrl = imageUrl;
       if (imageFile) {
         setIsUploadingImage(true);
-        const uploadResponse = await uploadCampaignImage(imageFile, (progress) =>
-          setUploadProgress(progress),
+        const uploadResponse = await uploadCampaignImage(
+          imageFile,
+          (progress) => setUploadProgress(progress),
         );
         nextImageUrl = uploadResponse.imageUrl;
       }
@@ -257,6 +263,30 @@ const EditCampaign = () => {
 
             {errors.title && (
               <p className="mt-2 text-sm text-red-500">{errors.title}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              Category
+            </label>
+            <select
+              name="category"
+              value={formValues.category}
+              onChange={handleChange}
+              className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-emerald-500"
+            >
+              <option value="" disabled>
+                Select a category
+              </option>
+              {campaignCategoryOptions.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
+            {errors.category && (
+              <p className="mt-2 text-sm text-red-500">{errors.category}</p>
             )}
           </div>
 

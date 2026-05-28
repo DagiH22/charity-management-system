@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import CharitySidebar from "../components/CharitySidebar";
 import { getCharityCampaigns } from "../services/charityDashboard.api";
@@ -8,13 +8,8 @@ import { useAuthStore } from "../store/authStore";
 import type { CharityCampaignsResponse } from "../types/charityDashboard";
 import { SearchInput } from "../components/ui/SearchInput";
 import { FilterSelect } from "../components/ui/FilterSelect";
+import CategoryDropdown from "../components/ui/CategoryDropdown";
 // resolveAssetUrl not needed here because CampaignCard handles images
-
-const statusOptions = [
-  { label: "Active", value: "ACTIVE" },
-  { label: "Closed", value: "CLOSED" },
-  { label: "Draft", value: "DRAFT" },
-] as const;
 
 export default function CharityCampaignsPage() {
   const { user } = useAuthStore();
@@ -41,6 +36,7 @@ export default function CharityCampaignsPage() {
   >("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
+  const [category, setCategory] = useState("ALL");
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
@@ -98,20 +94,9 @@ export default function CharityCampaignsPage() {
   }, [page, search, sortBy, sortOrder, status]);
 
   const totalPages = campaigns?.totalPages || 1;
-  const statusCounts = campaigns?.statusCounts || {
-    ACTIVE: 0,
-    CLOSED: 0,
-    DRAFT: 0,
-  };
+  // statusCounts no longer used in UI (dropdown handles status selection)
 
-  const summary = useMemo(
-    () =>
-      statusOptions.map((item) => ({
-        ...item,
-        count: statusCounts[item.value],
-      })),
-    [statusCounts],
-  );
+  // summary removed - categories are handled by dropdown now
 
   if (!user) {
     return null;
@@ -142,7 +127,8 @@ export default function CharityCampaignsPage() {
                 My Campaigns
               </h1>
               <p className="mt-2 text-lg text-slate-500">
-                Review, filter, and track only your created fundraising campaigns.
+                Review, filter, and track only your created fundraising
+                campaigns.
               </p>
             </div>
             <Link
@@ -154,38 +140,54 @@ export default function CharityCampaignsPage() {
           </div>
         </header>
 
-        <div className="mb-6 flex flex-wrap gap-3">
-          {summary.map((tab) => (
-            <button
-              key={tab.value}
-              type="button"
-              onClick={() => {
-                setPage(1);
-                setStatus(tab.value);
-              }}
-              className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                status === tab.value
-                  ? "border-emerald-500 bg-emerald-50 text-emerald-600"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-emerald-300"
-              }`}
-            >
-              {tab.label} ({tab.count})
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={() => {
+        <div className="mb-6 flex items-center gap-3">
+          <FilterSelect
+            value={status}
+            onChange={(e) => {
               setPage(1);
-              setStatus("ALL");
+              setStatus(e.target.value as any);
             }}
-            className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-              status === "ALL"
-                ? "border-emerald-500 bg-emerald-50 text-emerald-600"
-                : "border-slate-200 bg-white text-slate-600 hover:border-emerald-300"
-            }`}
-          >
-            All ({summary.reduce((acc, item) => acc + item.count, 0)})
-          </button>
+            defaultOption={{ value: "ALL", label: "All Status" }}
+            options={[
+              { label: "Active", value: "ACTIVE" },
+              { label: "Closed", value: "CLOSED" },
+              { label: "Draft", value: "DRAFT" },
+            ]}
+            containerClassName="w-44"
+          />
+          <CategoryDropdown
+            value={category}
+            onChange={(v) => {
+              setPage(1);
+              setCategory(v);
+              // charity page doesn't currently use category filter server-side
+            }}
+          />
+          <div className="ml-auto flex gap-3">
+            <FilterSelect
+              value={sortBy}
+              onChange={(event) =>
+                setSortBy(event.target.value as typeof sortBy)
+              }
+              options={[
+                { value: "createdAt", label: "Newest" },
+                { value: "currentAmount", label: "Amount Raised" },
+                { value: "targetAmount", label: "Target Amount" },
+                { value: "donorCount", label: "Donors" },
+                { value: "endDate", label: "Ending Soon" },
+              ]}
+            />
+            <FilterSelect
+              value={sortOrder}
+              onChange={(event) =>
+                setSortOrder(event.target.value as "asc" | "desc")
+              }
+              options={[
+                { value: "desc", label: "Descending" },
+                { value: "asc", label: "Ascending" },
+              ]}
+            />
+          </div>
         </div>
 
         <div className="mb-6 flex flex-wrap gap-3">
@@ -258,6 +260,7 @@ export default function CharityCampaignsPage() {
                   id: c.id,
                   title: c.title,
                   description: c.title || "",
+                  category: c.category || "OTHER",
                   targetAmount: c.targetAmount,
                   currentAmount: c.currentAmount,
                   status:

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CampaignCategory } from "@prisma/client";
 
 export const createCampaignSchema = z
   .object({
@@ -7,6 +8,8 @@ export const createCampaignSchema = z
       .trim()
       .min(3, "Campaign title must be at least 3 characters")
       .max(150, "Campaign title must be 150 characters or less"),
+
+    category: z.nativeEnum(CampaignCategory),
 
     description: z
       .string()
@@ -61,6 +64,8 @@ export const updateCampaignSchema = z
     title: z.string().trim().min(3).max(150),
 
     description: z.string().trim().min(20),
+
+    category: z.nativeEnum(CampaignCategory),
 
     targetAmount: z.coerce.number().positive(),
 

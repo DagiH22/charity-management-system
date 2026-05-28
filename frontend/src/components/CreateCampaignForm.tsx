@@ -10,6 +10,7 @@ import {
 import { createCampaign, uploadCampaignImage } from "../services/campaign.api";
 import ImageUploadField from "./ImageUploadField";
 import { validateImageFile } from "../utils/fileValidation";
+import { campaignCategoryOptions } from "../utils/campaignCategories";
 
 export default function CreateCampaignForm() {
   const navigate = useNavigate();
@@ -79,8 +80,9 @@ export default function CreateCampaignForm() {
       let imageUrl: string | null | undefined;
       if (imageFile) {
         setIsUploadingImage(true);
-        const uploadResponse = await uploadCampaignImage(imageFile, (progress) =>
-          setUploadProgress(progress),
+        const uploadResponse = await uploadCampaignImage(
+          imageFile,
+          (progress) => setUploadProgress(progress),
         );
         imageUrl = uploadResponse.imageUrl;
       }
@@ -119,9 +121,7 @@ export default function CreateCampaignForm() {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_40px_rgba(10,40,80,0.04)] sm:p-8">
       <div className="border-b border-slate-100 pb-5">
-        <h2 className="text-xl font-bold text-slate-900">
-          Campaign Details
-        </h2>
+        <h2 className="text-xl font-bold text-slate-900">Campaign Details</h2>
         <p className="mt-1 text-sm text-slate-500">
           Fill in the information below to start your new fundraising campaign.
         </p>
@@ -174,7 +174,9 @@ export default function CreateCampaignForm() {
             </label>
             <input
               className={`w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-all hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
-                errors.title ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200"
+                errors.title
+                  ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
+                  : "border-slate-200"
               }`}
               id="title"
               name="title"
@@ -199,7 +201,9 @@ export default function CreateCampaignForm() {
             </label>
             <textarea
               className={`min-h-36 w-full resize-y rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-all hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
-                errors.description ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200"
+                errors.description
+                  ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
+                  : "border-slate-200"
               }`}
               id="description"
               name="description"
@@ -212,6 +216,40 @@ export default function CreateCampaignForm() {
             {errors.description && (
               <p className="mt-1.5 text-sm font-medium text-red-600">
                 {errors.description}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label
+              className="mb-1.5 block text-sm font-semibold text-slate-700"
+              htmlFor="category"
+            >
+              Category
+            </label>
+            <select
+              className={`w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-all hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
+                errors.category
+                  ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
+                  : "border-slate-200"
+              }`}
+              id="category"
+              name="category"
+              value={formValues.category}
+              onChange={(event) => updateField("category", event.target.value)}
+            >
+              <option value="" disabled>
+                Select a category
+              </option>
+              {campaignCategoryOptions.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
+            {errors.category && (
+              <p className="mt-1.5 text-sm font-medium text-red-600">
+                {errors.category}
               </p>
             )}
           </div>
@@ -231,7 +269,9 @@ export default function CreateCampaignForm() {
             </label>
             <input
               className={`w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-all hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
-                errors.targetAmount ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200"
+                errors.targetAmount
+                  ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
+                  : "border-slate-200"
               }`}
               id="targetAmount"
               min="1"
@@ -267,7 +307,9 @@ export default function CreateCampaignForm() {
               </label>
               <input
                 className={`w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-all hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
-                  errors.startDate ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200"
+                  errors.startDate
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
+                    : "border-slate-200"
                 }`}
                 id="startDate"
                 name="startDate"
@@ -293,7 +335,9 @@ export default function CreateCampaignForm() {
               </label>
               <input
                 className={`w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-all hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
-                  errors.endDate ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200"
+                  errors.endDate
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
+                    : "border-slate-200"
                 }`}
                 id="endDate"
                 name="endDate"

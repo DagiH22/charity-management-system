@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { CampaignCategory } from "@prisma/client";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
 import {
@@ -130,7 +131,20 @@ export const closeCampaign = asyncHandler(
 
 export const getAllCampaigns = asyncHandler(
   async (req: Request, res: Response) => {
-    const campaigns = await getAllCampaignsService();
+    const category = req.query.category
+      ? String(req.query.category)
+      : undefined;
+
+    if (
+      category &&
+      !Object.values(CampaignCategory).includes(category as CampaignCategory)
+    ) {
+      throw new ApiError(400, "Invalid campaign category");
+    }
+
+    const campaigns = await getAllCampaignsService({
+      category: category as CampaignCategory | undefined,
+    });
 
     res.status(200).json({
       success: true,

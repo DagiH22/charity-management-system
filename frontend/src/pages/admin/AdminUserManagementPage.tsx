@@ -5,6 +5,7 @@ import { getAdminUsers } from "../../services/adminDashboard.api";
 import type { AdminUsersResponse } from "../../types/adminDashboard";
 import { SearchInput } from "../../components/ui/SearchInput";
 import { FilterSelect } from "../../components/ui/FilterSelect";
+import CategoryDropdown from "../../components/ui/CategoryDropdown";
 
 const roleTabs = ["ALL", "DONOR", "CHARITY", "ADMIN"] as const;
 
@@ -14,9 +15,12 @@ export default function AdminUserManagementPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [role, setRole] = useState<(typeof roleTabs)[number]>("ALL");
-  const [sortBy, setSortBy] = useState<"createdAt" | "name" | "email">("createdAt");
+  const [sortBy, setSortBy] = useState<"createdAt" | "name" | "email">(
+    "createdAt",
+  );
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
+  const [category, setCategory] = useState("ALL");
 
   useEffect(() => {
     const load = async () => {
@@ -60,26 +64,33 @@ export default function AdminUserManagementPage() {
   return (
     <AdminShell
       title="User Management"
-      description="Browse all registered users, filter by role, and monitor account verification." 
+      description="Browse all registered users, filter by role, and monitor account verification."
     >
-      <div className="mb-6 flex flex-wrap gap-3">
-        {roleTabs.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => {
-              setRole(tab);
-              setPage(1);
-            }}
-            className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-              role === tab
-                ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                : "border-slate-200 bg-white text-slate-600 hover:border-emerald-300"
-            }`}
-          >
-            {tab === "ALL" ? `All (${users?.total || 0})` : `${tab} (${users?.roleCounts[tab] || 0})`}
-          </button>
-        ))}
+      <div className="mb-6 flex items-center gap-3">
+        <FilterSelect
+          value={role}
+          onChange={(e) => {
+            setRole(e.target.value as any);
+            setPage(1);
+          }}
+          defaultOption={{ value: "ALL", label: "All Roles" }}
+          options={[
+            { value: "DONOR", label: "Donor" },
+            { value: "CHARITY", label: "Charity" },
+            { value: "ADMIN", label: "Admin" },
+          ]}
+          containerClassName="w-44"
+        />
+        <CategoryDropdown
+          value={category}
+          onChange={(v) => {
+            setCategory(v);
+            // category irrelevant for users, kept for visual consistency
+          }}
+        />
+        <div className="ml-auto rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 flex items-center justify-center">
+          {totalCountLabel} users
+        </div>
       </div>
 
       <div className="mb-6 grid gap-3 md:grid-cols-[1.3fr_0.7fr_0.6fr_auto]">
@@ -102,7 +113,9 @@ export default function AdminUserManagementPage() {
         />
         <FilterSelect
           value={sortOrder}
-          onChange={(event) => setSortOrder(event.target.value as "asc" | "desc")}
+          onChange={(event) =>
+            setSortOrder(event.target.value as "asc" | "desc")
+          }
           options={[
             { value: "desc", label: "Descending" },
             { value: "asc", label: "Ascending" },
@@ -123,7 +136,9 @@ export default function AdminUserManagementPage() {
           ))}
         </div>
       ) : error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-600">{error}</div>
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-600">
+          {error}
+        </div>
       ) : userItems.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-slate-500">
           No users found.

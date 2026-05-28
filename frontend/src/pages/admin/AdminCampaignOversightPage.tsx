@@ -8,6 +8,8 @@ import type { AdminCampaignsResponse } from "../../types/adminDashboard";
 import { resolveAssetUrl } from "../../utils/media";
 import { SearchInput } from "../../components/ui/SearchInput";
 import { FilterSelect } from "../../components/ui/FilterSelect";
+import CategoryDropdown from "../../components/ui/CategoryDropdown";
+import CategoryBadge from "../../components/CategoryBadge";
 
 const statusTabs = ["ACTIVE", "CLOSED", "ALL"] as const;
 
@@ -25,6 +27,7 @@ export default function AdminCampaignOversightPage() {
   >("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
+  const [category, setCategory] = useState("ALL");
 
   useEffect(() => {
     const load = async () => {
@@ -68,24 +71,32 @@ export default function AdminCampaignOversightPage() {
       title="Campaign Oversight"
       description="Review all campaigns across organizations, including active and closed."
     >
-      <div className="mb-6 flex flex-wrap gap-3">
-        {statusTabs.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => {
-              setPage(1);
-              setStatus(tab);
-            }}
-            className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-              status === tab
-                ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                : "border-slate-200 bg-white text-slate-600 hover:border-emerald-300"
-            }`}
-          >
-            {tab} ({tabCounts[tab]})
-          </button>
-        ))}
+      <div className="mb-6 flex items-center gap-3">
+        <FilterSelect
+          value={status}
+          onChange={(e) => {
+            setPage(1);
+            setStatus(e.target.value as any);
+          }}
+          defaultOption={{ value: "ALL", label: "All Status" }}
+          options={[
+            { label: "Active", value: "ACTIVE" },
+            { label: "Closed", value: "CLOSED" },
+          ]}
+          containerClassName="w-44"
+        />
+        <CategoryDropdown
+          value={category}
+          onChange={(v) => {
+            setPage(1);
+            setCategory(v);
+            // admin list not filtered by category server-side for now
+          }}
+        />
+        <div className="ml-2 flex items-center gap-2 text-xs text-slate-500">
+          <span>ACTIVE ({tabCounts.ACTIVE})</span>
+          <span>CLOSED ({tabCounts.CLOSED})</span>
+        </div>
       </div>
 
       <div className="mb-6 grid gap-3 md:grid-cols-[1.2fr_0.8fr_0.6fr]">
@@ -180,6 +191,9 @@ export default function AdminCampaignOversightPage() {
                     >
                       {campaign.status}
                     </span>
+                  </div>
+                  <div className="mt-2">
+                    <CategoryBadge category={campaign.category} />
                   </div>
                   <p className="mt-1 text-xs text-slate-500">
                     {campaign.charity.organizationName}

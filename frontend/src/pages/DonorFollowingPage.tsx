@@ -11,6 +11,7 @@ type FollowedCampaign = {
     id: number;
     title: string;
     description: string;
+    category?: string;
     currentAmount: number;
     targetAmount: number;
     donorCount: number;

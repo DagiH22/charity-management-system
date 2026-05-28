@@ -14,6 +14,7 @@ import type {
 } from "../../types/charityDashboard";
 import { resolveAssetUrl } from "../../utils/media";
 import formatCurrency from "../../utils/format";
+import CategoryBadge from "../../components/CategoryBadge";
 
 type CharityDashboardProps = {
   user: User;
@@ -480,6 +481,9 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
                           <h3 className="mb-2 line-clamp-1 text-lg font-bold text-slate-900 group-hover:text-emerald-700">
                             {campaign.title}
                           </h3>
+                          <div className="mb-3">
+                            <CategoryBadge category={campaign.category} />
+                          </div>
 
                           <div className="mt-auto">
                             <div className="mb-2 flex items-end justify-between text-sm">

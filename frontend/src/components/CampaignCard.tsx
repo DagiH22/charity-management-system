@@ -4,6 +4,7 @@ import { useState } from "react";
 import { closeCampaign } from "../services/campaign.api";
 import { resolveAssetUrl } from "../utils/media";
 import formatCurrency from "../utils/format";
+import CategoryBadge from "./CategoryBadge";
 
 type FeedbackState = {
   type: "success" | "error";
@@ -60,14 +61,14 @@ const CampaignCard = ({
   }
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-lg">
-      <div className="mb-4 overflow-hidden rounded-xl">
+    <div className="flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+      <div className="relative mb-5 overflow-hidden rounded-xl">
         {/* campaign image fallback to Avatar initials if image fails */}
         {campaign.imageUrl ? (
           <img
             src={resolveAssetUrl(campaign.imageUrl) || undefined}
             alt={campaign.title}
-            className="h-40 w-full object-cover"
+            className="h-48 w-full object-cover"
             loading="lazy"
             onError={(e) => {
               // hide broken image and rely on initials avatar below
@@ -75,39 +76,62 @@ const CampaignCard = ({
             }}
           />
         ) : (
-          <div className="flex h-40 w-full items-center justify-center bg-emerald-50 text-3xl font-bold text-emerald-600">
+          <div className="flex h-48 w-full items-center justify-center bg-emerald-50 text-4xl font-bold text-emerald-600">
             {campaign.title.charAt(0).toUpperCase()}
           </div>
         )}
+        <div className="absolute top-3 left-3 shadow-sm">
+          <CategoryBadge
+            category={campaign.category}
+            className="shadow-sm border border-black/5 backdrop-blur-sm shadow-black/5"
+          />
+        </div>
+        <div className="absolute top-3 right-3 shadow-sm">
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-bold shadow-sm backdrop-blur-sm bg-white/90 ${
+              (status as string).toUpperCase() === "ACTIVE"
+                ? "text-emerald-700"
+                : (status as string).toUpperCase() === "PENDING"
+                  ? "text-amber-700"
+                  : "text-rose-700"
+            }`}
+          >
+            {status}
+          </span>
+        </div>
       </div>
-      {/* Header */}
-      <div className="mb-5 flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">{campaign.title}</h2>
 
-          <p className="mt-1 text-sm text-gray-500">
+      {/* Header */}
+      <div className="mb-3 flex-1">
+        <h2 className="text-xl font-extrabold text-[#0b2b53] line-clamp-2 leading-tight">
+          {campaign.title}
+        </h2>
+
+        {/* Description */}
+        <p className="mt-3 mb-4 line-clamp-3 text-sm leading-relaxed text-slate-500">
+          {campaign.description}
+        </p>
+
+        <div className="mb-4 flex items-center gap-2 text-xs font-medium text-slate-400">
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          <span>
             {new Date(campaign.startDate).toLocaleDateString()} -{" "}
             {new Date(campaign.endDate).toLocaleDateString()}
-          </p>
+          </span>
         </div>
-
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-semibold ${
-            status === "Active"
-              ? "bg-green-100 text-green-700"
-              : status === "Pending"
-                ? "bg-yellow-100 text-yellow-700"
-                : "bg-red-100 text-red-700"
-          }`}
-        >
-          {status}
-        </span>
       </div>
-
-      {/* Description */}
-      <p className="mb-6 line-clamp-4 text-sm leading-relaxed text-gray-600">
-        {campaign.description}
-      </p>
 
       {feedback && (
         <div
