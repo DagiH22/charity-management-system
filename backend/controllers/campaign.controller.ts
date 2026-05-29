@@ -75,7 +75,20 @@ export const createCampaign = asyncHandler(
 
 export const getMyCampaigns = asyncHandler(
   async (req: Request, res: Response) => {
-    const campaigns = await getMyCampaignsService(req.user!.id);
+    const category = req.query.category
+      ? String(req.query.category)
+      : undefined;
+
+    if (
+      category &&
+      !Object.values(CampaignCategory).includes(category as CampaignCategory)
+    ) {
+      throw new ApiError(400, "Invalid campaign category");
+    }
+
+    const campaigns = await getMyCampaignsService(req.user!.id, {
+      category: category as CampaignCategory | undefined,
+    });
 
     res.status(200).json({
       success: true,

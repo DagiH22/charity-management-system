@@ -285,7 +285,10 @@ export const getDonationByTxRefService = async (txRef: string) => {
   return donation;
 };
 
-export const getMyCampaignsService = async (userId: number) => {
+export const getMyCampaignsService = async (
+  userId: number,
+  options?: { category?: CampaignCategory },
+) => {
   const charityProfile = await prisma.charityProfile.findUnique({
     where: { userId },
     select: { id: true },
@@ -298,6 +301,7 @@ export const getMyCampaignsService = async (userId: number) => {
   return prisma.campaign.findMany({
     where: {
       charityId: charityProfile.id,
+      ...(options?.category ? { category: options.category } : {}),
     },
     orderBy: {
       createdAt: "desc",

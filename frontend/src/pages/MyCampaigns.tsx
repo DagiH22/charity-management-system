@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import CampaignCard from "../components/CampaignCard";
 import { getMyCampaigns } from "../services/campaign.api";
+import CategoryFilterDropdown from "../components/ui/CategoryFilterDropdown";
 import type { Campaign } from "../types/campaign";
 import { useAuthStore } from "../store/authStore";
 import { Navigate } from "react-router-dom";
@@ -9,8 +10,10 @@ const MyCampaigns = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [category, setCategory] = useState("ALL");
+  const [status, setStatus] = useState("ALL");
   const { user } = useAuthStore();
-  
+
   if (!user) {
     return null;
   }
@@ -23,20 +26,20 @@ const MyCampaigns = () => {
     const fetchCampaigns = async () => {
       try {
         setLoading(true);
-        const data = await getMyCampaigns();
+        const params: { category?: string } = {};
+        if (category && category !== "ALL") params.category = category;
+
+        const data = await getMyCampaigns(params);
         setCampaigns(data.data);
       } catch (err: any) {
-        setError(
-          err.response?.data?.message ||
-            "Failed to fetch campaigns",
-        );
+        setError(err.response?.data?.message || "Failed to fetch campaigns");
       } finally {
         setLoading(false);
       }
     };
 
     fetchCampaigns();
-  }, []);
+  }, [category]);
 
   if (loading) {
     return (
@@ -61,18 +64,25 @@ const MyCampaigns = () => {
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold text-gray-800">
-              My Campaigns
-            </h1>
+            <h1 className="text-4xl font-bold text-gray-800">My Campaigns</h1>
 
             <p className="mt-2 text-gray-600">
               Manage and monitor your fundraising campaigns.
             </p>
           </div>
 
-          <button className="rounded-xl bg-emerald-600 px-5 py-3 font-medium text-white transition hover:bg-emerald-700">
-            Create Campaign
-          </button>
+          <div className="flex items-center gap-4">
+            <CategoryFilterDropdown
+              value={category}
+              onChange={(v) => setCategory(v)}
+              status={status}
+              onStatusChange={(s) => setStatus(s)}
+            />
+
+            <button className="rounded-xl bg-emerald-600 px-5 py-3 font-medium text-white transition hover:bg-emerald-700">
+              Create Campaign
+            </button>
+          </div>
         </div>
 
         {campaigns.length === 0 ? (

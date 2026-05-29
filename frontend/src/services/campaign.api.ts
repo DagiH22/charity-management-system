@@ -47,8 +47,8 @@ export const createCampaign = async (payload: {
   return data;
 };
 
-export const getMyCampaigns = async () => {
-  const { data } = await http.get(`/campaign/my-campaigns`);
+export const getMyCampaigns = async (params?: { category?: string }) => {
+  const { data } = await http.get(`/campaign/my-campaigns`, { params });
 
   return data;
 };
