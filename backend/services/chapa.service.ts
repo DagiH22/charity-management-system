@@ -72,6 +72,7 @@ type ChapaDonationMeta = {
 };
 
 const CHAPA_HOSTED_PAY_URL = "https://api.chapa.co/v1/hosted/pay";
+const CHAPA_VERIFY_URL = "https://api.chapa.co/v1/transaction/verify";
 const DEFAULT_RETURN_ORIGIN =
   env.FRONTEND_URLS.split(",")
     .map((origin) => origin.trim())
@@ -144,6 +145,14 @@ const normalizeReturnUrl = (returnUrl?: string) => {
   }
 };
 
+const appendTxRefToReturnUrl = (returnUrl: string, txRef: string) => {
+  const parsed = new URL(returnUrl);
+
+  parsed.searchParams.set("tx_ref", txRef);
+
+  return parsed.toString();
+};
+
 const parseBoolean = (value: unknown) => {
   if (typeof value === "boolean") {
     return value;
@@ -198,9 +207,9 @@ const parseWebhookMeta = (meta: unknown): ChapaDonationMeta => {
 export const createDonationCheckoutService = async (
   payload: DonationCheckoutPayload,
 ): Promise<DonationCheckoutResponse> => {
-  if (!env.CHAPA_SECRET_KEY) {
-    console.error("[CHAPA] CHAPA_SECRET_KEY not configured");
-    throw new ApiError(500, "CHAPA_SECRET_KEY is not configured");
+  if (!env.CHAPA_PUBLIC_KEY) {
+    console.error("[CHAPA] CHAPA_PUBLIC_KEY not configured");
+    throw new ApiError(500, "CHAPA_PUBLIC_KEY is not configured");
   }
 
   if (payload.amount < 10) {
@@ -238,7 +247,10 @@ export const createDonationCheckoutService = async (
   const txRef = buildTxRef();
   const amount = new Prisma.Decimal(payload.amount);
   const trimmedMessage = payload.message?.trim();
-  const returnUrl = normalizeReturnUrl(payload.returnUrl);
+  const returnUrl = appendTxRefToReturnUrl(
+    normalizeReturnUrl(payload.returnUrl),
+    txRef,
+  );
   const nameParts = splitName(payload.donorName);
 
   const donation = await prisma.donation.create({
@@ -261,7 +273,7 @@ export const createDonationCheckoutService = async (
     chapa: {
       actionUrl: CHAPA_HOSTED_PAY_URL,
       fields: {
-        public_key: env.CHAPA_SECRET_KEY,
+        public_key: env.CHAPA_PUBLIC_KEY,
         tx_ref: txRef,
         amount: amount.toFixed(2),
         currency: "ETB",
@@ -458,6 +470,35 @@ export const finalizeDonationFromChapaWebhook = async (payload: unknown) => {
       receipt,
     };
   });
+};
+
+export const verifyDonationWithChapa = async (txRef: string) => {
+  if (!env.CHAPA_SECRET_KEY) {
+    console.error("[CHAPA] CHAPA_SECRET_KEY not configured");
+    throw new ApiError(500, "CHAPA_SECRET_KEY is not configured");
+  }
+
+  const response = await fetch(
+    `${CHAPA_VERIFY_URL}/${encodeURIComponent(txRef)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${env.CHAPA_SECRET_KEY}`,
+      },
+    },
+  );
+
+  const result = (await response.json()) as Record<string, unknown>;
+
+  if (!response.ok) {
+    console.warn("[CHAPA] Transaction verification failed", {
+      txRef,
+      status: response.status,
+      result,
+    });
+    return { handled: false, reason: "Chapa verification failed", result };
+  }
+
+  return finalizeDonationFromChapaWebhook(result);
 };
 
 const normalizeChapaWebhookPayload = (

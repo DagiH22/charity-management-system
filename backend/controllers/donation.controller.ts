@@ -27,6 +27,22 @@ const safeCompare = (expected: string, actual?: string) => {
   return timingSafeEqual(expectedBuffer, actualBuffer);
 };
 
+const buildChapaWebhookUrl = (req: Request) => {
+  const webhookUrl = env.WEBHOOK_URL?.trim();
+
+  if (webhookUrl) {
+    const parsed = new URL(webhookUrl);
+
+    if (parsed.pathname === "/" || parsed.pathname === "") {
+      parsed.pathname = "/api/campaign/chapa/webhook";
+    }
+
+    return parsed.toString();
+  }
+
+  return `${req.protocol}://${req.get("host")}/api/campaign/chapa/webhook`;
+};
+
 export const donateToCampaign = asyncHandler(
   async (req: Request, res: Response) => {
     const campaignId = Number(req.params.id);
@@ -75,7 +91,7 @@ export const donateToCampaign = asyncHandler(
       isAnonymous: Boolean(isAnonymous),
       message,
       returnUrl,
-      callbackUrl: `${req.protocol}://${req.get("host")}/api/campaign/chapa/webhook`,
+      callbackUrl: buildChapaWebhookUrl(req),
     });
 
     res.status(201).json({ success: true, data: checkout });

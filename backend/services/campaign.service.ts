@@ -9,6 +9,7 @@ import {
   consumeApprovedCampaignRequest,
   getApprovedAllowanceForCharity,
 } from "./campaignRequest.service";
+import { verifyDonationWithChapa } from "./chapa.service";
 
 type UpdateCampaignPayload = {
   title?: string;
@@ -267,7 +268,7 @@ export const donateToCampaignService = async (
 };
 
 export const getDonationByTxRefService = async (txRef: string) => {
-  const donation = await prisma.donation.findFirst({
+  let donation = await prisma.donation.findFirst({
     where: { transactionId: txRef },
     include: {
       campaign: { select: { id: true, title: true, charityId: true } },
@@ -277,6 +278,22 @@ export const getDonationByTxRefService = async (txRef: string) => {
 
   if (!donation) {
     throw new ApiError(404, "Donation not found");
+  }
+
+  if (donation.status === "PENDING") {
+    await verifyDonationWithChapa(txRef);
+
+    donation = await prisma.donation.findFirst({
+      where: { transactionId: txRef },
+      include: {
+        campaign: { select: { id: true, title: true, charityId: true } },
+        donor: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    if (!donation) {
+      throw new ApiError(404, "Donation not found");
+    }
   }
 
   return donation;
