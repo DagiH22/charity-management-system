@@ -71,7 +71,7 @@ type ChapaDonationMeta = {
   returnUrl?: string;
 };
 
-const CHAPA_HOSTED_PAY_URL = "https://api.chapa.co/v1/hosted/pay";
+const CHAPA_INITIALIZE_URL = "https://api.chapa.co/v1/transaction/initialize";
 const CHAPA_VERIFY_URL = "https://api.chapa.co/v1/transaction/verify";
 const DEFAULT_RETURN_ORIGIN =
   env.FRONTEND_URLS.split(",")
@@ -206,10 +206,13 @@ const parseWebhookMeta = (meta: unknown): ChapaDonationMeta => {
 
 export const createDonationCheckoutService = async (
   payload: DonationCheckoutPayload,
-): Promise<DonationCheckoutResponse> => {
-  if (!env.CHAPA_PUBLIC_KEY) {
-    console.error("[CHAPA] CHAPA_PUBLIC_KEY not configured");
-    throw new ApiError(500, "CHAPA_PUBLIC_KEY is not configured");
+): Promise<{
+  donation: DonationSummary;
+  chapa: { checkoutUrl: string };
+}> => {
+  if (!env.CHAPA_SECRET_KEY) {
+    console.error("[CHAPA] CHAPA_SECRET_KEY not configured");
+    throw new ApiError(500, "CHAPA_SECRET_KEY is not configured");
   }
 
   if (payload.amount < 10) {
@@ -268,23 +271,45 @@ export const createDonationCheckoutService = async (
     select: donationSelect,
   });
 
+  const chapaPayload = {
+    amount: amount.toFixed(2),
+    currency: "ETB",
+    email: payload.donorEmail,
+    first_name: nameParts.firstName,
+    last_name: nameParts.lastName,
+    tx_ref: txRef,
+    callback_url: payload.callbackUrl,
+    return_url: returnUrl,
+    "customization[title]": `Donation for ${campaign.title}`,
+    "customization[description]": `Donation to ${campaign.charity.organizationName}`,
+    meta: {
+      campaignId: campaign.id,
+      isAnonymous: payload.isAnonymous,
+      message: trimmedMessage || null,
+      returnUrl: normalizeReturnUrl(payload.returnUrl),
+    },
+  };
+
+  const response = await fetch(CHAPA_INITIALIZE_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.CHAPA_SECRET_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(chapaPayload),
+  });
+
+  const responseData = (await response.json()) as any;
+
+  if (!response.ok || responseData.status !== "success") {
+    console.error("[CHAPA] Transaction initialize failed", responseData);
+    throw new ApiError(500, "Failed to initialize payment with Chapa.");
+  }
+
   return {
     donation: toDonationSummary(donation),
     chapa: {
-      actionUrl: CHAPA_HOSTED_PAY_URL,
-      fields: {
-        public_key: env.CHAPA_PUBLIC_KEY,
-        tx_ref: txRef,
-        amount: amount.toFixed(2),
-        currency: "ETB",
-        email: payload.donorEmail,
-        first_name: nameParts.firstName,
-        last_name: nameParts.lastName,
-        title: `Donation for ${campaign.title}`,
-        description: `Donation to ${campaign.charity.organizationName}`,
-        callback_url: payload.callbackUrl,
-        return_url: returnUrl,
-      },
+      checkoutUrl: responseData.data.checkout_url,
     },
   };
 };

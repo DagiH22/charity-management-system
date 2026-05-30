@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useLocation, Link as RouterLink } from "react-router-dom";
 import {
   getPublicCampaignById,
@@ -209,7 +209,9 @@ export default function CampaignDetailsPage() {
 
     // If neither URL param nor storage, nothing to do
     if (!txRef && !donationFromStorage) {
-      console.log("âš ï¸ No transaction reference found, skipping receipt fetch");
+      console.log(
+        "âš ï¸ No transaction reference found, skipping receipt fetch",
+      );
       return;
     }
 
@@ -430,24 +432,25 @@ export default function CampaignDetailsPage() {
         amount: currentDonationValue,
         isAnonymous,
         message: undefined,
-        returnUrl: window.location.href,
+        // Use configured frontend return URL if provided (Vite env). Fallback to current location.
+        returnUrl: import.meta.env.VITE_RETURN_URL ?? window.location.href,
         guestName: !isLoggedIn ? donorName : undefined,
         guestEmail: !isLoggedIn ? donorEmail : undefined,
       };
 
       const res = await donateToCampaignRequest(id, payload);
 
-      // If backend provided chapa checkout data, submit a form to Chapa hosted pay
+      // If backend provided chapa checkout data, redirect to checkoutUrl
       const checkout = res.data as unknown as {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         donation: any;
-        chapa: { actionUrl: string; fields: Record<string, string> };
+        chapa: { checkoutUrl: string };
       };
 
       // Store donation info in sessionStorage before redirecting to Chapa
       const donationInfo = {
-        tx_ref: checkout.chapa.fields.tx_ref,
-        amount: checkout.chapa.fields.amount,
+        tx_ref: checkout.donation.transactionId,
+        amount: checkout.donation.amount,
         donorName: isAnonymous ? "Anonymous Donor" : donorName,
         campaign: campaign?.title || "",
         method: "Chapa Payment",
@@ -457,25 +460,10 @@ export default function CampaignDetailsPage() {
         "chapaRedirectDonation",
         JSON.stringify(donationInfo),
       );
-      console.log("ðŸ’¾ Stored donation info in sessionStorage:", donationInfo);
+      console.log("💾 Stored donation info in sessionStorage:", donationInfo);
 
-      // Build and submit a form to Chapa hosted endpoint
-      const form = document.createElement("form");
-      form.action = checkout.chapa.actionUrl;
-      form.method = "POST";
-      form.style.display = "none";
-
-      Object.entries(checkout.chapa.fields).forEach(([k, v]) => {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = k;
-        input.value = String(v ?? "");
-        form.appendChild(input);
-      });
-
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
+      // Redirect directly to Chapa checkout
+      window.location.href = checkout.chapa.checkoutUrl;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setDonationError(err.response?.data?.message || "Donation failed.");
@@ -1187,4 +1175,3 @@ export default function CampaignDetailsPage() {
     </div>
   );
 }
-

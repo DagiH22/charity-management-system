@@ -1,20 +1,5 @@
 import { http } from "./httpClient";
 
-export type CampaignDonationCheckoutFields = {
-  public_key: string;
-  tx_ref: string;
-  amount: string;
-  currency: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  title: string;
-  description: string;
-  callback_url: string;
-  return_url: string;
-  meta?: string;
-};
-
 export type CampaignDonationCheckout = {
   donation: {
     id: number;
@@ -28,8 +13,7 @@ export type CampaignDonationCheckout = {
     donatedAt: string;
   };
   chapa: {
-    actionUrl: string;
-    fields: CampaignDonationCheckoutFields;
+    checkoutUrl: string;
   };
 };
 
