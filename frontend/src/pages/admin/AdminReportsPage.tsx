@@ -385,7 +385,9 @@ export default function AdminReportsPage() {
                       axisLine={false}
                       tickLine={false}
                       tick={{ fill: "#64748b", fontSize: 12 }}
-                      tickFormatter={(value) => `${formatCurrency(value)}`}
+                      tickFormatter={(value: number) =>
+                        `${formatCurrency(value)}`
+                      }
                     />
                     <YAxis
                       yAxisId="right"
@@ -512,7 +514,9 @@ export default function AdminReportsPage() {
                       axisLine={false}
                       tickLine={false}
                       tick={{ fill: "#64748b", fontSize: 12 }}
-                      tickFormatter={(value) => `${formatCurrency(value)}`}
+                      tickFormatter={(value: number) =>
+                        `${formatCurrency(value)}`
+                      }
                     />
                     <YAxis
                       type="category"
