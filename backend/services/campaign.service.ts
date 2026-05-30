@@ -5,6 +5,7 @@ import { prisma } from "../utils/prisma";
 import { createBulkNotifications } from "./notification.service";
 import type { NotificationInput } from "./notification.service";
 import { env } from "../utils/env";
+import { ensureDonationReceipt } from "./donationReceipt.service";
 import {
   consumeApprovedCampaignRequest,
   getApprovedAllowanceForCharity,
@@ -189,15 +190,19 @@ export const createCampaignService = async (
   return createdCampaign;
 };
 
-export const donateToCampaignService = async (
-  campaignId: number,
-  amount: number,
-  donorId: number,
-  isAnonymous: boolean = false,
-  message?: string,
-) => {
+type CompletedDonationInput = {
+  campaignId: number;
+  amount: number;
+  donorId?: number;
+  donorName?: string;
+  donorEmail?: string;
+  isAnonymous?: boolean;
+  message?: string;
+};
+
+const completeDonation = async (payload: CompletedDonationInput) => {
   const campaign = await prisma.campaign.findUnique({
-    where: { id: campaignId },
+    where: { id: payload.campaignId },
     include: {
       charity: {
         select: {
@@ -215,34 +220,42 @@ export const donateToCampaignService = async (
     throw new ApiError(400, "Cannot donate to a closed campaign");
   }
 
-  const transactionId = `TXN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+  const amount = new Prisma.Decimal(payload.amount);
+  const message = payload.message?.trim();
+  const donorName = payload.donorName?.trim();
+  const donorEmail = payload.donorEmail?.trim();
+  const transactionId = `SIM-${Date.now()}-${randomUUID().slice(0, 12)}`;
 
   // Use a transaction to ensure both records update correctly
-  const [donation, updatedCampaign] = await prisma.$transaction(async (tx) => {
-    const existingDonation = await tx.donation.findFirst({
-      where: {
-        campaignId,
-        donorId,
-      },
-    });
-
-    const donorIncrement = existingDonation ? 0 : 1;
+  const result = await prisma.$transaction(async (tx) => {
+    const donorIncrement = payload.donorId
+      ? (await tx.donation.findFirst({
+          where: {
+            campaignId: payload.campaignId,
+            donorId: payload.donorId,
+          },
+        }))
+        ? 0
+        : 1
+      : 1;
 
     const createdDonation = await tx.donation.create({
       data: {
-        donorId,
-        campaignId,
+        donorId: payload.donorId ?? null,
+        guestName: payload.donorId ? null : donorName || null,
+        guestEmail: payload.donorId ? null : donorEmail || null,
+        campaignId: payload.campaignId,
         amount,
-        isAnonymous,
-        message,
+        isAnonymous: payload.isAnonymous ?? false,
+        message: message || null,
         transactionId,
-        status: "COMPLETED", // Directly to complete since we mock Chapa for now
+        status: "COMPLETED",
       },
       include: { campaign: true },
     });
 
     const updated = await tx.campaign.update({
-      where: { id: campaignId },
+      where: { id: payload.campaignId },
       data: {
         currentAmount: {
           increment: amount,
@@ -255,39 +268,72 @@ export const donateToCampaignService = async (
 
     await createBulkNotifications(
       [
-        {
-          userId: donorId,
-          title: "Donation successful",
-          message: `Your donation of ${new Intl.NumberFormat("en-US").format(Number(amount))} ETB to ${campaign.title} was successful.`,
-          type: "DONATION",
-          metadata: {
-            campaignId,
-            donationId: createdDonation.id,
-            amount,
-            isAnonymous,
-          },
-        },
+        ...(payload.donorId
+          ? [
+              {
+                userId: payload.donorId,
+                title: "Donation successful",
+                message: `Your donation of ${new Intl.NumberFormat("en-US").format(Number(amount))} ETB to ${campaign.title} was successful.`,
+                type: "DONATION",
+                metadata: {
+                  campaignId: payload.campaignId,
+                  donationId: createdDonation.id,
+                  amount: Number(amount.toString()),
+                  isAnonymous: payload.isAnonymous ?? false,
+                },
+              },
+            ]
+          : []),
         {
           userId: campaign.charity.userId,
           title: "New donation received",
-          message: `${isAnonymous ? "An anonymous donor" : "A donor"} contributed ${new Intl.NumberFormat("en-US").format(Number(amount))} ETB to ${campaign.title}.`,
+          message: `${payload.isAnonymous ? "An anonymous donor" : donorName || donorEmail || "A donor"} contributed ${new Intl.NumberFormat("en-US").format(Number(amount))} ETB to ${campaign.title}.`,
           type: "DONATION",
           metadata: {
-            campaignId,
+            campaignId: payload.campaignId,
             donationId: createdDonation.id,
-            amount,
-            isAnonymous,
-            donorId,
+            amount: Number(amount.toString()),
+            isAnonymous: payload.isAnonymous ?? false,
+            donorId: payload.donorId ?? null,
           },
         },
       ] as NotificationInput[],
       tx,
     );
 
-    return [createdDonation, updated];
+    const receipt = await ensureDonationReceipt(createdDonation.id, tx);
+
+    return [createdDonation, updated, receipt] as const;
   });
-  return { donation, campaign: updatedCampaign };
+
+  const [donation, updatedCampaign, receipt] = result;
+
+  return { donation, campaign: updatedCampaign, receipt };
 };
+
+export const donateToCampaignService = async (
+  campaignId: number,
+  amount: number,
+  donorId: number,
+  isAnonymous: boolean = false,
+  message?: string,
+  donorName?: string,
+  donorEmail?: string,
+) => {
+  return completeDonation({
+    campaignId,
+    amount,
+    donorId,
+    isAnonymous,
+    message,
+    donorName,
+    donorEmail,
+  });
+};
+
+export const createDirectDonationService = async (
+  payload: CompletedDonationInput,
+) => completeDonation(payload);
 
 export const getDonationByTxRefService = async (txRef: string) => {
   let donation = await prisma.donation.findFirst({
@@ -316,6 +362,22 @@ export const getDonationByTxRefService = async (txRef: string) => {
     if (!donation) {
       throw new ApiError(404, "Donation not found");
     }
+  }
+
+  return donation;
+};
+
+export const getDonationByIdService = async (donationId: number) => {
+  const donation = await prisma.donation.findUnique({
+    where: { id: donationId },
+    include: {
+      campaign: { select: { id: true, title: true, charityId: true } },
+      donor: { select: { id: true, name: true, email: true } },
+    },
+  });
+
+  if (!donation) {
+    throw new ApiError(404, "Donation not found");
   }
 
   return donation;

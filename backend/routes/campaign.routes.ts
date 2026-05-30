@@ -18,6 +18,7 @@ import {
 } from "../controllers/campaign.controller";
 import {
   donateToCampaign,
+  donateDirectToCampaign,
   handleChapaDonationWebhook,
 } from "../controllers/donation.controller";
 import { imageUpload } from "../middlewares/upload.middleware";
@@ -75,5 +76,6 @@ campaignRouter.put(
 );
 // Donation endpoint (allows both authenticated donors and guests)
 campaignRouter.post("/:id/donate", optionalAuth, donateToCampaign);
+campaignRouter.post("/:id/donate-direct", optionalAuth, donateDirectToCampaign);
 
 export default campaignRouter;
