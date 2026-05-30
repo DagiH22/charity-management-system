@@ -101,7 +101,7 @@ export const getDonorDonationsService = async (
   };
 };
 
-export const getDonorAnonymousDonationsService = async (
+export const getDonorAnonymoETBonationsService = async (
   userId: number,
   options: {
     page: number;

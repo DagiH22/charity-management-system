@@ -3,7 +3,7 @@ import { protect, authorize } from "../middlewares/auth.middleware";
 import {
   getDonorDashboard,
   getDonorDonations,
-  getDonorAnonymousDonations,
+  getDonorAnonymoETBonations,
   getDonorFollowingCampaigns,
   toggleFollowCampaign,
 } from "../controllers/donor.controller";
@@ -19,7 +19,7 @@ donorRouter.get(
   "/anonymous-donations",
   protect,
   authorize("DONOR"),
-  getDonorAnonymousDonations,
+  getDonorAnonymoETBonations,
 );
 donorRouter.get(
   "/following",

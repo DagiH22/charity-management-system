@@ -4,7 +4,7 @@ import { ApiError } from "../utils/ApiError";
 export const getMyBankAccounts = async (userId: number) => {
   return prisma.bankAccount.findMany({
     where: { userId },
-    orderBy: { isPrimary: "desc", createdAt: "desc" },
+    orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }],
   });
 };
 

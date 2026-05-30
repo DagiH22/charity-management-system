@@ -3,7 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler";
 import {
   getDonorDashboardService,
   getDonorDonationsService,
-  getDonorAnonymousDonationsService,
+  getDonorAnonymoETBonationsService,
   getDonorFollowingCampaignsService,
   toggleFollowCampaignService,
 } from "../services/donor.service";
@@ -38,7 +38,7 @@ export const getDonorDonations = asyncHandler(
   },
 );
 
-export const getDonorAnonymousDonations = asyncHandler(
+export const getDonorAnonymoETBonations = asyncHandler(
   async (req: Request, res: Response) => {
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 10);
@@ -50,7 +50,7 @@ export const getDonorAnonymousDonations = asyncHandler(
       ? (String(req.query.sortOrder) as "asc" | "desc")
       : "desc";
 
-    const donations = await getDonorAnonymousDonationsService(req.user!.id, {
+    const donations = await getDonorAnonymoETBonationsService(req.user!.id, {
       page,
       limit,
       search,

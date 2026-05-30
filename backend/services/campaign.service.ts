@@ -11,6 +11,15 @@ import {
 } from "./campaignRequest.service";
 import { verifyDonationWithChapa } from "./chapa.service";
 
+const campaignWithCharityInclude = {
+  charity: {
+    select: {
+      id: true,
+      organizationName: true,
+    },
+  },
+} as const;
+
 type UpdateCampaignPayload = {
   title?: string;
   description?: string;
@@ -46,6 +55,7 @@ export const getCampaignByIdService = async (
   // Find campaign
   const campaign = await prisma.campaign.findUnique({
     where: { id: campaignId },
+    include: campaignWithCharityInclude,
   });
 
   if (!campaign) {
@@ -167,7 +177,16 @@ export const createCampaignService = async (
     return createdCampaign;
   });
 
-  return campaign;
+  const createdCampaign = await prisma.campaign.findUnique({
+    where: { id: campaign.id },
+    include: campaignWithCharityInclude,
+  });
+
+  if (!createdCampaign) {
+    throw new ApiError(404, "Campaign not found");
+  }
+
+  return createdCampaign;
 };
 
 export const donateToCampaignService = async (
@@ -320,6 +339,7 @@ export const getMyCampaignsService = async (
       charityId: charityProfile.id,
       ...(options?.category ? { category: options.category } : {}),
     },
+    include: campaignWithCharityInclude,
     orderBy: {
       createdAt: "desc",
     },
@@ -414,7 +434,16 @@ export const updateCampaignService = async (
     return updated;
   });
 
-  return updatedCampaign;
+  const refreshedCampaign = await prisma.campaign.findUnique({
+    where: { id: updatedCampaign.id },
+    include: campaignWithCharityInclude,
+  });
+
+  if (!refreshedCampaign) {
+    throw new ApiError(404, "Campaign not found");
+  }
+
+  return refreshedCampaign;
 };
 
 export const closeCampaignService = async (
@@ -489,7 +518,16 @@ export const closeCampaignService = async (
     return updated;
   });
 
-  return closedCampaign;
+  const refreshedCampaign = await prisma.campaign.findUnique({
+    where: { id: closedCampaign.id },
+    include: campaignWithCharityInclude,
+  });
+
+  if (!refreshedCampaign) {
+    throw new ApiError(404, "Campaign not found");
+  }
+
+  return refreshedCampaign;
 };
 
 export const getAllCampaignsService = async (options?: {

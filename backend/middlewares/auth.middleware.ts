@@ -13,6 +13,18 @@ type AuthJwtPayload = JwtPayload & {
 
 const AUTH_COOKIE_NAME = "cms_auth";
 
+const getAuthToken = (req: Request) => {
+  const cookieToken = req.cookies?.[AUTH_COOKIE_NAME];
+  if (cookieToken) return cookieToken;
+
+  const authHeader = req.header("authorization");
+  if (!authHeader) return undefined;
+
+  const [scheme, token] = authHeader.split(" ");
+  if (scheme?.toLowerCase() !== "bearer" || !token) return undefined;
+  return token.trim();
+};
+
 const safeUserSelect = {
   id: true,
   name: true,
@@ -32,7 +44,7 @@ export const protect = async (
   if (req.method === "OPTIONS") {
     return next();
   }
-  const token = req.cookies?.[AUTH_COOKIE_NAME];
+  const token = getAuthToken(req);
 
   if (!token) {
     return next(new ApiError(401, "Unauthorized: token is missing"));
@@ -108,7 +120,7 @@ export const optionalAuth = async (
   if (req.method === "OPTIONS") {
     return next();
   }
-  const token = req.cookies?.[AUTH_COOKIE_NAME];
+  const token = getAuthToken(req);
 
   if (!token) {
     return next(); // Just pass through, req.user will be undefined

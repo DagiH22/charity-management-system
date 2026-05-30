@@ -81,6 +81,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     success: true,
     message: "Registration successful",
     user,
+    token,
   });
 });
 
@@ -104,6 +105,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     success: true,
     message: "Login successful",
     user,
+    token,
   });
 });
 
