@@ -213,6 +213,8 @@ export default function CampaignDetailsPage() {
       return;
     }
 
+    let isCancelled = false;
+
     const fetchDonation = async () => {
       const txRefToUse = txRef || donationFromStorage?.tx_ref;
 
@@ -227,6 +229,10 @@ export default function CampaignDetailsPage() {
         console.log("âœ… Donation fetched successfully:", res);
         const donation = res.data.donation;
 
+        if (isCancelled) {
+          return;
+        }
+
         // CHECK PAYMENT STATUS - Only show receipt if COMPLETED
         if (donation.status !== "COMPLETED") {
           console.warn("âš ï¸ Payment not completed. Status:", donation.status);
@@ -237,7 +243,6 @@ export default function CampaignDetailsPage() {
           } else {
             setDonationError("âŒ Payment was not successful.");
           }
-          // Clean up storage
           sessionStorage.removeItem("chapaRedirectDonation");
           await loadData();
           return;
@@ -273,7 +278,11 @@ export default function CampaignDetailsPage() {
     };
 
     void fetchDonation();
-  }, [location.search, campaign, donorName, loadData]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [location.search, loadData]);
 
   useEffect(() => {
     if (!isLoggedIn || !campaign) return;

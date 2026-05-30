@@ -17,6 +17,7 @@ export const env = {
   DATABASE_URL: getEnv("DATABASE_URL"),
   JWT_SECRET: getEnv("JWT_SECRET"),
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN ?? "7d",
+  CHAPA_PUBLIC_KEY: process.env.CHAPA_PUBLIC_KEY ?? "",
   CHAPA_SECRET_KEY: process.env.CHAPA_SECRET_KEY ?? "",
   CHAPA_SECRET_HASH: process.env.CHAPA_SECRET_HASH ?? "",
   WEBHOOK_URL: process.env.WEBHOOK_URL ?? undefined,
