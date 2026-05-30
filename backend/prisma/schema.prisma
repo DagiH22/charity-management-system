@@ -1,13 +1,236 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int              @id @default(autoincrement())
+  name              String
+  email             String           @unique
+  password          String
+  role              Role
+  isVerified        Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  bio               String?          @db.Text
+  phone             String?
+  profileImage      String?
+  bankAccounts      BankAccount[]
+  charityProfile    CharityProfile?
+  donations         Donation[]
+  followedCampaigns FollowCampaign[]
+  notifications     Notification[]
+  passwordReset     PasswordReset?
+  reviewedCampaignRequests CampaignRequest[]
+}
+
+model CharityProfile {
+  id               Int                       @id @default(autoincrement())
+  userId           Int                       @unique
+  organizationName String
+  description      String                    @db.Text
+  documentUrl      String
+  phone            String?
+  address          String?
+  website          String?
+  createdAt        DateTime                  @default(now())
+  logo             String?
+  verifiedAt       DateTime?
+  updatedAt        DateTime                  @default(now()) @updatedAt
+  status           CharityVerificationStatus @default(PENDING)
+  socialFacebook   String?
+  socialTelegram   String?
+  socialInstagram  String?
+  socialTwitter    String?
+  socialYoutube    String?
+  socialTiktok     String?
+  campaigns        Campaign[]
+  campaignRequests CampaignRequest[]
+  user             User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Campaign {
+  id            Int              @id @default(autoincrement())
+  charityId     Int
+  title         String           @db.VarChar(150)
+  description   String           @db.Text
+  category      CampaignCategory @default(OTHER)
+  targetAmount  Decimal          @db.Decimal(12, 2)
+  currentAmount Decimal          @default(0.00) @db.Decimal(12, 2)
+  status        CampaignStatus   @default(ACTIVE)
+  startDate     DateTime
+  endDate       DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  donorCount    Int              @default(0)
+  imageUrl      String?
+  charity       CharityProfile   @relation(fields: [charityId], references: [id], onDelete: Cascade)
+  donations     Donation[]
+  followers     FollowCampaign[]
+  campaignRequestAllowance CampaignRequest? @relation("CampaignRequestConsumedCampaign")
+
+  @@index([charityId], map: "Campaign_charityId_fkey")
+}
+
+model Donation {
+  id            Int              @id @default(autoincrement())
+  donorId       Int?
+  campaignId    Int
+  amount        Decimal          @db.Decimal(12, 2)
+  isAnonymous   Boolean          @default(false)
+  message       String?          @db.Text
+  transactionId String?
+  status        DonationStatus   @default(PENDING)
+  donatedAt     DateTime         @default(now())
+  guestEmail    String?          @db.VarChar(150)
+  guestName     String?          @db.VarChar(150)
+  campaign      Campaign         @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  donor         User?            @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  receipt       DonationReceipt?
+
+  @@index([campaignId], map: "Donation_campaignId_fkey")
+  @@index([donorId], map: "Donation_donorId_fkey")
+}
+
+model DonationReceipt {
+  id               Int      @id @default(autoincrement())
+  donationId       Int      @unique
+  receiptReference String   @unique
+  issuedDate       DateTime @default(now())
+  donation         Donation @relation(fields: [donationId], references: [id], onDelete: Cascade)
+}
+
+model CampaignRequest {
+  id                 Int                   @id @default(autoincrement())
+  charityId          Int
+  reason             String                @db.Text
+  status             CampaignRequestStatus @default(PENDING)
+  requestedAt        DateTime              @default(now())
+  reviewedAt         DateTime?
+  reviewedById       Int?
+  consumedAt         DateTime?
+  consumedCampaignId Int?                  @unique
+  monthCampaignCount Int
+  totalCampaignCount Int
+  activeCampaignCount Int
+  charity            CharityProfile        @relation(fields: [charityId], references: [id], onDelete: Cascade)
+  reviewedBy         User?                 @relation(fields: [reviewedById], references: [id], onDelete: SetNull)
+  consumedCampaign   Campaign?             @relation("CampaignRequestConsumedCampaign", fields: [consumedCampaignId], references: [id], onDelete: SetNull)
+
+  @@index([charityId, status, requestedAt])
+  @@index([status, requestedAt])
+}
+
+model FollowCampaign {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  campaignId Int
+  createdAt  DateTime @default(now())
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, campaignId])
+  @@index([campaignId], map: "FollowCampaign_campaignId_fkey")
+}
+
+model BankAccount {
+  id            Int             @id @default(autoincrement())
+  userId        Int
+  bankName      String
+  accountNumber String
+  accountHolder String
+  type          BankAccountType @default(PERSONAL)
+  isPrimary     Boolean         @default(false)
+  createdAt     DateTime        @default(now())
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "BankAccount_userId_fkey")
+}
+
+model Notification {
+  id               Int              @id @default(autoincrement())
+  userId           Int
+  title            String           @db.VarChar(150)
+  message          String           @db.Text
+  notificationType NotificationType @map("type")
+  isRead           Boolean          @default(false)
+  metadata         Json?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "Notification_userId_fkey")
+  @@index([userId, isRead, createdAt])
+}
+
+model PasswordReset {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique @map("user_id")
+  resetCode      String   @map("reset_code") @db.VarChar(6)
+  expirationDate DateTime @map("expiration_date")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("PasswordReset")
+}
+
+enum Role {
+  DONOR
+  CHARITY
+  ADMIN
+}
+
+enum CampaignStatus {
+  ACTIVE
+  CLOSED
+  DRAFT
+}
+
+enum CampaignCategory {
+  HEALTH
+  EDUCATION
+  DISASTER_RELIEF
+  FOOD_SUPPORT
+  CHILDREN
+  ELDERLY
+  ENVIRONMENT
+  ANIMAL_WELFARE
+  COMMUNITY
+  RELIGIOUS
+  EMERGENCY
+  OTHER
+}
+
+enum DonationStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum BankAccountType {
+  PERSONAL
+  BUSINESS
+}
+
+enum NotificationType {
+  DONATION
+  CAMPAIGN
+  AUTH
+  SYSTEM
+}
+
+enum CharityVerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CampaignRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

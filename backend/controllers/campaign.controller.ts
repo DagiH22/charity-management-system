@@ -1,0 +1,198 @@
+import { Request, Response } from "express";
+import { CampaignCategory } from "@prisma/client";
+import { asyncHandler } from "../utils/asyncHandler";
+import { ApiError } from "../utils/ApiError";
+import {
+  createCampaignSchema,
+  updateCampaignSchema,
+} from "../validators/campaign.validator";
+import {
+  updateCampaignService,
+  closeCampaignService,
+  getCampaignByIdService,
+  createCampaignService,
+  getMyCampaignsService,
+  getAllCampaignsService,
+  getFeaturedCampaignsService,
+  getPublicCampaignByIdService,
+} from "../services/campaign.service";
+import { uploadFile } from "../services/file.service";
+
+type UploadedFile = {
+  filename: string;
+};
+
+export const getPublicCampaignById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const campaignId = Number(req.params.id);
+
+    if (Number.isNaN(campaignId)) {
+      throw new ApiError(400, "Invalid campaign id");
+    }
+
+    const campaign = await getPublicCampaignByIdService(campaignId);
+
+    res.status(200).json({
+      success: true,
+      data: campaign,
+    });
+  },
+);
+
+export const getCampaignById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const campaignId = Number(req.params.id);
+
+    if (Number.isNaN(campaignId)) {
+      throw new ApiError(400, "Invalid campaign id");
+    }
+
+    const campaign = await getCampaignByIdService(req.user!.id, campaignId);
+
+    res.status(200).json({
+      success: true,
+      data: campaign,
+    });
+  },
+);
+
+export const createCampaign = asyncHandler(
+  async (req: Request, res: Response) => {
+    const result = createCampaignSchema.safeParse(req.body);
+
+    if (!result.success) {
+      throw new ApiError(400, "Validation failed");
+    }
+
+    const campaign = await createCampaignService(req.user!.id, result.data);
+
+    res.status(201).json({
+      success: true,
+      data: campaign,
+    });
+  },
+);
+
+export const getMyCampaigns = asyncHandler(
+  async (req: Request, res: Response) => {
+    const category = req.query.category
+      ? String(req.query.category)
+      : undefined;
+
+    if (
+      category &&
+      !Object.values(CampaignCategory).includes(category as CampaignCategory)
+    ) {
+      throw new ApiError(400, "Invalid campaign category");
+    }
+
+    const campaigns = await getMyCampaignsService(req.user!.id, {
+      category: category as CampaignCategory | undefined,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: campaigns,
+    });
+  },
+);
+
+export const updateCampaign = asyncHandler(
+  async (req: Request, res: Response) => {
+    const campaignId = Number(req.params.id);
+
+    if (Number.isNaN(campaignId)) {
+      throw new ApiError(400, "Invalid campaign id");
+    }
+
+    const result = updateCampaignSchema.safeParse(req.body);
+
+    if (!result.success) {
+      throw new ApiError(400, "Validation failed");
+    }
+
+    const updatedCampaign = await updateCampaignService(
+      req.user!.id,
+      campaignId,
+      result.data,
+    );
+
+    res.status(200).json({
+      success: true,
+      data: updatedCampaign,
+    });
+  },
+);
+
+export const closeCampaign = asyncHandler(
+  async (req: Request, res: Response) => {
+    const campaignId = Number(req.params.id);
+
+    if (Number.isNaN(campaignId)) {
+      throw new ApiError(400, "Invalid campaign id");
+    }
+
+    const campaign = await closeCampaignService(req.user!.id, campaignId);
+
+    res.status(200).json({
+      success: true,
+      data: campaign,
+      message: "Campaign closed successfully",
+    });
+  },
+);
+
+export const getAllCampaigns = asyncHandler(
+  async (req: Request, res: Response) => {
+    const category = req.query.category
+      ? String(req.query.category)
+      : undefined;
+
+    if (
+      category &&
+      !Object.values(CampaignCategory).includes(category as CampaignCategory)
+    ) {
+      throw new ApiError(400, "Invalid campaign category");
+    }
+
+    const campaigns = await getAllCampaignsService({
+      category: category as CampaignCategory | undefined,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: campaigns,
+    });
+  },
+);
+
+export const getFeaturedCampaigns = asyncHandler(
+  async (req: Request, res: Response) => {
+    const campaigns = await getFeaturedCampaignsService();
+
+    res.status(200).json({
+      success: true,
+      data: campaigns,
+    });
+  },
+);
+
+export const uploadCampaignImage = asyncHandler(
+  async (req: Request, res: Response) => {
+    const requestWithFile = req as Request & { file?: UploadedFile };
+
+    if (!req.user) {
+      throw new ApiError(401, "Unauthorized");
+    }
+
+    const imageUrl = uploadFile(
+      requestWithFile.file,
+      "Campaign image is required",
+    );
+
+    res.status(201).json({
+      success: true,
+      imageUrl,
+    });
+  },
+);
