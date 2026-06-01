@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getApiErrorMessage } from "../services/apiErrors";
 import {
   getMyProfileRequest,
@@ -44,6 +44,7 @@ export default function ProfilePage() {
   const [bio, setBio] = useState("");
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
+  const profileImageObjectUrlRef = useRef<string | null>(null);
   const [removeProfileImage, setRemoveProfileImage] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
@@ -69,12 +70,30 @@ export default function ProfilePage() {
 
   const [copiedAccountNumber, setCopiedAccountNumber] = useState<number | null>(null);
 
+  const handleSetProfileImageFile = (file: File | null) => {
+    if (profileImageObjectUrlRef.current) {
+      URL.revokeObjectURL(profileImageObjectUrlRef.current);
+      profileImageObjectUrlRef.current = null;
+    }
+
+    setProfileImageFile(file);
+
+    if (!file) {
+      setProfileImagePreview(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    profileImageObjectUrlRef.current = objectUrl;
+    setProfileImagePreview(objectUrl);
+    setRemoveProfileImage(false);
+  };
+
   const syncProfileForm = (data: ProfileData) => {
     setName(data.user.name);
     setPhone(data.user.phone ?? "");
     setBio(data.user.bio ?? "");
-    setProfileImageFile(null);
-    setProfileImagePreview(null);
+    handleSetProfileImageFile(null);
     setRemoveProfileImage(false);
     setUploadProgress(null);
 
@@ -154,14 +173,13 @@ export default function ProfilePage() {
   }, []);
 
   useEffect(() => {
-    if (!profileImageFile) {
-      setProfileImagePreview(null);
-      return;
-    }
-    const objectUrl = URL.createObjectURL(profileImageFile);
-    setProfileImagePreview(objectUrl);
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [profileImageFile]);
+    return () => {
+      if (profileImageObjectUrlRef.current) {
+        URL.revokeObjectURL(profileImageObjectUrlRef.current);
+        profileImageObjectUrlRef.current = null;
+      }
+    };
+  }, []);
 
   const currentImageUrl = useMemo(() => {
     if (profileImagePreview) return profileImagePreview;
@@ -229,7 +247,7 @@ export default function ProfilePage() {
 
       const updatedProfile = await getMyProfileRequest();
       setProfile(updatedProfile.data);
-      setProfileImageFile(null);
+      handleSetProfileImageFile(null);
       setRemoveProfileImage(false);
       setUploadProgress(null);
       setProfileMessage("Profile updated successfully!");
@@ -332,7 +350,7 @@ export default function ProfilePage() {
             setName,
             bio,
             setBio,
-            setProfileImageFile,
+            setProfileImageFile: handleSetProfileImageFile,
             setRemoveProfileImage,
             charityPhone,
             setCharityPhone,

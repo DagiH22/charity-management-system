@@ -124,6 +124,20 @@ const splitName = (fullName: string) => {
   };
 };
 
+const normalizeEmail = (email?: string) => {
+  const normalized = email?.trim().toLowerCase() || "";
+
+  if (!normalized) {
+    return null;
+  }
+
+  if (!/^\S+@\S+\.\S+$/.test(normalized)) {
+    return null;
+  }
+
+  return normalized;
+};
+
 const normalizeReturnUrl = (returnUrl?: string) => {
   if (!returnUrl) {
     return DEFAULT_RETURN_ORIGIN;
@@ -255,6 +269,14 @@ export const createDonationCheckoutService = async (
     txRef,
   );
   const nameParts = splitName(payload.donorName);
+  const donorEmail = normalizeEmail(payload.donorEmail);
+
+  if (!donorEmail) {
+    throw new ApiError(
+      400,
+      "A valid donor email is required to initialize Chapa payment.",
+    );
+  }
 
   const donation = await prisma.donation.create({
     data: {
@@ -274,7 +296,7 @@ export const createDonationCheckoutService = async (
   const chapaPayload = {
     amount: amount.toFixed(2),
     currency: "ETB",
-    email: payload.donorEmail,
+    email: donorEmail,
     first_name: nameParts.firstName,
     last_name: nameParts.lastName,
     tx_ref: txRef,
