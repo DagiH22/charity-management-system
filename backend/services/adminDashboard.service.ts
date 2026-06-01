@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, CampaignLocation } from "@prisma/client";
 import { prisma } from "../utils/prisma";
 
 const containsInsensitive = (value: string) =>
@@ -116,6 +116,7 @@ export const getAdminOverviewService = async () => {
         title: true,
         status: true,
         category: true,
+        location: true,
         currentAmount: true,
         targetAmount: true,
         donorCount: true,
@@ -389,15 +390,17 @@ export const getAdminCampaignOversightService = async (options: {
   page: number;
   limit: number;
   search?: string;
+  location?: CampaignLocation;
   status?: "ACTIVE" | "CLOSED" | "DRAFT";
   sortBy?: "createdAt" | "currentAmount" | "targetAmount" | "donorCount";
   sortOrder?: "asc" | "desc";
 }) => {
-  const { page, limit, search, status, sortBy, sortOrder } = options;
+  const { page, limit, search, location, status, sortBy, sortOrder } = options;
   const searchTerm = search?.trim();
 
   const where: Prisma.CampaignWhereInput = {
     ...(status ? { status } : {}),
+    ...(location ? { location } : {}),
     ...(searchTerm
       ? {
           OR: [
@@ -425,6 +428,7 @@ export const getAdminCampaignOversightService = async (options: {
         status: true,
         imageUrl: true,
         category: true,
+        location: true,
         currentAmount: true,
         targetAmount: true,
         donorCount: true,
@@ -591,6 +595,7 @@ export const getAdminReportsService = async (options: {
         id: true,
         title: true,
         status: true,
+        location: true,
         currentAmount: true,
         targetAmount: true,
         donorCount: true,
@@ -676,6 +681,7 @@ export const getAdminReportsService = async (options: {
       id: campaign.id,
       title: campaign.title,
       status: campaign.status,
+      location: campaign.location,
       charity: campaign.charity,
       targetAmount: Number(campaign.targetAmount),
       currentAmount: Number(campaign.currentAmount),

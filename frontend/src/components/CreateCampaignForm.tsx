@@ -11,6 +11,7 @@ import { createCampaign, uploadCampaignImage } from "../services/campaign.api";
 import ImageUploadField from "./ImageUploadField";
 import { validateImageFile } from "../utils/fileValidation";
 import { campaignCategoryOptions } from "../utils/campaignCategories";
+import { campaignLocationOptions } from "../utils/campaignLocations";
 
 export default function CreateCampaignForm() {
   const navigate = useNavigate();
@@ -250,6 +251,37 @@ export default function CreateCampaignForm() {
             {errors.category && (
               <p className="mt-1.5 text-sm font-medium text-red-600">
                 {errors.category}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label
+              className="mb-1.5 block text-sm font-semibold text-slate-700"
+              htmlFor="location"
+            >
+              Location
+            </label>
+            <select
+              className={`w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-all hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
+                errors.location
+                  ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
+                  : "border-slate-200"
+              }`}
+              id="location"
+              name="location"
+              value={formValues.location}
+              onChange={(event) => updateField("location", event.target.value)}
+            >
+              {campaignLocationOptions.map((location) => (
+                <option key={location.value} value={location.value}>
+                  {location.label}
+                </option>
+              ))}
+            </select>
+            {errors.location && (
+              <p className="mt-1.5 text-sm font-medium text-red-600">
+                {errors.location}
               </p>
             )}
           </div>

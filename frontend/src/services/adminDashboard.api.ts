@@ -9,9 +9,10 @@ import type {
 import { http } from "./httpClient";
 
 export const getAdminOverview = async () => {
-  const { data } = await http.get<{ success: true; data: AdminOverviewResponse }>(
-    "/admin-dashboard/overview",
-  );
+  const { data } = await http.get<{
+    success: true;
+    data: AdminOverviewResponse;
+  }>("/admin-dashboard/overview");
   return data;
 };
 
@@ -20,7 +21,12 @@ export const getAdminUsers = async (params?: {
   limit?: number;
   search?: string;
   role?: "DONOR" | "CHARITY" | "ADMIN";
-  verification?: "PENDING" | "APPROVED" | "REJECTED" | "VERIFIED" | "UNVERIFIED";
+  verification?:
+    | "PENDING"
+    | "APPROVED"
+    | "REJECTED"
+    | "VERIFIED"
+    | "UNVERIFIED";
   sortBy?: "createdAt" | "name" | "email";
   sortOrder?: "asc" | "desc";
 }) => {
@@ -40,10 +46,10 @@ export const getAdminCharities = async (params?: {
   sortBy?: "createdAt" | "organizationName" | "updatedAt";
   sortOrder?: "asc" | "desc";
 }) => {
-  const { data } = await http.get<{ success: true; data: AdminCharitiesResponse }>(
-    "/admin-dashboard/charities",
-    { params },
-  );
+  const { data } = await http.get<{
+    success: true;
+    data: AdminCharitiesResponse;
+  }>("/admin-dashboard/charities", { params });
 
   return data;
 };
@@ -52,14 +58,15 @@ export const getAdminCampaigns = async (params?: {
   page?: number;
   limit?: number;
   search?: string;
+  location?: string;
   status?: "ACTIVE" | "CLOSED" | "DRAFT";
   sortBy?: "createdAt" | "currentAmount" | "targetAmount" | "donorCount";
   sortOrder?: "asc" | "desc";
 }) => {
-  const { data } = await http.get<{ success: true; data: AdminCampaignsResponse }>(
-    "/admin-dashboard/campaigns",
-    { params },
-  );
+  const { data } = await http.get<{
+    success: true;
+    data: AdminCampaignsResponse;
+  }>("/admin-dashboard/campaigns", { params });
 
   return data;
 };
@@ -76,10 +83,10 @@ export const getAdminDonations = async (params?: {
   sortBy?: "donatedAt" | "amount" | "status";
   sortOrder?: "asc" | "desc";
 }) => {
-  const { data } = await http.get<{ success: true; data: AdminDonationsResponse }>(
-    "/admin-dashboard/donations",
-    { params },
-  );
+  const { data } = await http.get<{
+    success: true;
+    data: AdminDonationsResponse;
+  }>("/admin-dashboard/donations", { params });
 
   return data;
 };
@@ -88,10 +95,10 @@ export const getAdminReports = async (params?: {
   dateFrom?: string;
   dateTo?: string;
 }) => {
-  const { data } = await http.get<{ success: true; data: AdminReportsResponse }>(
-    "/admin-dashboard/reports",
-    { params },
-  );
+  const { data } = await http.get<{
+    success: true;
+    data: AdminReportsResponse;
+  }>("/admin-dashboard/reports", { params });
 
   return data;
 };

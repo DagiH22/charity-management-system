@@ -9,6 +9,10 @@ import type { CharityCampaignsResponse } from "../types/charityDashboard";
 import { SearchInput } from "../components/ui/SearchInput";
 import { FilterSelect } from "../components/ui/FilterSelect";
 import CategoryDropdown from "../components/ui/CategoryDropdown";
+import {
+  campaignLocationOptions,
+  type CampaignLocation,
+} from "../utils/campaignLocations";
 // resolveAssetUrl not needed here because CampaignCard handles images
 
 export default function CharityCampaignsPage() {
@@ -37,6 +41,7 @@ export default function CharityCampaignsPage() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const [category, setCategory] = useState("ALL");
+  const [location, setLocation] = useState<"ALL" | CampaignLocation>("ALL");
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
@@ -78,6 +83,7 @@ export default function CharityCampaignsPage() {
           page,
           limit: 9,
           search: search || undefined,
+          location: location === "ALL" ? undefined : location,
           status: status === "ALL" ? undefined : status,
           sortBy,
           sortOrder,
@@ -91,7 +97,7 @@ export default function CharityCampaignsPage() {
     };
 
     void loadCampaigns();
-  }, [page, search, sortBy, sortOrder, status]);
+  }, [page, search, sortBy, sortOrder, status, location]);
 
   const totalPages = campaigns?.totalPages || 1;
   // statusCounts no longer used in UI (dropdown handles status selection)
@@ -174,6 +180,16 @@ export default function CharityCampaignsPage() {
                     setCategory(v);
                     // charity page doesn't currently use category filter server-side
                   }}
+                />
+                <FilterSelect
+                  value={location}
+                  onChange={(e) => {
+                    setPage(1);
+                    setLocation(e.target.value as any);
+                  }}
+                  defaultOption={{ value: "ALL", label: "All Locations" }}
+                  options={campaignLocationOptions}
+                  containerClassName="w-48"
                 />
               </div>
             </div>
@@ -268,6 +284,7 @@ export default function CharityCampaignsPage() {
                   title: c.title,
                   description: c.title || "",
                   category: c.category || "OTHER",
+                  location: c.location || "ETHIOPIA",
                   targetAmount: c.targetAmount,
                   currentAmount: c.currentAmount,
                   status:

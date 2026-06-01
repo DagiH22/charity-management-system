@@ -10,6 +10,10 @@ import { SearchInput } from "../../components/ui/SearchInput";
 import { FilterSelect } from "../../components/ui/FilterSelect";
 import CategoryDropdown from "../../components/ui/CategoryDropdown";
 import CategoryBadge from "../../components/CategoryBadge";
+import {
+  campaignLocationOptions,
+  type CampaignLocation,
+} from "../../utils/campaignLocations";
 
 const statusTabs = ["ACTIVE", "CLOSED", "ALL"] as const;
 
@@ -28,6 +32,7 @@ export default function AdminCampaignOversightPage() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const [category, setCategory] = useState("ALL");
+  const [location, setLocation] = useState<"ALL" | CampaignLocation>("ALL");
 
   useEffect(() => {
     const load = async () => {
@@ -38,6 +43,7 @@ export default function AdminCampaignOversightPage() {
           page,
           limit: 9,
           search: search || undefined,
+          location: location === "ALL" ? undefined : location,
           status: status === "ALL" ? undefined : status,
           sortBy,
           sortOrder,
@@ -51,7 +57,7 @@ export default function AdminCampaignOversightPage() {
     };
 
     void load();
-  }, [page, search, status, sortBy, sortOrder]);
+  }, [page, search, status, sortBy, sortOrder, location]);
 
   const totalPages = campaigns?.totalPages || 1;
 
@@ -93,6 +99,16 @@ export default function AdminCampaignOversightPage() {
                   setCategory(v);
                   // admin list not filtered by category server-side for now
                 }}
+              />
+              <FilterSelect
+                value={location}
+                onChange={(e) => {
+                  setPage(1);
+                  setLocation(e.target.value as any);
+                }}
+                defaultOption={{ value: "ALL", label: "All Locations" }}
+                options={campaignLocationOptions}
+                containerClassName="w-48"
               />
             </div>
           </div>

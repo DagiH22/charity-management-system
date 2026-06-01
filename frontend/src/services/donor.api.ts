@@ -36,6 +36,7 @@ export const getDonorFollowingCampaigns = async (
     page?: number;
     limit?: number;
     search?: string;
+    location?: string;
     status?: "ACTIVE" | "CLOSED" | "DRAFT";
     sortOrder?: "asc" | "desc";
   },

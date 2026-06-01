@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, CampaignLocation } from "@prisma/client";
 import { prisma } from "../utils/prisma";
 import { ApiError } from "../utils/ApiError";
 
@@ -171,11 +171,12 @@ export const getDonorFollowingCampaignsService = async (
     page: number;
     limit: number;
     search?: string;
+    location?: CampaignLocation;
     status?: "ACTIVE" | "CLOSED" | "DRAFT";
     sortOrder?: "asc" | "desc";
   },
 ) => {
-  const { page, limit, search, status, sortOrder } = options;
+  const { page, limit, search, location, status, sortOrder } = options;
   const searchTerm = search?.trim();
   const campaignWhere: Prisma.CampaignWhereInput = {
     ...(searchTerm
@@ -191,6 +192,7 @@ export const getDonorFollowingCampaignsService = async (
           ],
         }
       : {}),
+    ...(location ? { location } : {}),
     ...(status ? { status } : {}),
   };
 

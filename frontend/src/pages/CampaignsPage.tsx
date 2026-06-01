@@ -11,6 +11,10 @@ import { SearchInput } from "../components/ui/SearchInput";
 import { FilterSelect } from "../components/ui/FilterSelect";
 import type { CampaignCategory } from "../utils/campaignCategories";
 import CategoryDropdown from "../components/ui/CategoryDropdown";
+import {
+  campaignLocationOptions,
+  type CampaignLocation,
+} from "../utils/campaignLocations";
 
 const statusOptions = [
   { label: "Active", value: "ACTIVE" },
@@ -36,6 +40,7 @@ export default function CampaignsPage() {
   // Use backend status values (uppercase) to match returned data: 'ACTIVE' | 'CLOSED'
   const [status, setStatus] = useState<"ALL" | "ACTIVE" | "CLOSED">("ALL");
   const [category, setCategory] = useState<"ALL" | CampaignCategory>("ALL");
+  const [location, setLocation] = useState<"ALL" | CampaignLocation>("ALL");
   const [sortBy, setSortBy] = useState<
     "createdAt" | "currentAmount" | "targetAmount" | "donorCount" | "endDate"
   >("createdAt");
@@ -58,6 +63,7 @@ export default function CampaignsPage() {
         // Using existing `getAllCampaigns` and filtering linearly if not paginated on this endpoint for guest access temporarily
         const data = await getAllCampaigns({
           category: category === "ALL" ? undefined : category,
+          location: location === "ALL" ? undefined : location,
         });
         let fetchedData = data.data || [];
 
@@ -72,6 +78,12 @@ export default function CampaignsPage() {
         if (category !== "ALL") {
           fetchedData = fetchedData.filter(
             (c: Campaign) => c.category === category,
+          );
+        }
+
+        if (location !== "ALL") {
+          fetchedData = fetchedData.filter(
+            (c: Campaign) => c.location === location,
           );
         }
 
@@ -107,7 +119,7 @@ export default function CampaignsPage() {
     };
 
     fetchCampaigns();
-  }, [navigate, status, search, sortBy, sortOrder, category]);
+  }, [navigate, status, search, sortBy, sortOrder, category, location]);
 
   const handleCampaignClosed = (campaignId: number) => {
     setCampaigns(
@@ -172,6 +184,13 @@ export default function CampaignsPage() {
               <CategoryDropdown
                 value={category}
                 onChange={(v) => setCategory(v as any)}
+              />
+              <FilterSelect
+                value={location}
+                onChange={(e) => setLocation(e.target.value as any)}
+                defaultOption={{ value: "ALL", label: "All Locations" }}
+                options={campaignLocationOptions}
+                containerClassName="w-48"
               />
             </div>
           </div>

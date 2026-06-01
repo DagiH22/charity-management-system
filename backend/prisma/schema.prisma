@@ -59,6 +59,7 @@ model Campaign {
   title         String           @db.VarChar(150)
   description   String           @db.Text
   category      CampaignCategory @default(OTHER)
+  location      CampaignLocation @default(ETHIOPIA)
   targetAmount  Decimal          @db.Decimal(12, 2)
   currentAmount Decimal          @default(0.00) @db.Decimal(12, 2)
   status        CampaignStatus   @default(ACTIVE)
@@ -202,6 +203,25 @@ enum CampaignCategory {
   RELIGIOUS
   EMERGENCY
   OTHER
+}
+
+enum CampaignLocation {
+  ETHIOPIA
+  INTERNATIONAL
+  ADDIS_ABABA
+  AFAR
+  AMHARA
+  BENISHANGUL_GUMUZ
+  CENTRAL_ETHIOPIA
+  DIRE_DAWA
+  GAMBELA
+  HARARI
+  OROMIA
+  SIDAMA
+  SOMALI
+  SOUTH_ETHIOPIA
+  SOUTH_WEST_ETHIOPIA_PEOPLES
+  TIGRAY
 }
 
 enum DonationStatus {

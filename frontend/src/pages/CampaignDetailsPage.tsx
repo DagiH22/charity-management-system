@@ -17,6 +17,7 @@ import { getDonationReceipt } from "../services/donation.api";
 import { generateReceiptPDF, type ReceiptPDFData } from "../utils/receiptPdf";
 import { Link as LinkIcon, CheckCircle2 } from "lucide-react";
 import CategoryBadge from "../components/CategoryBadge";
+import { getCampaignLocationLabel } from "../utils/campaignLocations";
 
 const PRESET_AMOUNTS = [100, 250, 500, 1000];
 
@@ -507,6 +508,9 @@ export default function CampaignDetailsPage() {
               category={campaign.category}
               className="bg-white/90"
             />
+            <span className="ml-3 inline-flex rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-slate-600 shadow-sm">
+              {getCampaignLocationLabel(campaign.location)}
+            </span>
           </div>
           <h1 className="text-2xl font-extrabold text-white md:text-4xl lg:text-5xl">
             {campaign.title}

@@ -5,6 +5,7 @@ import { closeCampaign } from "../services/campaign.api";
 import { resolveAssetUrl } from "../utils/media";
 import formatCurrency from "../utils/format";
 import CategoryBadge from "./CategoryBadge";
+import { getCampaignLocationLabel } from "../utils/campaignLocations";
 
 type FeedbackState = {
   type: "success" | "error";
@@ -129,6 +130,10 @@ const CampaignCard = ({
           <span>
             {new Date(campaign.startDate).toLocaleDateString()} -{" "}
             {new Date(campaign.endDate).toLocaleDateString()}
+          </span>
+          <span className="text-slate-300">•</span>
+          <span className="text-slate-500">
+            {getCampaignLocationLabel(campaign.location)}
           </span>
         </div>
       </div>

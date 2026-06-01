@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { CampaignCategory } from "@prisma/client";
+import { CampaignCategory, CampaignLocation } from "@prisma/client";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiError } from "../utils/ApiError";
 import {
@@ -78,6 +78,9 @@ export const getMyCampaigns = asyncHandler(
     const category = req.query.category
       ? String(req.query.category)
       : undefined;
+    const location = req.query.location
+      ? String(req.query.location)
+      : undefined;
 
     if (
       category &&
@@ -86,8 +89,16 @@ export const getMyCampaigns = asyncHandler(
       throw new ApiError(400, "Invalid campaign category");
     }
 
+    if (
+      location &&
+      !Object.values(CampaignLocation).includes(location as CampaignLocation)
+    ) {
+      throw new ApiError(400, "Invalid campaign location");
+    }
+
     const campaigns = await getMyCampaignsService(req.user!.id, {
       category: category as CampaignCategory | undefined,
+      location: location as CampaignLocation | undefined,
     });
 
     res.status(200).json({
@@ -147,6 +158,9 @@ export const getAllCampaigns = asyncHandler(
     const category = req.query.category
       ? String(req.query.category)
       : undefined;
+    const location = req.query.location
+      ? String(req.query.location)
+      : undefined;
 
     if (
       category &&
@@ -155,8 +169,16 @@ export const getAllCampaigns = asyncHandler(
       throw new ApiError(400, "Invalid campaign category");
     }
 
+    if (
+      location &&
+      !Object.values(CampaignLocation).includes(location as CampaignLocation)
+    ) {
+      throw new ApiError(400, "Invalid campaign location");
+    }
+
     const campaigns = await getAllCampaignsService({
       category: category as CampaignCategory | undefined,
+      location: location as CampaignLocation | undefined,
     });
 
     res.status(200).json({

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CampaignCategory } from "@prisma/client";
+import { CampaignCategory, CampaignLocation } from "@prisma/client";
 
 export const createCampaignSchema = z
   .object({
@@ -10,6 +10,8 @@ export const createCampaignSchema = z
       .max(150, "Campaign title must be 150 characters or less"),
 
     category: z.nativeEnum(CampaignCategory),
+
+    location: z.nativeEnum(CampaignLocation).optional().default("ETHIOPIA"),
 
     description: z
       .string()
@@ -66,6 +68,8 @@ export const updateCampaignSchema = z
     description: z.string().trim().min(20),
 
     category: z.nativeEnum(CampaignCategory),
+
+    location: z.nativeEnum(CampaignLocation),
 
     targetAmount: z.coerce.number().positive(),
 

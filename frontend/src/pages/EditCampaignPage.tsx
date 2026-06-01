@@ -12,6 +12,7 @@ import ImageUploadField from "../components/ImageUploadField";
 import { validateImageFile } from "../utils/fileValidation";
 import { resolveAssetUrl } from "../utils/media";
 import { campaignCategoryOptions } from "../utils/campaignCategories";
+import { campaignLocationOptions } from "../utils/campaignLocations";
 
 type EditCampaignErrors = Partial<Record<keyof EditCampaignFormValues, string>>;
 
@@ -36,6 +37,7 @@ const EditCampaign = () => {
     title: "",
     description: "",
     category: "",
+    location: "ETHIOPIA",
     targetAmount: "",
     endDate: "",
   });
@@ -66,6 +68,7 @@ const EditCampaign = () => {
           title: campaign.title,
           description: campaign.description,
           category: campaign.category || "",
+          location: campaign.location || "ETHIOPIA",
           targetAmount: campaign.targetAmount,
           endDate: campaign.endDate.split("T")[0],
         });
@@ -287,6 +290,27 @@ const EditCampaign = () => {
             </select>
             {errors.category && (
               <p className="mt-2 text-sm text-red-500">{errors.category}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              Location
+            </label>
+            <select
+              name="location"
+              value={formValues.location}
+              onChange={handleChange}
+              className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-emerald-500"
+            >
+              {campaignLocationOptions.map((location) => (
+                <option key={location.value} value={location.value}>
+                  {location.label}
+                </option>
+              ))}
+            </select>
+            {errors.location && (
+              <p className="mt-2 text-sm text-red-500">{errors.location}</p>
             )}
           </div>
 

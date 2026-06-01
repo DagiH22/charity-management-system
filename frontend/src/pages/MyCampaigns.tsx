@@ -2,9 +2,14 @@ import { useEffect, useState } from "react";
 import CampaignCard from "../components/CampaignCard";
 import { getMyCampaigns } from "../services/campaign.api";
 import CategoryFilterDropdown from "../components/ui/CategoryFilterDropdown";
+import { FilterSelect } from "../components/ui/FilterSelect";
 import type { Campaign } from "../types/campaign";
 import { useAuthStore } from "../store/authStore";
 import { Navigate } from "react-router-dom";
+import {
+  campaignLocationOptions,
+  type CampaignLocation,
+} from "../utils/campaignLocations";
 
 const MyCampaigns = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -12,6 +17,7 @@ const MyCampaigns = () => {
   const [error, setError] = useState("");
   const [category, setCategory] = useState("ALL");
   const [status, setStatus] = useState("ALL");
+  const [location, setLocation] = useState<"ALL" | CampaignLocation>("ALL");
   const { user } = useAuthStore();
 
   if (!user) {
@@ -26,8 +32,9 @@ const MyCampaigns = () => {
     const fetchCampaigns = async () => {
       try {
         setLoading(true);
-        const params: { category?: string } = {};
+        const params: { category?: string; location?: string } = {};
         if (category && category !== "ALL") params.category = category;
+        if (location && location !== "ALL") params.location = location;
 
         const data = await getMyCampaigns(params);
         setCampaigns(data.data);
@@ -39,7 +46,7 @@ const MyCampaigns = () => {
     };
 
     fetchCampaigns();
-  }, [category]);
+  }, [category, location]);
 
   if (loading) {
     return (
@@ -77,6 +84,14 @@ const MyCampaigns = () => {
               onChange={(v) => setCategory(v)}
               status={status}
               onStatusChange={(s) => setStatus(s)}
+            />
+
+            <FilterSelect
+              value={location}
+              onChange={(event) => setLocation(event.target.value as any)}
+              defaultOption={{ value: "ALL", label: "All Locations" }}
+              options={campaignLocationOptions}
+              containerClassName="w-52"
             />
 
             <button className="rounded-xl bg-emerald-600 px-5 py-3 font-medium text-white transition hover:bg-emerald-700">

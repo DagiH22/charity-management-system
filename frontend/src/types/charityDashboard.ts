@@ -11,6 +11,7 @@ export type CharityCampaignSummary = {
   title: string;
   imageUrl?: string | null;
   category?: string;
+  location?: string;
   currentAmount: number;
   targetAmount: number;
   donorCount: number;

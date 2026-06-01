@@ -1,4 +1,4 @@
-import { Prisma, CampaignCategory } from "@prisma/client";
+import { Prisma, CampaignCategory, CampaignLocation } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import { ApiError } from "../utils/ApiError";
 import { prisma } from "../utils/prisma";
@@ -25,6 +25,7 @@ type UpdateCampaignPayload = {
   title?: string;
   description?: string;
   category?: CampaignCategory;
+  location?: CampaignLocation;
   targetAmount?: number;
   endDate?: string;
   imageUrl?: string | null;
@@ -33,6 +34,7 @@ type CreateCampaignPayload = {
   title: string;
   description: string;
   category: CampaignCategory;
+  location: CampaignLocation;
   targetAmount: number;
   startDate: string;
   endDate: string;
@@ -158,6 +160,7 @@ export const createCampaignService = async (
         title: payload.title,
         description: payload.description,
         category: payload.category,
+        location: payload.location,
         targetAmount: new Prisma.Decimal(payload.targetAmount),
         currentAmount: new Prisma.Decimal(0),
         startDate,
@@ -385,7 +388,7 @@ export const getDonationByIdService = async (donationId: number) => {
 
 export const getMyCampaignsService = async (
   userId: number,
-  options?: { category?: CampaignCategory },
+  options?: { category?: CampaignCategory; location?: CampaignLocation },
 ) => {
   const charityProfile = await prisma.charityProfile.findUnique({
     where: { userId },
@@ -400,6 +403,7 @@ export const getMyCampaignsService = async (
     where: {
       charityId: charityProfile.id,
       ...(options?.category ? { category: options.category } : {}),
+      ...(options?.location ? { location: options.location } : {}),
     },
     include: campaignWithCharityInclude,
     orderBy: {
@@ -457,6 +461,10 @@ export const updateCampaignService = async (
 
         ...(payload.category && {
           category: payload.category,
+        }),
+
+        ...(payload.location && {
+          location: payload.location,
         }),
 
         ...(payload.targetAmount && {
@@ -594,6 +602,7 @@ export const closeCampaignService = async (
 
 export const getAllCampaignsService = async (options?: {
   category?: CampaignCategory;
+  location?: CampaignLocation;
 }) => {
   return prisma.campaign.findMany({
     where: {
@@ -601,6 +610,7 @@ export const getAllCampaignsService = async (options?: {
         in: ["ACTIVE"],
       },
       ...(options?.category ? { category: options.category } : {}),
+      ...(options?.location ? { location: options.location } : {}),
     },
     include: {
       charity: {

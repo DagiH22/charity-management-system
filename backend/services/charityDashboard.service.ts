@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, CampaignLocation } from "@prisma/client";
 import { prisma } from "../utils/prisma";
 import { ApiError } from "../utils/ApiError";
 
@@ -101,6 +101,7 @@ export const getCharityDashboardService = async (userId: number) => {
         title: true,
         imageUrl: true,
         category: true,
+        location: true,
         currentAmount: true,
         targetAmount: true,
         donorCount: true,
@@ -138,18 +139,20 @@ export const getCharityCampaignsService = async (
     page: number;
     limit: number;
     search?: string;
+    location?: CampaignLocation;
     status?: "ACTIVE" | "CLOSED" | "DRAFT";
     sortBy?: CampaignSortBy;
     sortOrder?: "asc" | "desc";
   },
 ) => {
   const charityProfile = await getCharityProfile(userId);
-  const { page, limit, search, status, sortBy, sortOrder } = options;
+  const { page, limit, search, location, status, sortBy, sortOrder } = options;
   const searchTerm = search?.trim();
 
   const where: Prisma.CampaignWhereInput = {
     charityId: charityProfile.id,
     ...(status ? { status } : {}),
+    ...(location ? { location } : {}),
     ...(searchTerm
       ? {
           OR: [
@@ -180,6 +183,7 @@ export const getCharityCampaignsService = async (
         title: true,
         imageUrl: true,
         category: true,
+        location: true,
         currentAmount: true,
         targetAmount: true,
         donorCount: true,
@@ -291,6 +295,7 @@ export const getCharityContributionsService = async (
         title: true,
         imageUrl: true,
         category: true,
+        location: true,
         currentAmount: true,
         targetAmount: true,
         donorCount: true,
