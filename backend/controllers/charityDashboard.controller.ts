@@ -7,6 +7,7 @@ import {
   getCharityContributionsService,
   getCharityCampaignContributionsService,
 } from "../services/charityDashboard.service";
+import { CampaignLocation } from "@prisma/client";
 
 export const getCharityDashboard = asyncHandler(
   async (req: Request, res: Response) => {
@@ -20,6 +21,9 @@ export const getCharityCampaigns = asyncHandler(
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 12);
     const search = req.query.search ? String(req.query.search) : undefined;
+    const location = req.query.location
+      ? String(req.query.location)
+      : undefined;
     const status = req.query.status
       ? (String(req.query.status) as "ACTIVE" | "CLOSED" | "DRAFT")
       : undefined;
@@ -36,10 +40,18 @@ export const getCharityCampaigns = asyncHandler(
       ? (String(req.query.sortOrder) as "asc" | "desc")
       : "desc";
 
+    if (
+      location &&
+      !Object.values(CampaignLocation).includes(location as CampaignLocation)
+    ) {
+      throw new ApiError(400, "Invalid campaign location");
+    }
+
     const data = await getCharityCampaignsService(req.user!.id, {
       page,
       limit,
       search,
+      location: location as CampaignLocation | undefined,
       status,
       sortBy,
       sortOrder,

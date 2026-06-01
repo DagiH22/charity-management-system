@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { resolveAssetUrl } from "../utils/media";
 import CategoryBadge from "./CategoryBadge";
+import { getCampaignLocationLabel } from "../utils/campaignLocations";
 
 type CompactCampaignCardProps = {
   campaign: {
@@ -8,6 +9,7 @@ type CompactCampaignCardProps = {
     title: string;
     description: string;
     category?: string;
+    location?: string;
     currentAmount: number | string;
     targetAmount: number | string;
     donorCount?: number; // make optional since some endpoints might not return it
@@ -78,6 +80,7 @@ export const CompactCampaignCard = ({ campaign }: CompactCampaignCardProps) => {
             {campaign.donorCount !== undefined && (
               <span>{campaign.donorCount} donors</span>
             )}
+            <span>{getCampaignLocationLabel(campaign.location)}</span>
             {daysRemaining !== null && <span>{daysRemaining} days left</span>}
             <span className="uppercase">{campaign.status}</span>
           </div>

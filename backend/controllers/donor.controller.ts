@@ -7,6 +7,8 @@ import {
   getDonorFollowingCampaignsService,
   toggleFollowCampaignService,
 } from "../services/donor.service";
+import { CampaignLocation } from "@prisma/client";
+import { ApiError } from "../utils/ApiError";
 
 export const getDonorDashboard = asyncHandler(
   async (req: Request, res: Response) => {
@@ -66,6 +68,9 @@ export const getDonorFollowingCampaigns = asyncHandler(
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 10);
     const search = req.query.search ? String(req.query.search) : undefined;
+    const location = req.query.location
+      ? String(req.query.location)
+      : undefined;
     const status = req.query.status
       ? (String(req.query.status) as "ACTIVE" | "CLOSED" | "DRAFT")
       : undefined;
@@ -73,10 +78,18 @@ export const getDonorFollowingCampaigns = asyncHandler(
       ? (String(req.query.sortOrder) as "asc" | "desc")
       : "desc";
 
+    if (
+      location &&
+      !Object.values(CampaignLocation).includes(location as CampaignLocation)
+    ) {
+      throw new ApiError(400, "Invalid campaign location");
+    }
+
     const campaigns = await getDonorFollowingCampaignsService(req.user!.id, {
       page,
       limit,
       search,
+      location: location as CampaignLocation | undefined,
       status,
       sortOrder,
     });

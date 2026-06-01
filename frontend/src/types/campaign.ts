@@ -1,10 +1,12 @@
 import type { CampaignCategory } from "../utils/campaignCategories";
+import type { CampaignLocation } from "../utils/campaignLocations";
 
 export type Campaign = {
   id: number;
   title: string;
   description: string;
   category: CampaignCategory;
+  location?: CampaignLocation;
   targetAmount: number;
   currentAmount: number;
   status: "Pending" | "Active" | "Closed";
@@ -32,6 +34,7 @@ export type EditCampaignFormValues = {
   title: string;
   description: string;
   category: CampaignCategory | "";
+  location: CampaignLocation | "";
   targetAmount: string;
   endDate: string;
 };

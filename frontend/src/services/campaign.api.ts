@@ -21,6 +21,7 @@ export const createCampaign = async (payload: {
   title: string;
   description: string;
   category: string;
+  location: string;
   targetAmount: number;
   startDate: string;
   endDate: string;
@@ -31,7 +32,10 @@ export const createCampaign = async (payload: {
   return data;
 };
 
-export const getMyCampaigns = async (params?: { category?: string }) => {
+export const getMyCampaigns = async (params?: {
+  category?: string;
+  location?: string;
+}) => {
   const { data } = await http.get(`/campaign/my-campaigns`, { params });
 
   return data;
@@ -49,6 +53,7 @@ export const updateCampaign = async (
     title: string;
     description: string;
     category: string;
+    location: string;
     targetAmount: number;
     endDate: string;
     imageUrl?: string | null;
@@ -86,7 +91,10 @@ export const closeCampaign = async (id: string | undefined) => {
   return response.data;
 };
 
-export const getAllCampaigns = async (params?: { category?: string }) => {
+export const getAllCampaigns = async (params?: {
+  category?: string;
+  location?: string;
+}) => {
   const { data } = await http.get(`/campaign/all`, { params });
 
   return data;

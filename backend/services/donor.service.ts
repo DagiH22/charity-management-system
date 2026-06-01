@@ -1,6 +1,9 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, CampaignLocation } from "@prisma/client";
 import { prisma } from "../utils/prisma";
 import { ApiError } from "../utils/ApiError";
+
+const containsInsensitive = (value: string) =>
+  ({ contains: value, mode: "insensitive" }) as unknown as Prisma.StringFilter;
 
 export const getDonorDashboardService = async (userId: number) => {
   const currentMonthStart = new Date();
@@ -70,12 +73,21 @@ export const getDonorDonationsService = async (
   },
 ) => {
   const { page, limit, search, sortBy, sortOrder } = options;
+  const searchTerm = search?.trim();
   const where: Prisma.DonationWhereInput = {
     donorId: userId,
-    ...(search
+    ...(searchTerm
       ? {
           campaign: {
-            title: { contains: search },
+            OR: [
+              { title: containsInsensitive(searchTerm) },
+              { description: containsInsensitive(searchTerm) },
+              {
+                charity: {
+                  organizationName: containsInsensitive(searchTerm),
+                },
+              },
+            ],
           },
         }
       : {}),
@@ -112,13 +124,22 @@ export const getDonorAnonymoETBonationsService = async (
   },
 ) => {
   const { page, limit, search, sortBy, sortOrder } = options;
+  const searchTerm = search?.trim();
   const where: Prisma.DonationWhereInput = {
     donorId: userId,
     isAnonymous: true,
-    ...(search
+    ...(searchTerm
       ? {
           campaign: {
-            title: { contains: search },
+            OR: [
+              { title: containsInsensitive(searchTerm) },
+              { description: containsInsensitive(searchTerm) },
+              {
+                charity: {
+                  organizationName: containsInsensitive(searchTerm),
+                },
+              },
+            ],
           },
         }
       : {}),
@@ -150,13 +171,28 @@ export const getDonorFollowingCampaignsService = async (
     page: number;
     limit: number;
     search?: string;
+    location?: CampaignLocation;
     status?: "ACTIVE" | "CLOSED" | "DRAFT";
     sortOrder?: "asc" | "desc";
   },
 ) => {
-  const { page, limit, search, status, sortOrder } = options;
+  const { page, limit, search, location, status, sortOrder } = options;
+  const searchTerm = search?.trim();
   const campaignWhere: Prisma.CampaignWhereInput = {
-    ...(search ? { title: { contains: search } } : {}),
+    ...(searchTerm
+      ? {
+          OR: [
+            { title: containsInsensitive(searchTerm) },
+            { description: containsInsensitive(searchTerm) },
+            {
+              charity: {
+                organizationName: containsInsensitive(searchTerm),
+              },
+            },
+          ],
+        }
+      : {}),
+    ...(location ? { location } : {}),
     ...(status ? { status } : {}),
   };
 

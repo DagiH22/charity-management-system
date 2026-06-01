@@ -3,11 +3,16 @@ import {
   campaignCategoryOptions,
   type CampaignCategory,
 } from "./campaignCategories";
+import {
+  campaignLocationOptions,
+  type CampaignLocation,
+} from "./campaignLocations";
 
 export type CampaignFormValues = {
   title: string;
   description: string;
   category: CampaignCategory | "";
+  location: CampaignLocation | "";
   targetAmount: string;
   startDate: string;
   endDate: string;
@@ -21,6 +26,7 @@ export const initialCampaignFormValues: CampaignFormValues = {
   title: "",
   description: "",
   category: "",
+  location: "ETHIOPIA",
   targetAmount: "",
   startDate: "",
   endDate: "",
@@ -29,6 +35,10 @@ export const initialCampaignFormValues: CampaignFormValues = {
 const campaignCategoryValues = campaignCategoryOptions.map(
   (item) => item.value,
 ) as [CampaignCategory, ...CampaignCategory[]];
+
+const campaignLocationValues = campaignLocationOptions.map(
+  (item) => item.value,
+) as [CampaignLocation, ...CampaignLocation[]];
 
 export const campaignSchema = z
   .object({
@@ -42,6 +52,7 @@ export const campaignSchema = z
       .trim()
       .min(20, "Description must be at least 20 characters"),
     category: z.enum(campaignCategoryValues),
+    location: z.enum(campaignLocationValues),
     targetAmount: z.coerce
       .number()
       .positive("Fundraising goal must be greater than 0"),
@@ -113,6 +124,8 @@ export const editCampaignSchema = z.object({
     .min(20, "Description must be at least 20 characters"),
 
   category: z.enum(campaignCategoryValues),
+
+  location: z.enum(campaignLocationValues),
 
   targetAmount: z.coerce
     .number()

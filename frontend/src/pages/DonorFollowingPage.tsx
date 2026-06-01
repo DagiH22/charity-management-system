@@ -3,6 +3,10 @@ import { getDonorFollowingCampaigns } from "../services/donor.api";
 import { SearchInput } from "../components/ui/SearchInput";
 import { FilterSelect } from "../components/ui/FilterSelect";
 import { CompactCampaignCard } from "../components/CompactCampaignCard";
+import {
+  campaignLocationOptions,
+  type CampaignLocation,
+} from "../utils/campaignLocations";
 
 type FollowedCampaign = {
   id: number;
@@ -12,6 +16,7 @@ type FollowedCampaign = {
     title: string;
     description: string;
     category?: string;
+  location?: string;
     currentAmount: number;
     targetAmount: number;
     donorCount: number;
@@ -35,6 +40,7 @@ export default function DonorFollowingPage() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<"" | "ACTIVE" | "CLOSED" | "DRAFT">("");
+  const [location, setLocation] = useState<"ALL" | CampaignLocation>("ALL");
   const [page, setPage] = useState(1);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
@@ -46,6 +52,7 @@ export default function DonorFollowingPage() {
           page,
           limit: 6,
           search: search || undefined,
+          location: location === "ALL" ? undefined : location,
           status: status || undefined,
           sortOrder,
         });
@@ -58,7 +65,7 @@ export default function DonorFollowingPage() {
       }
     };
     fetchFollowing();
-  }, [page, search, status, sortOrder]);
+  }, [page, search, status, sortOrder, location]);
 
   const totalPages = following?.totalPages || 1;
 
@@ -82,6 +89,15 @@ export default function DonorFollowingPage() {
           }}
           placeholder="Search by campaign"
           containerClassName="w-full md:w-64"
+        />
+        <FilterSelect
+          value={location}
+          onChange={(event) => {
+            setPage(1);
+            setLocation(event.target.value as any);
+          }}
+          defaultOption={{ value: "ALL", label: "All locations" }}
+          options={campaignLocationOptions}
         />
         <FilterSelect
           value={status}
