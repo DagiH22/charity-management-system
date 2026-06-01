@@ -6,6 +6,11 @@ import {
   createDonationCheckoutService,
   finalizeDonationFromChapaWebhook,
 } from "../services/chapa.service";
+import {
+  createDirectDonationService,
+  getDonationByIdService,
+  getDonationByTxRefService,
+} from "../services/campaign.service";
 import { env } from "../utils/env";
 import {
   ensureDonationReceipt,
@@ -132,6 +137,51 @@ export const handleChapaDonationWebhook = asyncHandler(
   },
 );
 
+export const donateDirectToCampaign = asyncHandler(
+  async (req: Request, res: Response) => {
+    const campaignId = Number(req.params.id);
+
+    if (Number.isNaN(campaignId)) {
+      throw new ApiError(400, "Invalid campaign id");
+    }
+
+    const { amount, isAnonymous, message, guestName, guestEmail } = req.body as {
+      amount?: number | string;
+      isAnonymous?: boolean;
+      message?: string;
+      guestName?: string;
+      guestEmail?: string;
+    };
+
+    if (!amount || Number(amount) <= 0) {
+      throw new ApiError(400, "Invalid donation amount");
+    }
+
+    const donorId = req.user?.id;
+    const donorName = req.user?.name ?? guestName;
+    const donorEmail = req.user?.email ?? guestEmail;
+
+    if (!donorId && (!donorName || !donorEmail)) {
+      throw new ApiError(
+        400,
+        "Guest name and email are required for unauthenticated donations",
+      );
+    }
+
+    const result = await createDirectDonationService({
+      campaignId,
+      amount: Number(amount),
+      donorId,
+      donorName,
+      donorEmail,
+      isAnonymous: Boolean(isAnonymous),
+      message,
+    });
+
+    res.status(201).json({ success: true, data: result });
+  },
+);
+
 export const getDonationByTxRef = asyncHandler(
   async (req: Request, res: Response) => {
     const txRef = String(req.params.txRef || "").trim();
@@ -140,9 +190,7 @@ export const getDonationByTxRef = asyncHandler(
       throw new ApiError(400, "Missing txRef parameter");
     }
 
-    const donation = await (
-      await import("../services/campaign.service")
-    ).getDonationByTxRefService(txRef);
+    const donation = await getDonationByTxRefService(txRef);
 
     const receipt =
       donation.status === "COMPLETED"
@@ -166,6 +214,50 @@ export const getDonationByTxRef = asyncHandler(
         success: true,
         data: { donation: { ...donation, donor }, receipt },
       });
+  },
+);
+
+export const getDonationById = asyncHandler(async (req: Request, res: Response) => {
+  const donationId = Number(req.params.donationId);
+
+  if (Number.isNaN(donationId)) {
+    throw new ApiError(400, "Invalid donation id");
+  }
+
+  const donation = await getDonationByIdService(donationId);
+
+  const receipt =
+    donation.status === "COMPLETED"
+      ? await ensureDonationReceipt(donation.id)
+      : null;
+
+  const donor = {
+    id: donation.donor?.id || null,
+    name: donation.isAnonymous
+      ? "Anonymous"
+      : donation.donor?.name || donation.guestName || "Guest",
+    email: donation.isAnonymous
+      ? null
+      : donation.donor?.email || donation.guestEmail || null,
+  };
+
+  res.status(200).json({
+    success: true,
+    data: { donation: { ...donation, donor }, receipt },
+  });
+});
+
+export const getDonationReceiptById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const donationId = Number(req.params.donationId);
+
+    if (Number.isNaN(donationId)) {
+      throw new ApiError(400, "Invalid donation id");
+    }
+
+    const receipt = await ensureDonationReceipt(donationId);
+
+    res.status(200).json({ success: true, data: receipt });
   },
 );
 
