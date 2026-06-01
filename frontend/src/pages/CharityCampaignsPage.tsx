@@ -140,87 +140,94 @@ export default function CharityCampaignsPage() {
           </div>
         </header>
 
-        <div className="mb-6 flex items-center gap-3">
-          <FilterSelect
-            value={status}
-            onChange={(e) => {
-              setPage(1);
-              setStatus(e.target.value as any);
-            }}
-            defaultOption={{ value: "ALL", label: "All Status" }}
-            options={[
-              { label: "Active", value: "ACTIVE" },
-              { label: "Closed", value: "CLOSED" },
-              { label: "Draft", value: "DRAFT" },
-            ]}
-            containerClassName="w-44"
-          />
-          <CategoryDropdown
-            value={category}
-            onChange={(v) => {
-              setPage(1);
-              setCategory(v);
-              // charity page doesn't currently use category filter server-side
-            }}
-          />
-          <div className="ml-auto flex gap-3">
-            <FilterSelect
-              value={sortBy}
-              onChange={(event) =>
-                setSortBy(event.target.value as typeof sortBy)
-              }
-              options={[
-                { value: "createdAt", label: "Newest" },
-                { value: "currentAmount", label: "Amount Raised" },
-                { value: "targetAmount", label: "Target Amount" },
-                { value: "donorCount", label: "Donors" },
-                { value: "endDate", label: "Ending Soon" },
-              ]}
-            />
-            <FilterSelect
-              value={sortOrder}
-              onChange={(event) =>
-                setSortOrder(event.target.value as "asc" | "desc")
-              }
-              options={[
-                { value: "desc", label: "Descending" },
-                { value: "asc", label: "Ascending" },
-              ]}
-            />
+        <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-1 gap-4">
+              <SearchInput
+                value={search}
+                onChange={(event) => {
+                  setPage(1);
+                  setSearch(event.target.value);
+                }}
+                placeholder="Search campaigns"
+                containerClassName="max-w-md flex-1"
+              />
+              <div className="flex items-center gap-3">
+                <FilterSelect
+                  value={status}
+                  onChange={(e) => {
+                    setPage(1);
+                    setStatus(e.target.value as any);
+                  }}
+                  defaultOption={{ value: "ALL", label: "All Status" }}
+                  options={[
+                    { label: "Active", value: "ACTIVE" },
+                    { label: "Closed", value: "CLOSED" },
+                    { label: "Draft", value: "DRAFT" },
+                  ]}
+                  containerClassName="w-44"
+                />
+                <CategoryDropdown
+                  value={category}
+                  onChange={(v) => {
+                    setPage(1);
+                    setCategory(v);
+                    // charity page doesn't currently use category filter server-side
+                  }}
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <FilterSelect
+                value={sortBy}
+                onChange={(event) =>
+                  setSortBy(event.target.value as typeof sortBy)
+                }
+                options={[
+                  { value: "createdAt", label: "Newest" },
+                  { value: "currentAmount", label: "Amount Raised" },
+                  { value: "targetAmount", label: "Target Amount" },
+                  { value: "donorCount", label: "Donors" },
+                  { value: "endDate", label: "Ending Soon" },
+                ]}
+                containerClassName="w-full sm:w-auto"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
+                }
+                className="inline-flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-500 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                aria-label={`Sort ${sortOrder === "asc" ? "descending" : "ascending"}`}
+              >
+                {sortOrder === "asc" ? (
+                  <svg
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
-        </div>
-
-        <div className="mb-6 flex flex-wrap gap-3">
-          <SearchInput
-            value={search}
-            onChange={(event) => {
-              setPage(1);
-              setSearch(event.target.value);
-            }}
-            placeholder="Search campaigns"
-            containerClassName="w-full md:w-64"
-          />
-          <FilterSelect
-            value={sortBy}
-            onChange={(event) => setSortBy(event.target.value as typeof sortBy)}
-            options={[
-              { value: "createdAt", label: "Newest" },
-              { value: "currentAmount", label: "Amount Raised" },
-              { value: "targetAmount", label: "Target Amount" },
-              { value: "donorCount", label: "Donors" },
-              { value: "endDate", label: "Ending Soon" },
-            ]}
-          />
-          <FilterSelect
-            value={sortOrder}
-            onChange={(event) =>
-              setSortOrder(event.target.value as "asc" | "desc")
-            }
-            options={[
-              { value: "desc", label: "Descending" },
-              { value: "asc", label: "Ascending" },
-            ]}
-          />
         </div>
 
         {isLoading ? (

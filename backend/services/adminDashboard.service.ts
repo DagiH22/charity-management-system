@@ -1,6 +1,9 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../utils/prisma";
 
+const containsInsensitive = (value: string) =>
+  ({ contains: value, mode: "insensitive" }) as unknown as Prisma.StringFilter;
+
 const buildDateFilter = (dateFrom?: string, dateTo?: string) => {
   if (!dateFrom && !dateTo) {
     return undefined;
@@ -391,14 +394,20 @@ export const getAdminCampaignOversightService = async (options: {
   sortOrder?: "asc" | "desc";
 }) => {
   const { page, limit, search, status, sortBy, sortOrder } = options;
+  const searchTerm = search?.trim();
 
   const where: Prisma.CampaignWhereInput = {
     ...(status ? { status } : {}),
-    ...(search
+    ...(searchTerm
       ? {
           OR: [
-            { title: { contains: search } },
-            { charity: { organizationName: { contains: search } } },
+            { title: containsInsensitive(searchTerm) },
+            { description: containsInsensitive(searchTerm) },
+            {
+              charity: {
+                organizationName: containsInsensitive(searchTerm),
+              },
+            },
           ],
         }
       : {}),

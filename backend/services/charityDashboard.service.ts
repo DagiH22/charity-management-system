@@ -2,6 +2,9 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../utils/prisma";
 import { ApiError } from "../utils/ApiError";
 
+const containsInsensitive = (value: string) =>
+  ({ contains: value, mode: "insensitive" }) as unknown as Prisma.StringFilter;
+
 type CampaignSortBy =
   | "createdAt"
   | "currentAmount"
@@ -142,11 +145,24 @@ export const getCharityCampaignsService = async (
 ) => {
   const charityProfile = await getCharityProfile(userId);
   const { page, limit, search, status, sortBy, sortOrder } = options;
+  const searchTerm = search?.trim();
 
   const where: Prisma.CampaignWhereInput = {
     charityId: charityProfile.id,
     ...(status ? { status } : {}),
-    ...(search ? { title: { contains: search } } : {}),
+    ...(searchTerm
+      ? {
+          OR: [
+            { title: containsInsensitive(searchTerm) },
+            { description: containsInsensitive(searchTerm) },
+            {
+              charity: {
+                organizationName: containsInsensitive(searchTerm),
+              },
+            },
+          ],
+        }
+      : {}),
   };
 
   const orderBy: Prisma.CampaignOrderByWithRelationInput = {

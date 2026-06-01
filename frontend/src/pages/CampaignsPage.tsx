@@ -75,14 +75,14 @@ export default function CampaignsPage() {
           );
         }
 
-        if (search) {
+        const searchTerm = search.trim().toLowerCase();
+        if (searchTerm) {
           fetchedData = fetchedData.filter(
             (c: Campaign) =>
-              c.title.toLowerCase().includes(search.toLowerCase()) ||
+              c.title.toLowerCase().includes(searchTerm) ||
+              (c.description || "").toLowerCase().includes(searchTerm) ||
               (c.charity?.organizationName &&
-                c.charity.organizationName
-                  .toLowerCase()
-                  .includes(search.toLowerCase())),
+                c.charity.organizationName.toLowerCase().includes(searchTerm)),
           );
         }
 
