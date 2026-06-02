@@ -77,6 +77,9 @@ const DEFAULT_RETURN_ORIGIN =
   env.FRONTEND_URLS.split(",")
     .map((origin) => origin.trim())
     .filter(Boolean)[0] ?? "http://localhost:5173";
+const ALLOWED_MOBILE_RETURN_SCHEMES = env.MOBILE_RETURN_SCHEMES.split(",")
+  .map((scheme) => scheme.trim().toLowerCase())
+  .filter(Boolean);
 
 const donationSelect = {
   id: true,
@@ -145,6 +148,19 @@ const normalizeReturnUrl = (returnUrl?: string) => {
 
   try {
     const parsed = new URL(returnUrl);
+    const scheme = parsed.protocol.replace(":", "").toLowerCase();
+
+    if (scheme && scheme !== "http" && scheme !== "https") {
+      if (
+        ALLOWED_MOBILE_RETURN_SCHEMES.includes(scheme) &&
+        parsed.hostname.toLowerCase() === "app"
+      ) {
+        return parsed.toString();
+      }
+
+      return DEFAULT_RETURN_ORIGIN;
+    }
+
     const allowedOrigins = env.FRONTEND_URLS.split(",")
       .map((origin) => origin.trim())
       .filter(Boolean);

@@ -61,7 +61,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-72 flex-col overflow-hidden self-start bg-white border-r border-slate-200 transition-transform duration-300 ease-in-out lg:fixed lg:top-[80px] lg:bottom-0 lg:z-30 lg:flex lg:h-[calc(100vh-80px)] lg:w-72 lg:translate-x-0 shadow-xl lg:shadow-none",
+          "fixed inset-y-0 left-0 z-50 w-72 flex-col overflow-hidden bg-white border-r border-slate-200 transition-transform duration-300 ease-in-out h-[100dvh] lg:fixed lg:top-[80px] lg:bottom-0 lg:z-30 lg:flex lg:h-[calc(100vh-80px)] lg:w-72 lg:translate-x-0 shadow-xl lg:shadow-none",
           isOpen ? "translate-x-0 flex" : "-translate-x-full hidden",
         )}
       >

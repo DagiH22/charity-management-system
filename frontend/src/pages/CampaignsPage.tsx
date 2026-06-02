@@ -165,36 +165,38 @@ export default function CampaignsPage() {
 
       {/* Filters */}
       <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-1 gap-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col sm:flex-row flex-1 gap-4">
             <SearchInput
               placeholder="Search campaigns..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              containerClassName="max-w-md flex-1"
+              containerClassName="w-full sm:max-w-md"
             />
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <FilterSelect
                 value={status}
                 onChange={(e) => setStatus(e.target.value as any)}
                 defaultOption={{ value: "ALL", label: "All Status" }}
                 options={statusOptions}
-                containerClassName="w-44"
+                containerClassName="w-full sm:w-32"
               />
-              <CategoryDropdown
-                value={category}
-                onChange={(v) => setCategory(v as any)}
-              />
+              <div className="w-full sm:w-auto">
+                <CategoryDropdown
+                  value={category}
+                  onChange={(v) => setCategory(v as any)}
+                />
+              </div>
               <FilterSelect
                 value={location}
                 onChange={(e) => setLocation(e.target.value as any)}
                 defaultOption={{ value: "ALL", label: "All Locations" }}
                 options={campaignLocationOptions}
-                containerClassName="w-48"
+                containerClassName="w-full sm:w-40"
               />
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mt-2 lg:mt-0">
             <FilterSelect
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}

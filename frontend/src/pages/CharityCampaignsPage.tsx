@@ -147,8 +147,8 @@ export default function CharityCampaignsPage() {
         </header>
 
         <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-1 gap-4">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex flex-1 flex-col gap-4 md:flex-row md:flex-wrap md:items-center">
               <SearchInput
                 value={search}
                 onChange={(event) => {
@@ -156,9 +156,9 @@ export default function CharityCampaignsPage() {
                   setSearch(event.target.value);
                 }}
                 placeholder="Search campaigns"
-                containerClassName="max-w-md flex-1"
+                containerClassName="w-full md:max-w-md md:flex-1"
               />
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                 <FilterSelect
                   value={status}
                   onChange={(e) => {
@@ -189,11 +189,11 @@ export default function CharityCampaignsPage() {
                   }}
                   defaultOption={{ value: "ALL", label: "All Locations" }}
                   options={campaignLocationOptions}
-                  containerClassName="w-48"
+                  containerClassName="w-full sm:w-48"
                 />
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-4 xl:mt-0">
               <FilterSelect
                 value={sortBy}
                 onChange={(event) =>

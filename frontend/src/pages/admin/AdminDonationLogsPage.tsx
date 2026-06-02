@@ -242,8 +242,9 @@ export default function AdminDonationLogsPage() {
         </div>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500 whitespace-nowrap">
               <tr>
                 <th className="px-5 py-3">Donation</th>
                 <th className="px-5 py-3">Donor</th>
@@ -313,8 +314,9 @@ export default function AdminDonationLogsPage() {
                   </td>
                 </tr>
               ))}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

@@ -36,7 +36,7 @@ export default function NotificationDropdown({
 }: NotificationDropdownProps) {
   return (
     <div
-      className={`absolute right-0 top-full z-50 mt-3 w-[24rem] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_20px_60px_rgba(10,40,80,0.18)] ${dropdownClassName || ""}`}
+      className={`fixed inset-x-4 top-20 sm:absolute sm:inset-auto sm:right-0 sm:top-full z-50 sm:mt-3 w-auto sm:w-[24rem] sm:max-w-[24rem] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_20px_60px_rgba(10,40,80,0.18)] ${dropdownClassName || ""}`}
     >
       <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
         <div>

@@ -145,8 +145,9 @@ export default function AdminUserManagementPage() {
         </div>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500 whitespace-nowrap">
               <tr>
                 <th className="px-5 py-3">User</th>
                 <th className="px-5 py-3">Role</th>
@@ -194,7 +195,8 @@ export default function AdminUserManagementPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       )}
 

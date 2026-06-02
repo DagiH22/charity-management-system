@@ -2,11 +2,10 @@ import nodemailer from "nodemailer";
 import { env } from "../utils/env";
 
 const transporter = nodemailer.createTransport({
-  host: env.MAILTRAP_HOST,
-  port: env.MAILTRAP_PORT,
+  service: "gmail",
   auth: {
-    user: env.MAILTRAP_USER,
-    pass: env.MAILTRAP_PASS,
+    user: env.EMAIL,
+    pass: env.EMAIL_APP_PASSWORD,
   },
 });
 
@@ -64,7 +63,7 @@ export const sendPasswordResetOtpEmail = async (
   otp: string,
 ) => {
   await transporter.sendMail({
-    from: '"Charity Management System" <no-reply@charity-management.local>',
+    from: `"Charity Management System" <${env.EMAIL}>`,
     to: recipientEmail,
     subject: "Password Reset Code",
     html: buildPasswordResetEmailHtml(otp),
@@ -87,7 +86,7 @@ const buildPasswordResetSuccessEmailHtml = () => {
 
 export const sendPasswordResetSuccessEmail = async (recipientEmail: string) => {
   await transporter.sendMail({
-    from: '"Charity Management System" <no-reply@charity-management.local>',
+    from: `"Charity Management System" <${env.EMAIL}>`,
     to: recipientEmail,
     subject: "Password Reset Successful",
     html: buildPasswordResetSuccessEmailHtml(),

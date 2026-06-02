@@ -76,7 +76,7 @@ export default function DonorDonationsPage() {
         </p>
       </header>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3">
         <SearchInput
           value={search}
           onChange={(event) => {
@@ -84,10 +84,11 @@ export default function DonorDonationsPage() {
             setSearch(event.target.value);
           }}
           placeholder="Search by campaign"
-          containerClassName="w-full md:w-64"
+          containerClassName="w-full sm:flex-1 md:flex-none md:w-64"
         />
         <FilterSelect
           value={sortBy}
+          containerClassName="w-full sm:flex-1 md:w-auto"
           onChange={(event) => setSortBy(event.target.value as typeof sortBy)}
           options={[
             { value: "donatedAt", label: "Date" },
@@ -97,6 +98,7 @@ export default function DonorDonationsPage() {
         />
         <FilterSelect
           value={sortOrder}
+          containerClassName="w-full sm:flex-1 md:w-auto"
           onChange={(event) =>
             setSortOrder(event.target.value as "asc" | "desc")
           }

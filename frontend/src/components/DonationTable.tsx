@@ -28,8 +28,9 @@ export const DonationTable = ({
   downloadingId = null,
 }: DonationTableProps) => (
   <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-    <table className="w-full text-sm">
-      <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500 whitespace-nowrap">
         <tr>
           <th className="px-6 py-3">Campaign</th>
           <th className="px-6 py-3">Amount</th>
@@ -90,6 +91,7 @@ export const DonationTable = ({
           );
         })}
       </tbody>
-    </table>
+      </table>
+    </div>
   </div>
 );

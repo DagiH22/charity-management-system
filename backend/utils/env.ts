@@ -14,6 +14,8 @@ export const env = {
   NODE_ENV: process.env.NODE_ENV ?? "development",
   PORT: Number(process.env.PORT ?? 5000),
   FRONTEND_URLS: process.env.FRONTEND_URLS ?? "http://localhost:5173",
+  MOBILE_RETURN_SCHEMES:
+    process.env.MOBILE_RETURN_SCHEMES ?? "charitymanagment",
   DATABASE_URL: getEnv("DATABASE_URL"),
   JWT_SECRET: getEnv("JWT_SECRET"),
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN ?? "7d",
@@ -21,8 +23,6 @@ export const env = {
   CHAPA_SECRET_KEY: process.env.CHAPA_SECRET_KEY ?? "",
   CHAPA_SECRET_HASH: process.env.CHAPA_SECRET_HASH ?? "",
   WEBHOOK_URL: process.env.WEBHOOK_URL ?? undefined,
-  MAILTRAP_HOST: getEnv("MAILTRAP_HOST"),
-  MAILTRAP_PORT: Number(process.env.MAILTRAP_PORT ?? 2525),
-  MAILTRAP_USER: getEnv("MAILTRAP_USER"),
-  MAILTRAP_PASS: getEnv("MAILTRAP_PASS"),
+  EMAIL: getEnv("EMAIL"),
+  EMAIL_APP_PASSWORD: getEnv("EMAIL_APP_PASSWORD"),
 };
