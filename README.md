@@ -1,48 +1,48 @@
-# charity-management-system
-final year project
+# Charity Management System
 
-## Backend quick start (Auth API)
+Final Year Project
 
-1. Go to backend folder and install dependencies.
-2. Copy environment template and set real values.
-3. Run Prisma migration and generate client.
-4. Start development server.
+This project consists of a Node.js/Express backend and a React/Vite frontend.
 
-Suggested flow:
+## Quick Start Guide
 
-- `cd backend`
-- `cp .env.example .env`
-- update `DATABASE_URL` and `JWT_SECRET` in `.env`
-- `npm install`
-- `npx prisma migrate dev --name init_auth`
-- `npm run dev`
+### 1. Backend Setup
 
-Auth endpoints:
+Open a terminal and set up the backend server:
 
-- `POST /auth/register`
-- `POST /auth/login`
-- `GET /auth/me` (Bearer token required)
+```bash
+cd backend
+npm install
 
-Charity profile endpoints:
+# Set up environment variables
+cp .env.example .env
+# Edit .env and update DATABASE_URL and JWT_SECRET with your values
 
-- `POST /charity-profile` (Bearer token, CHARITY only)
-- `GET /charity-profile/me` (Bearer token, CHARITY only)
+# Initialize the database
+npx prisma migrate dev --name init
+npx prisma generate
 
-`POST /charity-profile` expects `multipart/form-data` with:
+# Start the development server
+npm run dev
+```
 
-- `document` (file: pdf/jpg/jpeg/png)
-- `organizationName` (text)
-- `description` (text)
-- `phone` (optional text)
-- `address` (optional text)
-- `website` (optional text)
+### 2. Frontend Setup
 
-Two-step charity registration flow:
+Open a new terminal window and set up the frontend application:
 
-1. Register with role `CHARITY` using `/auth/register`
-2. Complete profile via `/charity-profile`
+```bash
+cd frontend
+npm install
 
-After schema updates, run migration + regenerate Prisma client:
+# Set up environment variables
+cp .env.example .env
+# Update any required environment variables in .env if needed
 
-- `npx prisma migrate dev --name add_charity_profile`
-- `npx prisma generate`
+# Start the development server
+npm run dev
+```
+
+## Features Overview
+
+- **Backend (`/backend`)**: Node.js, Express, Prisma. Exposes REST APIs for Authentication, User Management, Charity Profiles, Campaigns, and Donations.
+- **Frontend (`/frontend`)**: React 19, Vite, Tailwind CSS. Provides interfaces for Admins, Charities, and Donors.
