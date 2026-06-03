@@ -2,7 +2,7 @@ import { Prisma, CampaignLocation } from "@prisma/client";
 import { prisma } from "../utils/prisma";
 
 const containsInsensitive = (value: string) =>
-  ({ contains: value, mode: "insensitive" }) as unknown as Prisma.StringFilter;
+  ({ contains: value }) as unknown as Prisma.StringFilter;
 
 const buildDateFilter = (dateFrom?: string, dateTo?: string) => {
   if (!dateFrom && !dateTo) {

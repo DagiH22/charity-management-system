@@ -3,7 +3,7 @@ import { prisma } from "../utils/prisma";
 import { ApiError } from "../utils/ApiError";
 
 const containsInsensitive = (value: string) =>
-  ({ contains: value, mode: "insensitive" }) as unknown as Prisma.StringFilter;
+  ({ contains: value }) as unknown as Prisma.StringFilter;
 
 type CampaignSortBy =
   | "createdAt"
