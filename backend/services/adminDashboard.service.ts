@@ -759,6 +759,9 @@ export const toggleUserSuspensionService = async (userId: number) => {
 
   if (newSuspendedState) {
     updateData.isVerified = false;
+  } else {
+    // When releasing suspension, toggle back to verified
+    updateData.isVerified = true;
   }
 
   const updatedUser = await prisma.user.update({
@@ -766,10 +769,10 @@ export const toggleUserSuspensionService = async (userId: number) => {
     data: updateData,
   });
 
-  if (user.role === "CHARITY" && user.charityProfile && newSuspendedState) {
+  if (user.role === "CHARITY" && user.charityProfile) {
     await prisma.charityProfile.update({
       where: { userId: user.id },
-      data: { status: "REJECTED" },
+      data: { status: newSuspendedState ? "REJECTED" : "APPROVED" },
     });
   }
 

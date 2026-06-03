@@ -39,11 +39,11 @@ export default function AdminUserManagementPage() {
               return {
                 ...user,
                 isSuspended: newSuspendedState,
-                isVerified: newSuspendedState ? false : user.isVerified,
+                isVerified: newSuspendedState ? false : true,
                 charityProfile: user.charityProfile
                   ? {
                       ...user.charityProfile,
-                      status: newSuspendedState ? "REJECTED" : user.charityProfile.status,
+                      status: newSuspendedState ? "REJECTED" : "APPROVED",
                     }
                   : null,
               };

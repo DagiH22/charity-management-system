@@ -93,8 +93,9 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
     return donation.donor?.name || donation.guestName || "Unknown Donor";
   };
 
-  const isRejected = user.charityVerificationStatus === "REJECTED";
-  const showVerificationBanner = !user.isVerified;
+  const isSuspended = user.isSuspended;
+  const isRejected = user.charityVerificationStatus === "REJECTED" && !isSuspended;
+  const showVerificationBanner = !user.isVerified || isSuspended;
 
   return (
     <div className="relative -mx-[6vw] -my-12 flex min-h-[calc(100vh-73px)] lg:flex-row">
@@ -171,12 +172,20 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
           >
             <div
               className={`rounded-full p-2 ${
-                isRejected ? "bg-rose-100" : "bg-amber-100"
+                isSuspended
+                  ? "bg-rose-100"
+                  : isRejected 
+                    ? "bg-rose-100" 
+                    : "bg-amber-100"
               }`}
             >
               <svg
                 className={`h-5 w-5 ${
-                  isRejected ? "text-rose-600" : "text-amber-600"
+                  isSuspended
+                    ? "text-rose-600"
+                    : isRejected 
+                      ? "text-rose-600" 
+                      : "text-amber-600"
                 }`}
                 fill="none"
                 viewBox="0 0 24 24"
@@ -193,19 +202,33 @@ export default function CharityDashboard({ user }: CharityDashboardProps) {
             <div>
               <p
                 className={`font-semibold ${
-                  isRejected ? "text-rose-800" : "text-amber-800"
+                  isSuspended
+                    ? "text-rose-800"
+                    : isRejected 
+                      ? "text-rose-800" 
+                      : "text-amber-800"
                 }`}
               >
-                {isRejected ? "Verification rejected" : "Verification pending"}
+                {isSuspended 
+                  ? "Account Suspended" 
+                  : isRejected 
+                    ? "Verification rejected" 
+                    : "Verification pending"}
               </p>
               <p
                 className={`mt-1 text-sm ${
-                  isRejected ? "text-rose-700" : "text-amber-700"
+                  isSuspended
+                    ? "text-rose-700"
+                    : isRejected 
+                      ? "text-rose-700" 
+                      : "text-amber-700"
                 }`}
               >
-                {isRejected
-                  ? "Your charity profile was rejected. Please update your information and submit again for review."
-                  : "Your charity profile is submitted. An admin will review your document soon. Limited features apply until verified."}
+                {isSuspended
+                  ? "Your account has been suspended by the administrator. Please contact support for more information."
+                  : isRejected
+                    ? "Your charity profile was rejected. Please update your information and submit again for review."
+                    : "Your charity profile is submitted. An admin will review your document soon. Limited features apply until verified."}
               </p>
               {isRejected && (
                 <Link

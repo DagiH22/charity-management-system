@@ -55,6 +55,7 @@ const toSafeUserSelect = {
   email: true,
   role: true,
   isVerified: true,
+  isSuspended: true,
   bio: true,
   phone: true,
   profileImage: true,
@@ -84,6 +85,7 @@ type SafeUserWithProfile = {
   email: string;
   role: AppRole;
   isVerified: boolean;
+  isSuspended: boolean;
   bio: string | null;
   phone: string | null;
   profileImage: string | null;
@@ -135,6 +137,7 @@ const toAuthUser = (user: SafeUserWithProfile) => {
     email: user.email,
     role: user.role,
     isVerified,
+    isSuspended: user.isSuspended,
     bio: user.bio,
     phone: user.phone,
     profileImage: user.profileImage,
