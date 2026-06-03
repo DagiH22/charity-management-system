@@ -102,3 +102,10 @@ export const getAdminReports = async (params?: {
 
   return data;
 };
+
+export const toggleUserSuspension = async (userId: number) => {
+  const { data } = await http.patch<{ success: true; data: any }>(
+    `/admin-dashboard/users/${userId}/suspend`,
+  );
+  return data;
+};

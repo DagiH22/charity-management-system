@@ -1,5 +1,6 @@
 import { Prisma, CampaignLocation } from "@prisma/client";
 import { prisma } from "../utils/prisma";
+import { ApiError } from "../utils/ApiError";
 
 const containsInsensitive = (value: string) =>
   ({ contains: value }) as unknown as Prisma.StringFilter;
@@ -266,6 +267,7 @@ export const getAdminUsersService = async (options: {
         email: true,
         role: true,
         isVerified: true,
+        isSuspended: true,
         createdAt: true,
         charityProfile: {
           select: {
@@ -737,4 +739,39 @@ export const getAdminReportsService = async (options: {
       activeCampaigns,
     },
   };
+};
+
+export const toggleUserSuspensionService = async (userId: number) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { charityProfile: true }
+  });
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const newSuspendedState = !user.isSuspended;
+
+  const updateData: any = {
+    isSuspended: newSuspendedState,
+  };
+
+  if (newSuspendedState) {
+    updateData.isVerified = false;
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: updateData,
+  });
+
+  if (user.role === "CHARITY" && user.charityProfile && newSuspendedState) {
+    await prisma.charityProfile.update({
+      where: { userId: user.id },
+      data: { status: "REJECTED" },
+    });
+  }
+
+  return { suspended: newSuspendedState, user: updatedUser };
 };

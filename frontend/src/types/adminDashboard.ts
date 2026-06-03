@@ -68,6 +68,7 @@ export type AdminUsersResponse = {
     email: string;
     role: "DONOR" | "CHARITY" | "ADMIN";
     isVerified: boolean;
+    isSuspended: boolean;
     createdAt: string;
     charityProfile: {
       id: number;

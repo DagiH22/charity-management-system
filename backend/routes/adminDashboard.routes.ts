@@ -7,6 +7,7 @@ import {
   getAdminOverview,
   getAdminReports,
   getAdminUsers,
+  toggleUserSuspension,
 } from "../controllers/adminDashboard.controller";
 
 const adminDashboardRouter = Router();
@@ -19,5 +20,6 @@ adminDashboardRouter.get("/charities", getAdminCharityVerifications);
 adminDashboardRouter.get("/campaigns", getAdminCampaignOversight);
 adminDashboardRouter.get("/donations", getAdminDonationLogs);
 adminDashboardRouter.get("/reports", getAdminReports);
+adminDashboardRouter.patch("/users/:id/suspend", toggleUserSuspension);
 
 export default adminDashboardRouter;

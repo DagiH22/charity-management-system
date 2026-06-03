@@ -7,6 +7,7 @@ import {
   getAdminOverviewService,
   getAdminReportsService,
   getAdminUsersService,
+  toggleUserSuspensionService,
 } from "../services/adminDashboard.service";
 import { CampaignLocation } from "@prisma/client";
 import { ApiError } from "../utils/ApiError";
@@ -183,6 +184,19 @@ export const getAdminReports = asyncHandler(
     const dateTo = req.query.dateTo ? String(req.query.dateTo) : undefined;
 
     const data = await getAdminReportsService({ dateFrom, dateTo });
+
+    res.status(200).json({ success: true, data });
+  },
+);
+
+export const toggleUserSuspension = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = Number(req.params.id);
+    if (!userId) {
+      throw new ApiError(400, "User ID is required");
+    }
+
+    const data = await toggleUserSuspensionService(userId);
 
     res.status(200).json({ success: true, data });
   },

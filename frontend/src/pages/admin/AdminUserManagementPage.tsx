@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import AdminShell from "../../components/AdminShell";
 import { getApiErrorMessage } from "../../services/apiErrors";
-import { getAdminUsers } from "../../services/adminDashboard.api";
+import { getAdminUsers, toggleUserSuspension } from "../../services/adminDashboard.api";
 import type { AdminUsersResponse } from "../../types/adminDashboard";
 import { SearchInput } from "../../components/ui/SearchInput";
 import { FilterSelect } from "../../components/ui/FilterSelect";
@@ -21,6 +21,43 @@ export default function AdminUserManagementPage() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const [category, setCategory] = useState("ALL");
+  const [isToggling, setIsToggling] = useState<Record<number, boolean>>({});
+
+  const handleToggleSuspension = async (userId: number) => {
+    try {
+      setIsToggling((prev) => ({ ...prev, [userId]: true }));
+      await toggleUserSuspension(userId);
+      
+      // Update local state instead of full reload for better UX
+      setUsers((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          items: prev.items.map((user) => {
+            if (user.id === userId) {
+              const newSuspendedState = !user.isSuspended;
+              return {
+                ...user,
+                isSuspended: newSuspendedState,
+                isVerified: newSuspendedState ? false : user.isVerified,
+                charityProfile: user.charityProfile
+                  ? {
+                      ...user.charityProfile,
+                      status: newSuspendedState ? "REJECTED" : user.charityProfile.status,
+                    }
+                  : null,
+              };
+            }
+            return user;
+          }),
+        };
+      });
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setIsToggling((prev) => ({ ...prev, [userId]: false }));
+    }
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -153,6 +190,7 @@ export default function AdminUserManagementPage() {
                 <th className="px-5 py-3">Role</th>
                 <th className="px-5 py-3">Verification</th>
                 <th className="px-5 py-3">Joined</th>
+                <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -191,6 +229,25 @@ export default function AdminUserManagementPage() {
                   </td>
                   <td className="px-5 py-4 text-xs text-slate-500">
                     {new Date(user.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-5 py-4 text-right">
+                    {user.role === "CHARITY" && (
+                      <button
+                        onClick={() => handleToggleSuspension(user.id)}
+                        disabled={isToggling[user.id]}
+                        className={`rounded-lg px-3 py-1.5 text-xs font-semibold shadow-sm transition-colors disabled:opacity-50 ${
+                          user.isSuspended
+                            ? "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                            : "bg-red-500 text-white hover:bg-red-600"
+                        }`}
+                      >
+                        {isToggling[user.id]
+                          ? "..."
+                          : user.isSuspended
+                            ? "Release Suspend"
+                            : "Suspend"}
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
